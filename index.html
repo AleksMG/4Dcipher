@@ -155,6 +155,33 @@
             color: var(--error-color);
             margin-top: 10px;
         }
+        
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            background: #eee;
+            border: none;
+            flex: 1;
+            text-align: center;
+        }
+        
+        .tab.active {
+            background: var(--secondary-color);
+            color: white;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
     </style>
 </head>
 <body>
@@ -170,11 +197,22 @@
             <label for="key">Encryption Key:</label>
             <input type="text" id="key" value="SECRET">
             
-            <label for="plaintext">Plaintext:</label>
-            <textarea id="plaintext" placeholder="Text to encrypt"></textarea>
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('encrypt')">Encrypt</button>
+                <button class="tab" onclick="switchTab('decrypt')">Decrypt</button>
+            </div>
             
-            <button id="encrypt-btn">Encrypt</button>
-            <button id="decrypt-btn">Decrypt</button>
+            <div id="encrypt-tab" class="tab-content active">
+                <label for="plaintext">Plaintext:</label>
+                <textarea id="plaintext" placeholder="Text to encrypt"></textarea>
+                <button id="encrypt-btn">Encrypt</button>
+            </div>
+            
+            <div id="decrypt-tab" class="tab-content">
+                <label for="ciphertext">Ciphertext:</label>
+                <textarea id="ciphertext" placeholder="Text to decrypt"></textarea>
+                <button id="decrypt-btn">Decrypt</button>
+            </div>
             
             <div id="error" class="error"></div>
         </div>
@@ -194,212 +232,225 @@
     </div>
     
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Constants
-            const LAYERS = 3;
-            const ROWS = 4;
-            const COLS = 3;
-            const TOTAL_CELLS = LAYERS * ROWS * COLS;
+        // Constants
+        const LAYERS = 3;
+        const ROWS = 4;
+        const COLS = 3;
+        const TOTAL_CELLS = LAYERS * ROWS * COLS;
+        
+        // DOM elements
+        const alphabetInput = document.getElementById('alphabet');
+        const keyInput = document.getElementById('key');
+        const plaintextInput = document.getElementById('plaintext');
+        const ciphertextInput = document.getElementById('ciphertext');
+        const encryptBtn = document.getElementById('encrypt-btn');
+        const decryptBtn = document.getElementById('decrypt-btn');
+        const resultText = document.getElementById('result-text');
+        const errorDiv = document.getElementById('error');
+        const cubeDisplay = document.getElementById('cube-display');
+        
+        // Initialize cipher
+        let cube = [];
+        let charToCoords = {};
+        let coordsToChar = {};
+        
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
             
-            // DOM elements
-            const alphabetInput = document.getElementById('alphabet');
-            const keyInput = document.getElementById('key');
-            const plaintextInput = document.getElementById('plaintext');
-            const encryptBtn = document.getElementById('encrypt-btn');
-            const decryptBtn = document.getElementById('decrypt-btn');
-            const resultText = document.getElementById('result-text');
-            const errorDiv = document.getElementById('error');
-            const cubeDisplay = document.getElementById('cube-display');
+            document.querySelector(`.tab[onclick="switchTab('${tabName}')"]`).classList.add('active');
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+        }
+        
+        function initCube() {
+            cubeDisplay.innerHTML = '';
+            charToCoords = {};
+            coordsToChar = {};
             
-            // Initialize cipher
-            let cube = [];
-            let charToCoords = {};
-            let coordsToChar = {};
-            
-            function initCube() {
-                cubeDisplay.innerHTML = '';
-                charToCoords = {};
-                coordsToChar = {};
-                
-                const alphabet = alphabetInput.value;
-                if (alphabet.length < TOTAL_CELLS) {
-                    showError(`Alphabet must contain at least ${TOTAL_CELLS} characters. Currently has ${alphabet.length}.`);
-                    return false;
-                }
-                
-                // Create 3 layers of 4x3 grids
-                for (let layer = 0; layer < LAYERS; layer++) {
-                    const layerDiv = document.createElement('div');
-                    layerDiv.className = 'cube-layer';
-                    
-                    const title = document.createElement('div');
-                    title.className = 'layer-title';
-                    title.textContent = `Layer ${layer + 1}`;
-                    layerDiv.appendChild(title);
-                    
-                    const grid = document.createElement('div');
-                    grid.className = 'cube-grid';
-                    
-                    for (let row = 0; row < ROWS; row++) {
-                        for (let col = 0; col < COLS; col++) {
-                            const index = (layer * ROWS * COLS) + (row * COLS) + col;
-                            const char = alphabet[index] || ' ';
-                            
-                            const cell = document.createElement('div');
-                            cell.className = 'cube-cell';
-                            cell.textContent = char;
-                            cell.id = `cell-${layer}-${row}-${col}`;
-                            
-                            const coords = document.createElement('div');
-                            coords.className = 'coordinates';
-                            coords.textContent = `${layer+1}.${row+1}.${col+1}`;
-                            
-                            cell.appendChild(coords);
-                            grid.appendChild(cell);
-                            
-                            // Store coordinates
-                            charToCoords[char] = { layer, row, col };
-                            coordsToChar[`${layer},${row},${col}`] = char;
-                        }
-                    }
-                    
-                    layerDiv.appendChild(grid);
-                    cubeDisplay.appendChild(layerDiv);
-                }
-                
-                hideError();
-                return true;
+            const alphabet = alphabetInput.value;
+            if (alphabet.length < TOTAL_CELLS) {
+                showError(`Alphabet must contain at least ${TOTAL_CELLS} characters. Currently has ${alphabet.length}.`);
+                return false;
             }
             
-            function encrypt() {
-                if (!initCube()) return;
+            // Create 3 layers of 4x3 grids
+            for (let layer = 0; layer < LAYERS; layer++) {
+                const layerDiv = document.createElement('div');
+                layerDiv.className = 'cube-layer';
                 
-                const plaintext = plaintextInput.value.toUpperCase();
-                const key = keyInput.value.toUpperCase();
+                const title = document.createElement('div');
+                title.className = 'layer-title';
+                title.textContent = `Layer ${layer + 1}`;
+                layerDiv.appendChild(title);
                 
-                if (!plaintext) {
-                    showError('Enter text to encrypt');
+                const grid = document.createElement('div');
+                grid.className = 'cube-grid';
+                
+                for (let row = 0; row < ROWS; row++) {
+                    for (let col = 0; col < COLS; col++) {
+                        const index = (layer * ROWS * COLS) + (row * COLS) + col;
+                        const char = alphabet[index] || ' ';
+                        
+                        const cell = document.createElement('div');
+                        cell.className = 'cube-cell';
+                        cell.textContent = char;
+                        cell.id = `cell-${layer}-${row}-${col}`;
+                        
+                        const coords = document.createElement('div');
+                        coords.className = 'coordinates';
+                        coords.textContent = `${layer+1}.${row+1}.${col+1}`;
+                        
+                        cell.appendChild(coords);
+                        grid.appendChild(cell);
+                        
+                        // Store coordinates
+                        charToCoords[char] = { layer, row, col };
+                        coordsToChar[`${layer},${row},${col}`] = char;
+                    }
+                }
+                
+                layerDiv.appendChild(grid);
+                cubeDisplay.appendChild(layerDiv);
+            }
+            
+            hideError();
+            return true;
+        }
+        
+        function encrypt() {
+            if (!initCube()) return;
+            
+            const plaintext = plaintextInput.value.toUpperCase();
+            const key = keyInput.value.toUpperCase();
+            
+            if (!plaintext) {
+                showError('Enter text to encrypt');
+                return;
+            }
+            
+            let result = '';
+            let keyIndex = 0;
+            
+            for (let i = 0; i < plaintext.length; i++) {
+                const char = plaintext[i];
+                const keyChar = key[keyIndex % key.length];
+                
+                if (!(char in charToCoords)) {
+                    result += char;
+                    continue;
+                }
+                
+                if (!(keyChar in charToCoords)) {
+                    showError(`Key character '${keyChar}' not in alphabet`);
                     return;
                 }
                 
-                let result = '';
-                let keyIndex = 0;
+                // Get coordinates
+                const charCoords = charToCoords[char];
+                const keyCoords = charToCoords[keyChar];
                 
-                for (let i = 0; i < plaintext.length; i++) {
-                    const char = plaintext[i];
-                    const keyChar = key[keyIndex % key.length];
-                    
-                    if (!(char in charToCoords)) {
-                        result += char;
-                        continue;
-                    }
-                    
-                    if (!(keyChar in charToCoords)) {
-                        showError(`Key character '${keyChar}' not in alphabet`);
-                        return;
-                    }
-                    
-                    // Get coordinates
-                    const charCoords = charToCoords[char];
-                    const keyCoords = charToCoords[keyChar];
-                    
-                    // Calculate new coordinates
-                    const newLayer = (charCoords.layer + keyCoords.layer) % LAYERS;
-                    const newRow = (charCoords.row + keyCoords.row) % ROWS;
-                    const newCol = (charCoords.col + keyCoords.col) % COLS;
-                    
-                    // Get encrypted character
-                    const encryptedChar = coordsToChar[`${newLayer},${newRow},${newCol}`];
-                    result += encryptedChar;
-                    
-                    // Highlight animation
-                    highlightCell(charCoords.layer, charCoords.row, charCoords.col);
-                    highlightCell(keyCoords.layer, keyCoords.row, keyCoords.col);
-                    highlightCell(newLayer, newRow, newCol);
-                    
-                    keyIndex++;
-                }
+                // Calculate new coordinates
+                const newLayer = (charCoords.layer + keyCoords.layer) % LAYERS;
+                const newRow = (charCoords.row + keyCoords.row) % ROWS;
+                const newCol = (charCoords.col + keyCoords.col) % COLS;
                 
-                resultText.textContent = result;
+                // Get encrypted character
+                const encryptedChar = coordsToChar[`${newLayer},${newRow},${newCol}`];
+                result += encryptedChar;
+                
+                // Highlight animation
+                highlightCell(charCoords.layer, charCoords.row, charCoords.col);
+                highlightCell(keyCoords.layer, keyCoords.row, keyCoords.col);
+                highlightCell(newLayer, newRow, newCol);
+                
+                keyIndex++;
             }
             
-            function decrypt() {
-                if (!initCube()) return;
+            resultText.textContent = result;
+            ciphertextInput.value = result;
+        }
+        
+        function decrypt() {
+            if (!initCube()) return;
+            
+            const ciphertext = ciphertextInput.value.toUpperCase();
+            const key = keyInput.value.toUpperCase();
+            
+            if (!ciphertext) {
+                showError('Enter text to decrypt');
+                return;
+            }
+            
+            let result = '';
+            let keyIndex = 0;
+            
+            for (let i = 0; i < ciphertext.length; i++) {
+                const char = ciphertext[i];
+                const keyChar = key[keyIndex % key.length];
                 
-                const ciphertext = ciphertextInput.value.toUpperCase();
-                const key = keyInput.value.toUpperCase();
+                if (!(char in charToCoords)) {
+                    result += char;
+                    continue;
+                }
                 
-                if (!ciphertext) {
-                    showError('Enter text to decrypt');
+                if (!(keyChar in charToCoords)) {
+                    showError(`Key character '${keyChar}' not in alphabet`);
                     return;
                 }
                 
-                let result = '';
-                let keyIndex = 0;
+                // Get coordinates
+                const charCoords = charToCoords[char];
+                const keyCoords = charToCoords[keyChar];
                 
-                for (let i = 0; i < ciphertext.length; i++) {
-                    const char = ciphertext[i];
-                    const keyChar = key[keyIndex % key.length];
-                    
-                    if (!(char in charToCoords)) {
-                        result += char;
-                        continue;
-                    }
-                    
-                    if (!(keyChar in charToCoords)) {
-                        showError(`Key character '${keyChar}' not in alphabet`);
-                        return;
-                    }
-                    
-                    // Get coordinates
-                    const charCoords = charToCoords[char];
-                    const keyCoords = charToCoords[keyChar];
-                    
-                    // Calculate original coordinates
-                    const newLayer = (charCoords.layer - keyCoords.layer + LAYERS) % LAYERS;
-                    const newRow = (charCoords.row - keyCoords.row + ROWS) % ROWS;
-                    const newCol = (charCoords.col - keyCoords.col + COLS) % COLS;
-                    
-                    // Get decrypted character
-                    const decryptedChar = coordsToChar[`${newLayer},${newRow},${newCol}`];
-                    result += decryptedChar;
-                    
-                    // Highlight animation
-                    highlightCell(charCoords.layer, charCoords.row, charCoords.col);
-                    highlightCell(keyCoords.layer, keyCoords.row, keyCoords.col);
-                    highlightCell(newLayer, newRow, newCol);
-                    
-                    keyIndex++;
-                }
+                // Calculate original coordinates
+                const newLayer = (charCoords.layer - keyCoords.layer + LAYERS) % LAYERS;
+                const newRow = (charCoords.row - keyCoords.row + ROWS) % ROWS;
+                const newCol = (charCoords.col - keyCoords.col + COLS) % COLS;
                 
-                resultText.textContent = result;
+                // Get decrypted character
+                const decryptedChar = coordsToChar[`${newLayer},${newRow},${newCol}`];
+                result += decryptedChar;
+                
+                // Highlight animation
+                highlightCell(charCoords.layer, charCoords.row, charCoords.col);
+                highlightCell(keyCoords.layer, keyCoords.row, keyCoords.col);
+                highlightCell(newLayer, newRow, newCol);
+                
+                keyIndex++;
             }
             
-            function highlightCell(layer, row, col) {
-                const cell = document.getElementById(`cell-${layer}-${row}-${col}`);
-                if (cell) {
-                    cell.classList.add('highlight');
-                    setTimeout(() => {
-                        cell.classList.remove('highlight');
-                    }, 1000);
-                }
+            resultText.textContent = result;
+            plaintextInput.value = result;
+        }
+        
+        function highlightCell(layer, row, col) {
+            const cell = document.getElementById(`cell-${layer}-${row}-${col}`);
+            if (cell) {
+                cell.classList.add('highlight');
+                setTimeout(() => {
+                    cell.classList.remove('highlight');
+                }, 1000);
             }
-            
-            function showError(message) {
-                errorDiv.textContent = message;
-            }
-            
-            function hideError() {
-                errorDiv.textContent = '';
-            }
-            
-            // Event listeners
-            encryptBtn.addEventListener('click', encrypt);
-            decryptBtn.addEventListener('click', decrypt);
-            
-            // Initialize
-            initCube();
-        });
+        }
+        
+        function showError(message) {
+            errorDiv.textContent = message;
+        }
+        
+        function hideError() {
+            errorDiv.textContent = '';
+        }
+        
+        // Event listeners
+        encryptBtn.addEventListener('click', encrypt);
+        decryptBtn.addEventListener('click', decrypt);
+        
+        // Initialize
+        initCube();
     </script>
 </body>
 </html>
