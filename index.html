@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>4D Trifid Cipher</title>
+    <style>
+        :root {
+            --primary: #4285f4;
+            --secondary: #34a853;
+            --error: #ea4335;
+            --warning: #fbbc05;
+            --light-bg: #f5f5f5;
+            --dark-text: #333;
+            --border-radius: 6px;
+            --shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            color: var(--dark-text);
+            background-color: #f9f9f9;
+        }
+        
+        h1, h2, h3 {
+            color: var(--primary);
+        }
+        
+        .panel {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        textarea, input, select {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0 15px;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            font-family: inherit;
+        }
+        
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.3s;
+            margin-right: 10px;
+        }
+        
+        button:hover {
+            opacity: 0.9;
+        }
+        
+        .btn-secondary {
+            background-color: var(--secondary);
+        }
+        
+        .result-box {
+            min-height: 50px;
+            padding: 15px;
+            background-color: var(--light-bg);
+            border-radius: var(--border-radius);
+            margin-top: 10px;
+            word-break: break-word;
+            font-family: monospace;
+        }
+        
+        .status {
+            margin: 15px 0;
+            padding: 12px;
+            border-radius: var(--border-radius);
+        }
+        
+        .success {
+            background-color: #e6f4ea;
+            color: var(--secondary);
+        }
+        
+        .error {
+            background-color: #fce8e6;
+            color: var(--error);
+        }
+        
+        .cube-display {
+            margin-top: 20px;
+            font-family: monospace;
+            background-color: var(--light-bg);
+            padding: 15px;
+            border-radius: var(--border-radius);
+        }
+        
+        .counter {
+            font-size: 0.8em;
+            color: #666;
+            text-align: right;
+        }
+        
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>4D Trifid Cipher</h1>
+    
+    <div class="panel">
+        <h2>Configuration</h2>
+        
+        <div class="grid">
+            <div>
+                <label for="cipher-type">Cipher Type:</label>
+                <select id="cipher-type">
+                    <option value="3x3x3x3">3×3×3 Cube + 3×3 Square (36 chars)</option>
+                    <option value="4x4x4x4">4×4×4 Cube + 4×4 Square (80 chars)</option>
+                </select>
+            </div>
+            
+            <div>
+                <label for="key">Encryption Key:</label>
+                <input type="text" id="key" value="SECRETKEY">
+            </div>
+            
+            <div>
+                <label for="space-char">Space Replacement:</label>
+                <input type="text" id="space-char" value="/" maxlength="1">
+            </div>
+        </div>
+        
+        <div>
+            <label for="alphabet">Custom Alphabet (will be sanitized):</label>
+            <textarea id="alphabet" placeholder="Enter custom alphabet..."></textarea>
+            <div id="char-counter" class="counter">0/0 characters</div>
+        </div>
+        
+        <button id="init-cipher">Initialize Cipher</button>
+        <button id="reset-defaults">Reset to Defaults</button>
+        
+        <div id="config-status" class="status"></div>
+    </div>
+    
+    <div class="grid">
+        <div class="panel">
+            <h2>Encryption</h2>
+            <textarea id="plaintext" placeholder="Enter text to encrypt..."></textarea>
+            <button id="encrypt-btn" class="btn-secondary">Encrypt</button>
+            <h3>Result:</h3>
+            <div id="encrypted-result" class="result-box"></div>
+        </div>
+        
+        <div class="panel">
+            <h2>Decryption</h2>
+            <textarea id="ciphertext" placeholder="Enter text to decrypt..."></textarea>
+            <button id="decrypt-btn" class="btn-secondary">Decrypt</button>
+            <h3>Result:</h3>
+            <div id="decrypted-result" class="result-box"></div>
+        </div>
+    </div>
+    
+    <div class="panel">
+        <h2>Cipher Structure</h2>
+        <div id="cube-display" class="cube-display"></div>
+    </div>
+
+    <script>
+        /**
+         * Base 4D Trifid Cipher Class
+         */
+        class FourDTrifidCipher {
+            constructor(cubeSize, squareSize, alphabet, key, spaceChar) {
+                this.cubeSize = cubeSize;
+                this.squareSize = squareSize;
+                this.spaceChar = spaceChar;
+                this.setAlphabet(alphabet, key);
+            }
+            
+            /**
+             * Sanitizes and sets the alphabet
+             */
+            setAlphabet(alphabet, key) {
+                const cleanAlphabet = this.sanitizeString(alphabet);
+                const requiredChars = this.cubeSize ** 3 + this.squareSize ** 2;
+                
+                if (cleanAlphabet.length < requiredChars) {
+                    throw new Error(`Need at least ${requiredChars} unique characters`);
+                }
+                
+                this.cubeAlphabet = cleanAlphabet.slice(0, this.cubeSize ** 3);
+                this.squareAlphabet = cleanAlphabet.slice(this.cubeSize ** 3, requiredChars);
+                this.key = key;
+                this.generateStructures();
+            }
+            
+            /**
+             * Sanitizes input string (uppercase, remove duplicates/spaces)
+             */
+            sanitizeString(str) {
+                return [...new Set(str.toUpperCase().replace(/\s/g, ''))].join('');
+            }
+            
+            /**
+             * Applies key to alphabet for initial shuffling
+             */
+            applyKey(alphabet, key) {
+                const cleanKey = this.sanitizeString(key);
+                const keyChars = [];
+                
+                // Add key characters first (no duplicates)
+                for (const char of cleanKey) {
+                    if (!keyChars.includes(char) && alphabet.includes(char)) {
+                        keyChars.push(char);
+                    }
+                }
+                
+                // Add remaining alphabet characters
+                const remainingChars = [];
+                for (const char of alphabet) {
+                    if (!keyChars.includes(char)) {
+                        remainingChars.push(char);
+                    }
+                }
+                
+                return [...keyChars, ...remainingChars];
+            }
+            
+            /**
+             * Generates the cube and square structures
+             */
+            generateStructures() {
+                // Generate cube
+                const cubeChars = this.applyKey(this.cubeAlphabet, this.key);
+                this.cube = [];
+                
+                for (let z = 0; z < this.cubeSize; z++) {
+                    this.cube[z] = [];
+                    for (let y = 0; y < this.cubeSize; y++) {
+                        this.cube[z][y] = cubeChars.slice(
+                            z * this.cubeSize * this.cubeSize + y * this.cubeSize,
+                            z * this.cubeSize * this.cubeSize + (y + 1) * this.cubeSize
+                        );
+                    }
+                }
+                
+                // Generate square
+                const squareChars = this.applyKey(this.squareAlphabet, this.key);
+                this.square = [];
+                
+                for (let y = 0; y < this.squareSize; y++) {
+                    this.square[y] = squareChars.slice(
+                        y * this.squareSize,
+                        (y + 1) * this.squareSize
+                    );
+                }
+            }
+            
+            /**
+             * Finds 4D coordinates for a character
+             */
+            findCoordinates(char) {
+                char = char.toUpperCase();
+                
+                // Handle space replacement
+                if (char === ' ' || char === this.spaceChar) {
+                    char = this.spaceChar;
+                }
+                
+                // Search in cube first
+                for (let z = 0; z < this.cubeSize; z++) {
+                    for (let y = 0; y < this.cubeSize; y++) {
+                        for (let x = 0; x < this.cubeSize; x++) {
+                            if (this.cube[z][y][x] === char) {
+                                return [z + 1, y + 1, x + 1, 0]; // 0 indicates cube
+                            }
+                        }
+                    }
+                }
+                
+                // Search in square if not found in cube
+                for (let y = 0; y < this.squareSize; y++) {
+                    for (let x = 0; x < this.squareSize; x++) {
+                        if (this.square[y][x] === char) {
+                            return [0, 0, 0, y * this.squareSize + x + 1]; // Last coord indicates square position
+                        }
+                    }
+                }
+                
+                // Fallback (use last character)
+                return [this.cubeSize, this.cubeSize, this.cubeSize, this.squareSize * this.squareSize];
+            }
+            
+            /**
+             * Gets character from 4D coordinates
+             */
+            getCharFromCoordinates(z, y, x, s) {
+                if (s === 0) {
+                    // Character from cube
+                    z = Math.max(1, Math.min(z, this.cubeSize)) - 1;
+                    y = Math.max(1, Math.min(y, this.cubeSize)) - 1;
+                    x = Math.max(1, Math.min(x, this.cubeSize)) - 1;
+                    return this.cube[z][y][x];
+                } else {
+                    // Character from square
+                    s = Math.max(1, Math.min(s, this.squareSize * this.squareSize)) - 1;
+                    const row = Math.floor(s / this.squareSize);
+                    const col = s % this.squareSize;
+                    return this.square[row][col];
+                }
+            }
+            
+            /**
+             * Prepares text for processing
+             */
+            prepareText(text) {
+                let result = "";
+                const upperText = text.toUpperCase();
+                
+                for (const char of upperText) {
+                    if (this.cubeAlphabet.includes(char) || this.squareAlphabet.includes(char)) {
+                        result += char;
+                    } else if (char === ' ') {
+                        result += this.spaceChar;
+                    }
+                }
+                
+                return result;
+            }
+            
+            /**
+             * Encrypts plaintext
+             */
+            encrypt(plaintext) {
+                const prepared = this.prepareText(plaintext);
+                let coords = [];
+                
+                // Convert characters to coordinates
+                for (const char of prepared) {
+                    coords.push(...this.findCoordinates(char));
+                }
+                
+                // Process in groups of cubeSize characters
+                let result = "";
+                const groupSize = this.cubeSize;
+                
+                for (let i = 0; i < coords.length; i += groupSize * 4) {
+                    const group = coords.slice(i, i + groupSize * 4);
+                    if (group.length === 0) continue;
+                    
+                    // Separate each coordinate component
+                    const zCoords = [], yCoords = [], xCoords = [], sCoords = [];
+                    
+                    for (let j = 0; j < group.length; j += 4) {
+                        zCoords.push(group[j]);
+                        yCoords.push(group[j + 1]);
+                        xCoords.push(group[j + 2]);
+                        sCoords.push(group[j + 3]);
+                    }
+                    
+                    // Regroup coordinates for encryption
+                    const regrouped = [...zCoords, ...yCoords, ...xCoords, ...sCoords];
+                    
+                    // Convert back to characters
+                    for (let k = 0; k < regrouped.length; k += 4) {
+                        const [z, y, x, s] = regrouped.slice(k, k + 4);
+                        result += this.getCharFromCoordinates(z, y, x, s);
+                    }
+                }
+                
+                return result;
+            }
+            
+            /**
+             * Decrypts ciphertext
+             */
+            decrypt(ciphertext) {
+                const prepared = this.prepareText(ciphertext);
+                let coords = [];
+                
+                // Convert characters to coordinates
+                for (const char of prepared) {
+                    coords.push(...this.findCoordinates(char));
+                }
+                
+                // Process in groups of cubeSize characters
+                let result = "";
+                const groupSize = this.cubeSize;
+                
+                for (let i = 0; i < coords.length; i += groupSize * 4) {
+                    const group = coords.slice(i, i + groupSize * 4);
+                    if (group.length === 0) continue;
+                    
+                    // Split into coordinate components
+                    const splitIndex = group.length / 4;
+                    const zCoords = group.slice(0, splitIndex);
+                    const yCoords = group.slice(splitIndex, splitIndex * 2);
+                    const xCoords = group.slice(splitIndex * 2, splitIndex * 3);
+                    const sCoords = group.slice(splitIndex * 3);
+                    
+                    // Regroup for decryption
+                    const regrouped = [];
+                    for (let j = 0; j < splitIndex; j++) {
+                        regrouped.push(zCoords[j], yCoords[j], xCoords[j], sCoords[j]);
+                    }
+                    
+                    // Convert back to characters
+                    for (let k = 0; k < regrouped.length; k += 4) {
+                        const [z, y, x, s] = regrouped.slice(k, k + 4);
+                        result += this.getCharFromCoordinates(z, y, x, s);
+                    }
+                }
+                
+                return result;
+            }
+            
+            /**
+             * Renders the cipher structure for display
+             */
+            renderStructure() {
+                let html = '<div class="grid">';
+                
+                // Render cube
+                html += '<div><h3>3D Cube:</h3>';
+                for (let z = 0; z < this.cubeSize; z++) {
+                    html += `<div><strong>Layer ${z + 1}:</strong><pre>`;
+                    for (let y = 0; y < this.cubeSize; y++) {
+                        html += this.cube[z][y].join(' ') + '\n';
+                    }
+                    html += '</pre></div>';
+                }
+                html += '</div>';
+                
+                // Render square
+                html += '<div><h3>2D Square:</h3><pre>';
+                for (let y = 0; y < this.squareSize; y++) {
+                    html += this.square[y].join(' ') + '\n';
+                }
+                html += '</pre></div>';
+                
+                html += '</div>';
+                return html;
+            }
+        }
+
+        /**
+         * 3×3×3 + 3×3 Implementation (36 characters)
+         */
+        class Trifid3x3x3x3 extends FourDTrifidCipher {
+            constructor(alphabet = "", key = "", spaceChar = "/") {
+                const defaultAlphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+                super(3, 3, alphabet || defaultAlphabet, key, spaceChar);
+            }
+        }
+
+        /**
+         * 4×4×4 + 4×4 Implementation (80 characters)
+         */
+        class Trifid4x4x4x4 extends FourDTrifidCipher {
+            constructor(alphabet = "", key = "", spaceChar = "/") {
+                const defaultAlphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_-+={}[]|:;<>?,.";
+                super(4, 4, alphabet || defaultAlphabet, key, spaceChar);
+            }
+        }
+
+        // UI Implementation
+        document.addEventListener('DOMContentLoaded', function() {
+            let currentCipher = null;
+            const defaultAlphabets = {
+                '3x3x3x3': "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
+                '4x4x4x4': "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_-+={}[]|:;<>?,."
+            };
+            
+            // Initialize UI elements
+            const cipherTypeSelect = document.getElementById('cipher-type');
+            const keyInput = document.getElementById('key');
+            const spaceCharInput = document.getElementById('space-char');
+            const alphabetInput = document.getElementById('alphabet');
+            const charCounter = document.getElementById('char-counter');
+            const initBtn = document.getElementById('init-cipher');
+            const resetBtn = document.getElementById('reset-defaults');
+            const encryptBtn = document.getElementById('encrypt-btn');
+            const decryptBtn = document.getElementById('decrypt-btn');
+            const statusDiv = document.getElementById('config-status');
+            const cubeDisplay = document.getElementById('cube-display');
+            
+            // Update character counter
+            function updateCharCounter() {
+                const cipherType = cipherTypeSelect.value;
+                const cubeSize = cipherType === '3x3x3x3' ? 3 : 4;
+                const squareSize = cubeSize;
+                const requiredChars = Math.pow(cubeSize, 3) + Math.pow(squareSize, 2);
+                const currentChars = alphabetInput.value.length;
+                
+                charCounter.textContent = `${currentChars}/${requiredChars} characters`;
+                
+                if (currentChars < requiredChars) {
+                    charCounter.style.color = 'var(--error)';
+                } else if (currentChars > requiredChars) {
+                    charCounter.style.color = 'var(--warning)';
+                } else {
+                    charCounter.style.color = 'var(--secondary)';
+                }
+            }
+            
+            // Show status message
+            function showStatus(message, type = "success") {
+                statusDiv.textContent = message;
+                statusDiv.className = "status " + type;
+                
+                if (type === "success") {
+                    setTimeout(() => {
+                        if (statusDiv.textContent === message) {
+                            statusDiv.textContent = '';
+                            statusDiv.className = "status";
+                        }
+                    }, 5000);
+                }
+            }
+            
+            // Initialize cipher based on UI settings
+            function initCipher() {
+                try {
+                    const cipherType = cipherTypeSelect.value;
+                    const key = keyInput.value;
+                    const spaceChar = spaceCharInput.value || '/';
+                    let alphabet = alphabetInput.value;
+                    
+                    if (!alphabet) {
+                        alphabet = defaultAlphabets[cipherType];
+                        alphabetInput.value = alphabet;
+                    }
+                    
+                    if (cipherType === '3x3x3x3') {
+                        currentCipher = new Trifid3x3x3x3(alphabet, key, spaceChar);
+                    } else {
+                        currentCipher = new Trifid4x4x4x4(alphabet, key, spaceChar);
+                    }
+                    
+                    cubeDisplay.innerHTML = currentCipher.renderStructure();
+                    showStatus("Cipher initialized successfully");
+                    updateCharCounter();
+                } catch (e) {
+                    showStatus("Error: " + e.message, "error");
+                }
+            }
+            
+            // Reset to defaults
+            function resetDefaults() {
+                const cipherType = cipherTypeSelect.value;
+                alphabetInput.value = defaultAlphabets[cipherType];
+                keyInput.value = "SECRETKEY";
+                spaceCharInput.value = "/";
+                updateCharCounter();
+                showStatus("Reset to default values");
+            }
+            
+            // Event listeners
+            cipherTypeSelect.addEventListener('change', function() {
+                alphabetInput.value = defaultAlphabets[this.value];
+                updateCharCounter();
+            });
+            
+            alphabetInput.addEventListener('input', updateCharCounter);
+            initBtn.addEventListener('click', initCipher);
+            resetBtn.addEventListener('click', resetDefaults);
+            
+            encryptBtn.addEventListener('click', function() {
+                if (!currentCipher) {
+                    showStatus("Please initialize cipher first", "error");
+                    return;
+                }
+                
+                try {
+                    const result = currentCipher.encrypt(document.getElementById('plaintext').value);
+                    document.getElementById('encrypted-result').textContent = result;
+                    showStatus("Text encrypted successfully");
+                } catch (e) {
+                    showStatus("Encryption error: " + e.message, "error");
+                }
+            });
+            
+            decryptBtn.addEventListener('click', function() {
+                if (!currentCipher) {
+                    showStatus("Please initialize cipher first", "error");
+                    return;
+                }
+                
+                try {
+                    const result = currentCipher.decrypt(document.getElementById('ciphertext').value);
+                    document.getElementById('decrypted-result').textContent = result;
+                    showStatus("Text decrypted successfully");
+                } catch (e) {
+                    showStatus("Decryption error: " + e.message, "error");
+                }
+            });
+            
+            // Initialize on load
+            resetDefaults();
+            initCipher();
+        });
+    </script>
+</body>
+</html>
