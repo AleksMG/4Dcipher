@@ -240,6 +240,7 @@
                     <select id="cipher-type">
                         <option value="3x3">3×3×3 Cube + 3×3 Square (36 chars)</option>
                         <option value="4x4">4×4×4 Cube + 4×4 Square (80 chars)</option>
+                        <option value="5x5">5×5×5 Cube + 5×5 Square (150 chars)</option>
                         <option value="custom">Custom</option>
                     </select>
                 </div>
@@ -247,11 +248,11 @@
                 <div id="custom-settings" style="display: none;">
                     <div class="form-group">
                         <label for="cube-size">Cube Size:</label>
-                        <input type="number" id="cube-size" min="2" max="5" value="3">
+                        <input type="number" id="cube-size" min="2" max="6" value="3">
                     </div>
                     <div class="form-group">
                         <label for="square-size">Square Size:</label>
-                        <input type="number" id="square-size" min="2" max="5" value="3">
+                        <input type="number" id="square-size" min="2" max="6" value="3">
                     </div>
                     <div class="form-group">
                         <label for="custom-alphabet">Custom Alphabet:</label>
@@ -270,6 +271,11 @@
                     <input type="text" id="space-char" maxlength="1" value="/">
                 </div>
 
+                <div class="form-group">
+                    <label for="padding-char">Padding Character:</label>
+                    <input type="text" id="padding-char" maxlength="1" value="X">
+                </div>
+
                 <button id="save-settings" class="btn">Save Configuration</button>
                 <button id="reset-settings" class="btn" style="background: var(--gray); margin-top: 1rem;">Reset to Defaults</button>
             </div>
@@ -278,10 +284,11 @@
 
     <script>
         class FourDTrifidCipher {
-            constructor(cubeSize, squareSize, alphabet, key, spaceChar = '/') {
+            constructor(cubeSize, squareSize, alphabet, key, spaceChar = '/', paddingChar = 'X') {
                 this.cubeSize = cubeSize;
                 this.squareSize = squareSize;
                 this.spaceChar = spaceChar;
+                this.paddingChar = paddingChar;
                 this.setAlphabet(alphabet, key);
             }
 
@@ -304,6 +311,8 @@
             }
 
             applyKey(alphabet, key) {
+                if (!key) return alphabet.split('');
+                
                 const cleanKey = this.sanitizeString(key);
                 const keyChars = [];
                 
@@ -396,7 +405,7 @@
                 }
             }
 
-            prepareText(text) {
+            prepareText(text, isEncrypt = true) {
                 let result = "";
                 const upperText = text.toUpperCase();
                 
@@ -405,6 +414,9 @@
                         result += char;
                     } else if (char === ' ') {
                         result += this.spaceChar;
+                    } else if (isEncrypt) {
+                        // Only apply padding during encryption
+                        result += this.paddingChar;
                     }
                 }
                 
@@ -418,36 +430,34 @@
                 // Process in blocks of cubeSize characters
                 for (let i = 0; i < prepared.length; i += this.cubeSize) {
                     const block = prepared.slice(i, i + this.cubeSize);
-                    const coords = [];
+                    const zStream = [], yStream = [], xStream = [], sStream = [];
                     
                     // Get coordinates for each character in block
                     for (const char of block) {
                         const coord = this.findCoordinates(char);
-                        coords.push(coord.z, coord.y, coord.x, coord.s);
+                        zStream.push(coord.z);
+                        yStream.push(coord.y);
+                        xStream.push(coord.x);
+                        sStream.push(coord.s);
                     }
                     
-                    // Split into coordinate streams
-                    const zStream = [];
-                    const yStream = [];
-                    const xStream = [];
-                    const sStream = [];
-                    
-                    for (let j = 0; j < coords.length; j += 4) {
-                        zStream.push(coords[j]);
-                        yStream.push(coords[j + 1]);
-                        xStream.push(coords[j + 2]);
-                        sStream.push(coords[j + 3]);
+                    // Pad the streams if necessary
+                    while (zStream.length < this.cubeSize) {
+                        zStream.push(1);
+                        yStream.push(1);
+                        xStream.push(1);
+                        sStream.push(0);
                     }
                     
-                    // Concatenate streams
+                    // Concatenate all streams
                     const regrouped = [...zStream, ...yStream, ...xStream, ...sStream];
                     
-                    // Convert back to characters
+                    // Convert back to characters (process in groups of 4)
                     for (let j = 0; j < regrouped.length; j += 4) {
-                        const z = regrouped[j];
-                        const y = regrouped[j + 1];
-                        const x = regrouped[j + 2];
-                        const s = regrouped[j + 3];
+                        const z = regrouped[j] || 1;
+                        const y = regrouped[j + 1] || 1;
+                        const x = regrouped[j + 2] || 1;
+                        const s = regrouped[j + 3] || 0;
                         result += this.getCharFromCoordinates(z, y, x, s);
                     }
                 }
@@ -456,41 +466,46 @@
             }
 
             decrypt(ciphertext) {
-                const prepared = this.prepareText(ciphertext);
+                const prepared = this.prepareText(ciphertext, false);
                 let result = '';
                 
-                // Process in blocks of cubeSize^2 characters (since encryption expands)
+                // Process in blocks of 4*cubeSize characters (since encryption expands)
                 const blockSize = this.cubeSize * 4;
                 for (let i = 0; i < prepared.length; i += blockSize) {
                     const block = prepared.slice(i, i + blockSize);
                     const coords = [];
                     
-                    // Get coordinates for each character in block
+                    // Get all coordinates from the block
                     for (const char of block) {
                         const coord = this.findCoordinates(char);
                         coords.push(coord.z, coord.y, coord.x, coord.s);
                     }
                     
-                    // Split back into original coordinate streams
-                    const streamLength = coords.length / 4;
-                    const zStream = coords.slice(0, streamLength);
-                    const yStream = coords.slice(streamLength, streamLength * 2);
-                    const xStream = coords.slice(streamLength * 2, streamLength * 3);
-                    const sStream = coords.slice(streamLength * 3);
+                    // Split into original coordinate streams
+                    const streamSize = coords.length / 4;
+                    const zStream = [], yStream = [], xStream = [], sStream = [];
                     
-                    // Reconstruct original coordinates
-                    const originalCoords = [];
-                    for (let j = 0; j < streamLength; j++) {
-                        originalCoords.push(zStream[j], yStream[j], xStream[j], sStream[j]);
+                    for (let j = 0; j < coords.length; j++) {
+                        const streamIndex = Math.floor(j / streamSize);
+                        switch (streamIndex) {
+                            case 0: zStream.push(coords[j]); break;
+                            case 1: yStream.push(coords[j]); break;
+                            case 2: xStream.push(coords[j]); break;
+                            case 3: sStream.push(coords[j]); break;
+                        }
                     }
                     
-                    // Convert back to characters
-                    for (let j = 0; j < originalCoords.length; j += 4) {
-                        const z = originalCoords[j];
-                        const y = originalCoords[j + 1];
-                        const x = originalCoords[j + 2];
-                        const s = originalCoords[j + 3];
-                        result += this.getCharFromCoordinates(z, y, x, s);
+                    // Reconstruct original coordinates
+                    for (let j = 0; j < zStream.length; j++) {
+                        const z = zStream[j];
+                        const y = yStream[j];
+                        const x = xStream[j];
+                        const s = sStream[j];
+                        const char = this.getCharFromCoordinates(z, y, x, s);
+                        // Skip padding characters in decryption
+                        if (char !== this.paddingChar) {
+                            result += char;
+                        }
                     }
                 }
                 
@@ -527,16 +542,24 @@
 
         // Default implementations
         class Trifid3x3x3x3 extends FourDTrifidCipher {
-            constructor(alphabet = "", key = "", spaceChar = "/") {
+            constructor(alphabet = "", key = "", spaceChar = "/", paddingChar = "X") {
                 const defaultAlphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-                super(3, 3, alphabet || defaultAlphabet, key, spaceChar);
+                super(3, 3, alphabet || defaultAlphabet, key, spaceChar, paddingChar);
             }
         }
 
         class Trifid4x4x4x4 extends FourDTrifidCipher {
-            constructor(alphabet = "", key = "", spaceChar = "/") {
+            constructor(alphabet = "", key = "", spaceChar = "/", paddingChar = "X") {
                 const defaultAlphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_-+={}[]|:;<>?,.";
-                super(4, 4, alphabet || defaultAlphabet, key, spaceChar);
+                super(4, 4, alphabet || defaultAlphabet, key, spaceChar, paddingChar);
+            }
+        }
+
+        class Trifid5x5x5x5 extends FourDTrifidCipher {
+            constructor(alphabet = "", key = "", spaceChar = "/", paddingChar = "X") {
+                const defaultAlphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_-+={}[]|:;<>?,." +
+                                       "ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõöøùúûüýþÿ";
+                super(5, 5, alphabet || defaultAlphabet, key, spaceChar, paddingChar);
             }
         }
 
@@ -567,12 +590,35 @@
 
             cipherType.addEventListener('change', function() {
                 customSettings.style.display = this.value === 'custom' ? 'block' : 'none';
+                
+                // Update default alphabet based on selection
+                if (this.value === '3x3') {
+                    customAlphabet.placeholder = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+                } else if (this.value === '4x4') {
+                    customAlphabet.placeholder = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_-+={}[]|:;<>?,.";
+                } else if (this.value === '5x5') {
+                    customAlphabet.placeholder = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_-+={}[]|:;<>?,." +
+                                               "ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõöøùúûüýþÿ";
+                }
+                
+                updateRequiredChars();
             });
 
             // Update required characters count
             function updateRequiredChars() {
-                const cubeSize = parseInt(cubeSizeInput.value) || 3;
-                const squareSize = parseInt(squareSizeInput.value) || 3;
+                let cubeSize = 3, squareSize = 3;
+                
+                if (cipherType.value === 'custom') {
+                    cubeSize = parseInt(cubeSizeInput.value) || 3;
+                    squareSize = parseInt(squareSizeInput.value) || 3;
+                } else if (cipherType.value === '4x4') {
+                    cubeSize = 4;
+                    squareSize = 4;
+                } else if (cipherType.value === '5x5') {
+                    cubeSize = 5;
+                    squareSize = 5;
+                }
+                
                 requiredChars.textContent = cubeSize ** 3 + squareSize ** 2;
             }
 
@@ -588,13 +634,18 @@
                     const cipherTypeValue = cipherType.value;
                     const key = document.getElementById('cipher-key').value;
                     const spaceChar = document.getElementById('space-char').value || '/';
+                    const paddingChar = document.getElementById('padding-char').value || 'X';
                     
                     if (cipherTypeValue === '3x3') {
                         const alphabet = customAlphabet.value || "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-                        currentCipher = new Trifid3x3x3x3(alphabet, key, spaceChar);
+                        currentCipher = new Trifid3x3x3x3(alphabet, key, spaceChar, paddingChar);
                     } else if (cipherTypeValue === '4x4') {
                         const alphabet = customAlphabet.value || "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_-+={}[]|:;<>?,.";
-                        currentCipher = new Trifid4x4x4x4(alphabet, key, spaceChar);
+                        currentCipher = new Trifid4x4x4x4(alphabet, key, spaceChar, paddingChar);
+                    } else if (cipherTypeValue === '5x5') {
+                        const alphabet = customAlphabet.value || "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_-+={}[]|:;<>?,." +
+                                                               "ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõöøùúûüýþÿ";
+                        currentCipher = new Trifid5x5x5x5(alphabet, key, spaceChar, paddingChar);
                     } else {
                         const cubeSize = parseInt(cubeSizeInput.value) || 3;
                         const squareSize = parseInt(squareSizeInput.value) || 3;
@@ -604,7 +655,7 @@
                             throw new Error(`Need at least ${cubeSize ** 3 + squareSize ** 2} unique characters`);
                         }
                         
-                        currentCipher = new FourDTrifidCipher(cubeSize, squareSize, alphabet, key, spaceChar);
+                        currentCipher = new FourDTrifidCipher(cubeSize, squareSize, alphabet, key, spaceChar, paddingChar);
                     }
                     
                     // Update visualization
@@ -626,12 +677,14 @@
                 customSettings.style.display = 'none';
                 document.getElementById('cipher-key').value = '';
                 document.getElementById('space-char').value = '/';
+                document.getElementById('padding-char').value = 'X';
                 cubeSizeInput.value = '3';
                 squareSizeInput.value = '3';
                 customAlphabet.value = '';
                 
                 currentCipher = new Trifid3x3x3x3();
                 document.getElementById('cipher-visualization').innerHTML = currentCipher.renderVisualization();
+                updateRequiredChars();
             });
 
             // Encrypt button
@@ -666,6 +719,7 @@
 
             // Initialize with default cipher visualization
             document.getElementById('cipher-visualization').innerHTML = currentCipher.renderVisualization();
+            updateRequiredChars();
         });
     </script>
 </body>
