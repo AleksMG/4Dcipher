@@ -1,187 +1,452 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
-    <title>Трифорд-4D Шифратор</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Шифр Тритемиуса (4x3 куб)</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1000px;
             margin: 0 auto;
             padding: 20px;
+            background-color: #f5f5f5;
         }
+        
+        h1, h2 {
+            color: #2c3e50;
+            text-align: center;
+        }
+        
         .container {
             display: flex;
-            flex-direction: column;
+            flex-wrap: wrap;
             gap: 20px;
+            justify-content: space-between;
         }
-        textarea, input, button {
-            padding: 10px;
-            font-size: 16px;
+        
+        .control-panel {
+            flex: 1;
+            min-width: 300px;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
+        
+        .visualization {
+            flex: 1;
+            min-width: 300px;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        label {
+            display: block;
+            margin-top: 15px;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        
         button {
-            cursor: pointer;
-            background-color: #4CAF50;
+            background-color: #3498db;
             color: white;
             border: none;
+            padding: 10px 15px;
+            margin-top: 15px;
             border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
         }
-        .output {
+        
+        button:hover {
+            background-color: #2980b9;
+        }
+        
+        .cube {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 5px;
+            margin: 20px auto;
+            max-width: 300px;
+        }
+        
+        .cube-row {
+            display: contents;
+        }
+        
+        .cube-cell {
             border: 1px solid #ddd;
-            padding: 15px;
-            min-height: 100px;
+            padding: 15px 0;
+            text-align: center;
             background-color: #f9f9f9;
+            font-weight: bold;
+            position: relative;
         }
-        .coord-system {
+        
+        .cube-cell.header {
+            background-color: #3498db;
+            color: white;
+            font-weight: normal;
+        }
+        
+        .coordinates {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            font-size: 10px;
+            color: #777;
+        }
+        
+        .result {
             margin-top: 20px;
             padding: 15px;
-            background-color: #e9e9e9;
-            border-radius: 5px;
+            background-color: #e8f4fc;
+            border-radius: 4px;
+            border-left: 4px solid #3498db;
+        }
+        
+        .highlight {
+            background-color: #fffacd;
+            transition: background-color 0.5s;
+        }
+        
+        .error {
+            color: #e74c3c;
+            font-size: 14px;
+        }
+        
+        .tabs {
+            display: flex;
+            margin-bottom: 15px;
+        }
+        
+        .tab {
+            padding: 10px 15px;
+            cursor: pointer;
+            background-color: #eee;
+            border: 1px solid #ddd;
+            border-bottom: none;
+            border-radius: 4px 4px 0 0;
+            margin-right: 5px;
+        }
+        
+        .tab.active {
+            background-color: white;
+            border-bottom: 1px solid white;
+            margin-bottom: -1px;
+            font-weight: bold;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
         }
     </style>
 </head>
 <body>
-    <h1>Трифорд-4D Шифратор</h1>
+    <h1>Шифр Тритемиуса (метод Триффорда)</h1>
+    <p style="text-align: center;">Реализация с кубом 4×3 (4 строки, 3 столбца)</p>
     
     <div class="container">
-        <div>
-            <h3>Исходное сообщение:</h3>
-            <textarea id="message" rows="4" cols="50" placeholder="Введите сообщение (только A-Z)"></textarea>
+        <div class="control-panel">
+            <h2>Настройки шифра</h2>
+            
+            <label for="alphabet">Алфавит:</label>
+            <textarea id="alphabet" rows="4">АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ .,!?</textarea>
+            
+            <label for="key">Ключ:</label>
+            <input type="text" id="key" value="ПАРОЛЬ">
+            
+            <div class="tabs">
+                <div class="tab active" data-tab="encrypt">Шифрование</div>
+                <div class="tab" data-tab="decrypt">Дешифрование</div>
+            </div>
+            
+            <div class="tab-content active" id="encrypt-tab">
+                <label for="plaintext">Исходный текст:</label>
+                <textarea id="plaintext" rows="4"></textarea>
+                <button id="encrypt-btn">Зашифровать</button>
+            </div>
+            
+            <div class="tab-content" id="decrypt-tab">
+                <label for="ciphertext">Зашифрованный текст:</label>
+                <textarea id="ciphertext" rows="4"></textarea>
+                <button id="decrypt-btn">Расшифровать</button>
+            </div>
+            
+            <div id="error" class="error"></div>
         </div>
         
-        <div>
-            <h3>Ключ (3 числа через запятую):</h3>
-            <input type="text" id="coordKey" value="5,7,2" placeholder="Например: 1,2,3">
-        </div>
-        
-        <div>
-            <h3>Символьный ключ (для 4-й координаты):</h3>
-            <input type="text" id="charKey" value="SECRET" placeholder="Например: KEY">
-        </div>
-        
-        <div>
-            <button onclick="encrypt()">Зашифровать</button>
-            <button onclick="decrypt()">Дешифровать</button>
-        </div>
-        
-        <div>
-            <h3>Результат:</h3>
-            <div id="result" class="output"></div>
-        </div>
-        
-        <div class="coord-system">
-            <h3>Система координат:</h3>
-            <p>Каждая буква представляется как (строка, столбец, слой, символ):</p>
-            <p>1. Первые 3 числа вычисляются через позицию буквы в алфавите и основной ключ</p>
-            <p>2. 4-я координата берётся из символьного ключа по кругу</p>
+        <div class="visualization">
+            <h2>Визуализация куба 4×3</h2>
+            <div class="cube" id="cube-display">
+                <!-- Кубик будет сгенерирован JavaScript -->
+            </div>
+            
+            <div class="result">
+                <h3>Результат:</h3>
+                <div id="result-text"></div>
+            </div>
+            
+            <div>
+                <h3>Как работает шифр:</h3>
+                <p>1. Символы алфавита размещаются в кубе 4×3</p>
+                <p>2. Каждый символ имеет координаты (строка, столбец)</p>
+                <p>3. Для шифрования: к координатам символа текста прибавляются координаты символа ключа (по модулю размеров куба)</p>
+                <p>4. Для расшифрования: из координат символа шифротекста вычитаются координаты символа ключа (по модулю размеров куба)</p>
+            </div>
         </div>
     </div>
-
+    
     <script>
-        const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        
-        // Преобразование буквы в 3D координаты
-        function charTo3D(char, key) {
-            const index = alphabet.indexOf(char);
-            if (index === -1) return null;
+        document.addEventListener('DOMContentLoaded', function() {
+            // Элементы DOM
+            const alphabetInput = document.getElementById('alphabet');
+            const keyInput = document.getElementById('key');
+            const plaintextInput = document.getElementById('plaintext');
+            const ciphertextInput = document.getElementById('ciphertext');
+            const encryptBtn = document.getElementById('encrypt-btn');
+            const decryptBtn = document.getElementById('decrypt-btn');
+            const resultText = document.getElementById('result-text');
+            const errorDiv = document.getElementById('error');
+            const cubeDisplay = document.getElementById('cube-display');
+            const tabs = document.querySelectorAll('.tab');
+            const tabContents = document.querySelectorAll('.tab-content');
             
-            const row = Math.floor(index / 9);
-            const col = Math.floor((index % 9) / 3);
-            const layer = index % 3;
+            // Параметры куба
+            const ROWS = 4;
+            const COLS = 3;
             
-            // Применяем ключ
-            return [
-                (row + key[0]) % 3,
-                (col + key[1]) % 3,
-                (layer + key[2]) % 3
-            ];
-        }
-        
-        // Преобразование 3D координат в букву
-        function coordsToChar(coords, key) {
-            const [row, col, layer] = coords;
+            // Инициализация
+            let cube = [];
+            let alphabet = '';
+            let charToCoords = {};
+            let coordsToChar = {};
             
-            // Отменяем ключ
-            const origRow = (row - key[0] + 3) % 3;
-            const origCol = (col - key[1] + 3) % 3;
-            const origLayer = (layer - key[2] + 3) % 3;
-            
-            const index = origRow * 9 + origCol * 3 + origLayer;
-            return alphabet[index];
-        }
-        
-        // Шифрование
-        function encrypt() {
-            const message = document.getElementById('message').value.toUpperCase().replace(/[^A-Z]/g, '');
-            const coordKey = document.getElementById('coordKey').value.split(',').map(Number);
-            const charKey = document.getElementById('charKey').value.toUpperCase().replace(/[^A-Z]/g, '') || 'A';
-            
-            if (coordKey.length !== 3) {
-                alert('Ключ должен содержать 3 числа через запятую!');
-                return;
-            }
-            
-            let result = [];
-            for (let i = 0; i < message.length; i++) {
-                const char = message[i];
-                const coords = charTo3D(char, coordKey);
-                if (!coords) continue;
+            // Инициализация куба
+            function initCube() {
+                cubeDisplay.innerHTML = '';
+                charToCoords = {};
+                coordsToChar = {};
                 
-                // Берём символ для 4-й координаты из ключа по кругу
-                const k4Char = charKey[i % charKey.length];
-                result.push(`(${coords[0]},${coords[1]},${coords[2]},'${k4Char}')`);
-            }
-            
-            document.getElementById('result').innerHTML = result.join(' ');
-        }
-        
-        // Дешифрование
-        function decrypt() {
-            const input = document.getElementById('message').value.trim();
-            const coordKey = document.getElementById('coordKey').value.split(',').map(Number);
-            const charKey = document.getElementById('charKey').value.toUpperCase().replace(/[^A-Z]/g, '') || 'A';
-            
-            if (coordKey.length !== 3) {
-                alert('Ключ должен содержать 3 числа через запятую!');
-                return;
-            }
-            
-            // Парсим координаты из строки вида (1,2,3,'A')
-            const coordsRegex = /\((\d+),(\d+),(\d+),'([A-Z])'\)/g;
-            let match;
-            const allCoords = [];
-            
-            while ((match = coordsRegex.exec(input)) !== null) {
-                allCoords.push({
-                    coords: [parseInt(match[1]), parseInt(match[2]), parseInt(match[3])],
-                    k4Char: match[4]
-                });
-            }
-            
-            if (allCoords.length === 0) {
-                alert('Не найдены координаты для дешифровки!');
-                return;
-            }
-            
-            // Проверяем 4-ю координату
-            let decrypted = '';
-            let keyValid = true;
-            
-            for (let i = 0; i < allCoords.length; i++) {
-                const expectedChar = charKey[i % charKey.length];
-                if (allCoords[i].k4Char !== expectedChar) {
-                    keyValid = false;
+                // Добавляем заголовки столбцов
+                const headerRow = document.createElement('div');
+                headerRow.className = 'cube-row';
+                for (let col = 0; col < COLS; col++) {
+                    const headerCell = document.createElement('div');
+                    headerCell.className = 'cube-cell header';
+                    headerCell.textContent = `Столбец ${col + 1}`;
+                    cubeDisplay.appendChild(headerCell);
                 }
                 
-                const char = coordsToChar(allCoords[i].coords, coordKey);
-                decrypted += char;
+                // Создаем куб
+                alphabet = alphabetInput.value;
+                if (alphabet.length < ROWS * COLS) {
+                    showError(`Алфавит должен содержать минимум ${ROWS * COLS} символов. Добавьте еще ${ROWS * COLS - alphabet.length} символов.`);
+                    return false;
+                }
+                
+                // Заполняем куб
+                for (let row = 0; row < ROWS; row++) {
+                    for (let col = 0; col < COLS; col++) {
+                        const index = row * COLS + col;
+                        const char = alphabet[index];
+                        
+                        // Сохраняем координаты
+                        charToCoords[char] = { row, col };
+                        coordsToChar[`${row},${col}`] = char;
+                        
+                        // Создаем ячейку куба
+                        const cell = document.createElement('div');
+                        cell.className = 'cube-cell';
+                        cell.textContent = char;
+                        cell.id = `cell-${row}-${col}`;
+                        
+                        const coords = document.createElement('div');
+                        coords.className = 'coordinates';
+                        coords.textContent = `${row+1},${col+1}`;
+                        
+                        cell.appendChild(coords);
+                        cubeDisplay.appendChild(cell);
+                    }
+                }
+                
+                hideError();
+                return true;
             }
             
-            if (!keyValid) {
-                decrypted += ' (Внимание: 4-я координата не совпадает с ключом!)';
+            // Шифрование
+            function encrypt() {
+                if (!initCube()) return;
+                
+                const plaintext = plaintextInput.value.toUpperCase();
+                const key = keyInput.value.toUpperCase();
+                
+                if (!plaintext) {
+                    showError('Введите текст для шифрования');
+                    return;
+                }
+                
+                if (!key) {
+                    showError('Введите ключ');
+                    return;
+                }
+                
+                let result = '';
+                let keyIndex = 0;
+                
+                for (let i = 0; i < plaintext.length; i++) {
+                    const char = plaintext[i];
+                    const keyChar = key[keyIndex % key.length];
+                    
+                    if (!(char in charToCoords)) {
+                        result += char;
+                        continue;
+                    }
+                    
+                    if (!(keyChar in charToCoords)) {
+                        showError(`Символ ключа '${keyChar}' отсутствует в алфавите`);
+                        return;
+                    }
+                    
+                    // Получаем координаты символа и ключа
+                    const charCoords = charToCoords[char];
+                    const keyCoords = charToCoords[keyChar];
+                    
+                    // Вычисляем новые координаты
+                    const newRow = (charCoords.row + keyCoords.row) % ROWS;
+                    const newCol = (charCoords.col + keyCoords.col) % COLS;
+                    
+                    // Получаем зашифрованный символ
+                    const encryptedChar = coordsToChar[`${newRow},${newCol}`];
+                    result += encryptedChar;
+                    
+                    // Подсветка анимации
+                    highlightCell(charCoords.row, charCoords.col, 'lightgreen');
+                    highlightCell(keyCoords.row, keyCoords.col, 'lightblue');
+                    highlightCell(newRow, newCol, 'lightcoral');
+                    
+                    keyIndex++;
+                }
+                
+                resultText.innerHTML = `<strong>Зашифрованный текст:</strong> ${result}`;
+                ciphertextInput.value = result;
             }
             
-            document.getElementById('result').innerHTML = decrypted;
-        }
+            // Дешифрование
+            function decrypt() {
+                if (!initCube()) return;
+                
+                const ciphertext = ciphertextInput.value.toUpperCase();
+                const key = keyInput.value.toUpperCase();
+                
+                if (!ciphertext) {
+                    showError('Введите текст для дешифрования');
+                    return;
+                }
+                
+                if (!key) {
+                    showError('Введите ключ');
+                    return;
+                }
+                
+                let result = '';
+                let keyIndex = 0;
+                
+                for (let i = 0; i < ciphertext.length; i++) {
+                    const char = ciphertext[i];
+                    const keyChar = key[keyIndex % key.length];
+                    
+                    if (!(char in charToCoords)) {
+                        result += char;
+                        continue;
+                    }
+                    
+                    if (!(keyChar in charToCoords)) {
+                        showError(`Символ ключа '${keyChar}' отсутствует в алфавите`);
+                        return;
+                    }
+                    
+                    // Получаем координаты символа и ключа
+                    const charCoords = charToCoords[char];
+                    const keyCoords = charToCoords[keyChar];
+                    
+                    // Вычисляем исходные координаты
+                    const newRow = (charCoords.row - keyCoords.row + ROWS) % ROWS;
+                    const newCol = (charCoords.col - keyCoords.col + COLS) % COLS;
+                    
+                    // Получаем расшифрованный символ
+                    const decryptedChar = coordsToChar[`${newRow},${newCol}`];
+                    result += decryptedChar;
+                    
+                    // Подсветка анимации
+                    highlightCell(charCoords.row, charCoords.col, 'lightgreen');
+                    highlightCell(keyCoords.row, keyCoords.col, 'lightblue');
+                    highlightCell(newRow, newCol, 'lightcoral');
+                    
+                    keyIndex++;
+                }
+                
+                resultText.innerHTML = `<strong>Расшифрованный текст:</strong> ${result}`;
+                plaintextInput.value = result;
+            }
+            
+            // Подсветка ячейки
+            function highlightCell(row, col, color) {
+                const cell = document.getElementById(`cell-${row}-${col}`);
+                if (cell) {
+                    cell.style.backgroundColor = color;
+                    setTimeout(() => {
+                        cell.style.backgroundColor = '#f9f9f9';
+                    }, 500);
+                }
+            }
+            
+            // Показать ошибку
+            function showError(message) {
+                errorDiv.textContent = message;
+            }
+            
+            // Скрыть ошибку
+            function hideError() {
+                errorDiv.textContent = '';
+            }
+            
+            // Переключение вкладок
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tabContents.forEach(c => c.classList.remove('active'));
+                    
+                    tab.classList.add('active');
+                    document.getElementById(`${tab.dataset.tab}-tab`).classList.add('active');
+                });
+            });
+            
+            // Обработчики событий
+            encryptBtn.addEventListener('click', encrypt);
+            decryptBtn.addEventListener('click', decrypt);
+            
+            // Инициализация при загрузке
+            initCube();
+        });
     </script>
 </body>
 </html>
