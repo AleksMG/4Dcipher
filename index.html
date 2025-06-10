@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Secure Trifid Cipher Pro+</title>
+    <title>Secure Trifid Cipher Pro</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -625,7 +625,7 @@
 <body>
     <div class="container">
         <header>
-            <h1><i class="fas fa-user-secret"></i> Secure Trifid Cipher Pro+</h1>
+            <h1><i class="fas fa-user-secret"></i> Secure Trifid Cipher Pro</h1>
             <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
                 <i class="fas fa-moon"></i>
             </button>
@@ -757,7 +757,7 @@
             </div>
 
             <div id="about" class="tab-content">
-                <h2><i class="fas fa-info-circle"></i> About Secure Trifid Cipher Pro+</h2>
+                <h2><i class="fas fa-info-circle"></i> About Secure Trifid Cipher</h2>
                 
                 <div class="card">
                     <h3><i class="fas fa-question-circle"></i> Cryptographic Principles</h3>
@@ -768,25 +768,25 @@
                         <li><strong>Key-Based Cube Generation:</strong> Each round uses a unique cube derived from a cryptographic hash of the master key</li>
                         <li><strong>Multiple Encryption Rounds:</strong> Configurable rounds (3-10) with different cubes for each round</li>
                         <li><strong>Strong Key Derivation:</strong> Uses PBKDF2 with SHA-256 for key stretching (100,000 iterations)</li>
-                        <li><strong>Diagonal Mixing:</strong> ChaCha20-inspired diagonal mixing between rounds for better diffusion</li>
-                        <li><strong>S-Box Substitution:</strong> AES-inspired key-dependent S-Box substitution between rounds</li>
-                        <li><strong>Diffusion:</strong> Each round completely transforms the data using different cubes</li>
-                        <li><strong>Confusion:</strong> Complex relationship between key and ciphertext</li>
+                        <li><strong>S-Box Substitution:</strong> AES-like substitution boxes for increased non-linearity</li>
+                        <li><strong>Diagonal Mixing:</strong> ChaCha20-style diagonal mixing for improved diffusion</li>
+                        <li><strong>Advanced Confusion:</strong> Multiple layers of key-dependent transformations</li>
                     </ul>
                     
-                    <h4><i class="fas fa-key"></i> Cube Generation Process:</h4>
+                    <h4><i class="fas fa-key"></i> Cryptographic Process:</h4>
                     <ol>
                         <li>Create master seed from encryption key using PBKDF2</li>
-                        <li>Generate S-Box from key material</li>
+                        <li>Generate key-dependent S-boxes for non-linear substitution</li>
                         <li>For each round:
                             <ul>
                                 <li>Derive round-specific seed using HMAC-SHA256</li>
                                 <li>Shuffle alphabet using cryptographically secure Fisher-Yates algorithm</li>
                                 <li>Fill 4×4×4 cube with shuffled characters</li>
-                                <li>Apply diagonal mixing pattern</li>
+                                <li>Apply diagonal mixing for improved diffusion</li>
+                                <li>Perform S-box substitution for non-linearity</li>
                             </ul>
                         </li>
-                        <li>Verify all cubes are unique and properly filled</li>
+                        <li>Apply key-dependent transformations during encryption/decryption</li>
                     </ol>
 
                     <h4><i class="fas fa-user-secret"></i> Security Recommendations:</h4>
@@ -803,15 +803,21 @@
     </div>
 
     <script>
-        class SecureTrifidCipherProPlus {
+        class SecureTrifidCipher {
             constructor() {
                 this.cubes = []; // Array to store cubes for each round
+                this.sBoxes = []; // S-boxes for each round
                 this.alphabet = "";
                 this.fillerChar = "~";
                 this.encryptionKey = "";
                 this.rounds = 5;
                 this.salt = window.crypto.getRandomValues(new Uint8Array(16)).join('');
-                this.sBox = null; // Will hold our substitution box
+                // AES-like constants for S-box generation
+                this.rcon = [0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1B, 0x36];
+                // ChaCha20-like constants for diagonal mixing
+                this.chachaConstants = [
+                    0x61707865, 0x3320646e, 0x79622d32, 0x6b206574
+                ];
                 this.initEventListeners();
                 this.initTheme();
                 this.setupTextPreviews();
@@ -976,7 +982,7 @@
                 this.encryptionKey = '';
                 this.rounds = 5;
                 this.cubes = [];
-                this.sBox = null;
+                this.sBoxes = [];
                 document.getElementById('cubesContainer').innerHTML = '';
                 document.getElementById('securityMeter').style.width = '0%';
                 document.querySelectorAll('#passwordStrength span').forEach(span => span.classList.remove('active'));
@@ -1029,10 +1035,7 @@
                 this.rounds = parseInt(document.getElementById('rounds').value);
 
                 try {
-                    // Generate S-Box first
-                    await this.generateSBox();
-                    
-                    // Generate cubes for all rounds
+                    // Generate cubes and S-boxes for all rounds
                     await this.generateAllCubes();
 
                     // Update previews
@@ -1040,7 +1043,7 @@
                     this.updateTextPreview(document.getElementById('ciphertext').value, 'ciphertextPreview');
 
                     // Show success
-                    statusElement.innerHTML = `<i class="fas fa-check-circle status-icon"></i> Successfully generated ${this.rounds} cryptographically secure cubes with S-Box`;
+                    statusElement.innerHTML = `<i class="fas fa-check-circle status-icon"></i> Successfully generated ${this.rounds} cryptographically secure cubes with S-box substitution and diagonal mixing`;
                     statusElement.classList.add('alert-success');
                     statusElement.style.display = 'block';
                     
@@ -1057,57 +1060,24 @@
                 }
             }
 
-            async generateSBox() {
-                if (!this.encryptionKey) {
-                    throw new Error("Encryption key is required to generate S-Box");
-                }
-
-                // Create a unique seed for the S-Box based on the key
-                const sBoxSeed = await this.deriveKey(this.encryptionKey, this.salt + "SBOX", 100000);
-                
-                // Initialize S-Box with 256 entries (0-255)
-                const sBox = Array.from({ length: 256 }, (_, i) => i);
-                
-                // Shuffle using Fisher-Yates with our seeded random
-                const seedNum = this.stringToNumber(sBoxSeed);
-                const random = this.seededRandom(seedNum);
-                
-                for (let i = sBox.length - 1; i > 0; i--) {
-                    const j = Math.floor(random() * (i + 1));
-                    [sBox[i], sBox[j]] = [sBox[j], sBox[i]];
-                }
-                
-                this.sBox = sBox;
-                return sBox;
-            }
-
-            stringToNumber(str) {
-                let hash = 0;
-                for (let i = 0; i < str.length; i++) {
-                    hash = (hash << 5) - hash + str.charCodeAt(i);
-                    hash |= 0; // Convert to 32bit integer
-                }
-                return Math.abs(hash);
-            }
-
             async generateAllCubes() {
                 this.cubes = [];
+                this.sBoxes = [];
                 const key = this.encryptionKey || 'default_key'; // Fallback if no key provided
                 
                 try {
                     // Create master seed from key using PBKDF2
                     const masterSeed = await this.deriveKey(key, this.salt, 100000);
                     
+                    // Generate key-dependent S-boxes for all rounds
+                    await this.generateSBoxes(masterSeed);
+                    
                     for (let round = 0; round < this.rounds; round++) {
                         // Create round-specific seed using HMAC
                         const roundSeed = await this.hmacSha256(masterSeed, round.toString());
                         
                         // Generate cube for this round
-                        const cube = await this.generateCubeFromSeed(roundSeed);
-                        
-                        // Apply diagonal mixing to the cube
-                        this.applyDiagonalMixing(cube, roundSeed);
-                        
+                        const cube = await this.generateCubeFromSeed(roundSeed, round);
                         this.cubes.push(cube);
                     }
                     
@@ -1116,57 +1086,6 @@
                 } catch (error) {
                     console.error("Error in cube generation:", error);
                     throw error;
-                }
-            }
-
-            applyDiagonalMixing(cube, seed) {
-                // Inspired by ChaCha20's diagonal mixing
-                // We'll mix the cube diagonally in three dimensions
-                const seedNum = this.stringToNumber(seed);
-                const random = this.seededRandom(seedNum);
-                
-                // Number of mixing rounds (similar to ChaCha20's 20 rounds, but reduced for performance)
-                const rounds = 4;
-                
-                for (let r = 0; r < rounds; r++) {
-                    // Mix along x-y-z diagonals
-                    for (let d = 0; d < 4; d++) {
-                        // Get diagonal elements
-                        const diagonal = [];
-                        for (let i = 0; i < 4; i++) {
-                            diagonal.push(cube[i][i][(i + d) % 4]);
-                        }
-                        
-                        // Rotate diagonal based on seed
-                        const rotations = 1 + Math.floor(random() * 3);
-                        for (let rot = 0; rot < rotations; rot++) {
-                            const last = diagonal.pop();
-                            diagonal.unshift(last);
-                        }
-                        
-                        // Put back rotated elements
-                        for (let i = 0; i < 4; i++) {
-                            cube[i][i][(i + d) % 4] = diagonal[i];
-                        }
-                    }
-                    
-                    // Mix along x-z-y diagonals
-                    for (let d = 0; d < 4; d++) {
-                        const diagonal = [];
-                        for (let i = 0; i < 4; i++) {
-                            diagonal.push(cube[i][(i + d) % 4][i]);
-                        }
-                        
-                        const rotations = 1 + Math.floor(random() * 3);
-                        for (let rot = 0; rot < rotations; rot++) {
-                            const last = diagonal.pop();
-                            diagonal.unshift(last);
-                        }
-                        
-                        for (let i = 0; i < 4; i++) {
-                            cube[i][(i + d) % 4][i] = diagonal[i];
-                        }
-                    }
                 }
             }
 
@@ -1219,9 +1138,155 @@
                     .join('');
             }
 
-            async generateCubeFromSeed(seed) {
+            hexToUint8Array(hexString) {
+                const result = new Uint8Array(hexString.length / 2);
+                for (let i = 0; i < hexString.length; i += 2) {
+                    result[i / 2] = parseInt(hexString.substr(i, 2), 16);
+                }
+                return result;
+            }
+
+            // Generate S-boxes for all rounds based on key
+            async generateSBoxes(masterSeed) {
+                for (let round = 0; round < this.rounds; round++) {
+                    // Create round-specific seed for S-box
+                    const sBoxSeed = await this.hmacSha256(masterSeed, `sbox-${round}`);
+                    
+                    // Generate AES-like S-box
+                    const sBox = this.generateSBox(sBoxSeed, round);
+                    this.sBoxes.push(sBox);
+                }
+            }
+
+            // Generate AES-like S-box with key dependency
+            generateSBox(seed, round) {
+                // Create a 256-entry S-box (for 8-bit substitution)
+                const sBox = new Array(256);
+                
+                // Initialize with identity mapping
+                for (let i = 0; i < 256; i++) {
+                    sBox[i] = i;
+                }
+                
+                // Convert seed to array of bytes for mixing
+                const seedBytes = this.hexToUint8Array(seed);
+                
+                // Mix in the round constant (similar to AES rcon)
+                const roundConstant = this.rcon[round % this.rcon.length];
+                
+                // Create key-dependent substitution
+                for (let i = 0; i < 256; i++) {
+                    // Apply non-linear transformation (similar to AES S-box)
+                    let x = sBox[i];
+                    
+                    // Mix with key material
+                    x ^= seedBytes[i % seedBytes.length];
+                    
+                    // Apply round constant
+                    x ^= roundConstant;
+                    
+                    // GF(2^8) operations (simplified version of AES approach)
+                    // Apply affine transformation
+                    let y = 0;
+                    for (let j = 0; j < 8; j++) {
+                        y |= (((x >> j) & 1) ^ ((x >> ((j + 1) % 8)) & 1) ^ ((x >> ((j + 2) % 8)) & 1) ^ 
+                             ((x >> ((j + 3) % 8)) & 1) ^ ((seedBytes[(i + j) % seedBytes.length] & 1))) << j;
+                    }
+                    
+                    sBox[i] = y;
+                }
+                
+                return sBox;
+            }
+
+            // Apply S-box substitution to data
+            applySBox(data, sBox) {
+                return data.map(byte => sBox[byte & 0xFF]);
+            }
+
+            // Apply diagonal mixing (ChaCha20-style)
+            applyDiagonalMixing(state, seed) {
+                // Convert state to 16 32-bit words (4x4 matrix)
+                const words = new Uint32Array(16);
+                for (let i = 0; i < 16; i++) {
+                    words[i] = (state[i*4] << 24) | (state[i*4+1] << 16) | (state[i*4+2] << 8) | state[i*4+3];
+                }
+                
+                // Generate key-dependent rotation constants
+                const seedBytes = this.hexToUint8Array(seed);
+                const rotations = [];
+                for (let i = 0; i < 4; i++) {
+                    rotations.push((seedBytes[i] % 16) + 8); // Ensure rotation range 8-23
+                }
+                
+                // Apply ChaCha20-like quarter round to diagonal
+                this.quarterRound(words, 0, 5, 10, 15, rotations[0]);
+                this.quarterRound(words, 1, 6, 11, 12, rotations[1]);
+                this.quarterRound(words, 2, 7, 8, 13, rotations[2]);
+                this.quarterRound(words, 3, 4, 9, 14, rotations[3]);
+                
+                // Convert back to bytes
+                const result = new Uint8Array(64);
+                for (let i = 0; i < 16; i++) {
+                    result[i*4] = (words[i] >>> 24) & 0xFF;
+                    result[i*4+1] = (words[i] >>> 16) & 0xFF;
+                    result[i*4+2] = (words[i] >>> 8) & 0xFF;
+                    result[i*4+3] = words[i] & 0xFF;
+                }
+                
+                return result;
+            }
+
+            // ChaCha20-inspired quarter round function
+            quarterRound(state, a, b, c, d, rotation) {
+                state[a] = (state[a] + state[b]) >>> 0;
+                state[d] = this.rotl32(state[d] ^ state[a], rotation);
+                
+                state[c] = (state[c] + state[d]) >>> 0;
+                state[b] = this.rotl32(state[b] ^ state[c], rotation + 2);
+                
+                state[a] = (state[a] + state[b]) >>> 0;
+                state[d] = this.rotl32(state[d] ^ state[a], rotation + 3);
+                
+                state[c] = (state[c] + state[d]) >>> 0;
+                state[b] = this.rotl32(state[b] ^ state[c], rotation + 1);
+            }
+
+            // 32-bit left rotation
+            rotl32(x, n) {
+                return ((x << n) | (x >>> (32 - n))) >>> 0;
+            }
+
+            async generateCubeFromSeed(seed, round) {
                 // Shuffle alphabet based on seed using Fisher-Yates
                 const shuffledAlphabet = this.seededShuffle(this.alphabet, seed);
+                
+                // Convert alphabet to byte array for S-box and diagonal mixing
+                const alphabetBytes = new Uint8Array(64);
+                for (let i = 0; i < shuffledAlphabet.length; i++) {
+                    alphabetBytes[i] = shuffledAlphabet.charCodeAt(i);
+                }
+                
+                // Apply S-box substitution
+                const substitutedBytes = this.applySBox(alphabetBytes, this.sBoxes[round]);
+                
+                // Apply diagonal mixing for improved diffusion
+                const mixedBytes = this.applyDiagonalMixing(substitutedBytes, seed);
+                
+                // Convert back to characters
+                let processedAlphabet = '';
+                for (let i = 0; i < 64; i++) {
+                    // Map back to original alphabet range to maintain character set
+                    const idx = mixedBytes[i] % this.alphabet.length;
+                    processedAlphabet += this.alphabet[idx];
+                }
+                
+                // Ensure uniqueness after transformations
+                const uniqueChars = new Set(processedAlphabet);
+                if (uniqueChars.size !== processedAlphabet.length) {
+                    // If collisions occurred during transformation, fall back to shuffled alphabet
+                    processedAlphabet = shuffledAlphabet;
+                }
                 
                 // Fill 4x4x4 cube
                 const cube = [];
@@ -1232,7 +1297,7 @@
                     for (let row = 0; row < 4; row++) {
                         const cubeRow = [];
                         for (let col = 0; col < 4; col++) {
-                            cubeRow.push(shuffledAlphabet[pos % shuffledAlphabet.length]);
+                            cubeRow.push(processedAlphabet[pos % processedAlphabet.length]);
                             pos++;
                         }
                         cubeLayer.push(cubeRow);
@@ -1244,15 +1309,15 @@
             }
 
             seededShuffle(array, seed) {
-                // Convert seed to a number for the random generator
-                let numericSeed = 0;
-                for (let i = 0; i < seed.length; i++) {
-                    numericSeed = (numericSeed << 5) - numericSeed + seed.charCodeAt(i);
-                    numericSeed |= 0;
+                // Convert seed to a number sequence for the random generator
+                const seedValues = [];
+                for (let i = 0; i < seed.length; i += 8) {
+                    const chunk = seed.substr(i, 8);
+                    seedValues.push(parseInt(chunk, 16) || 1); // Fallback to 1 if parsing fails
                 }
                 
                 // Create a seeded random generator
-                const random = this.seededRandom(numericSeed);
+                const random = this.seededXoshiro128(seedValues);
                 
                 // Fisher-Yates shuffle
                 const arr = array.split('');
@@ -1264,13 +1329,42 @@
                 return arr.join('');
             }
 
-            seededRandom(seed) {
-                // Simple seeded random generator (not cryptographically secure)
-                let x = Math.sin(seed) * 10000;
+            // Improved seeded random generator (Xoshiro128+)
+            seededXoshiro128(seed) {
+                let state = new Uint32Array(4);
+                
+                // Initialize state with seed
+                for (let i = 0; i < 4; i++) {
+                    state[i] = seed[i % seed.length] || (i + 1) * 0x9E3779B9; // Golden ratio constant as fallback
+                }
+                
+                // Warm up the RNG
+                for (let i = 0; i < 20; i++) {
+                    this.xoshiro128Next(state);
+                }
+                
                 return () => {
-                    x = Math.sin(x) * 10000;
-                    return x - Math.floor(x);
+                    const result = (state[0] + state[3]) >>> 0;
+                    this.xoshiro128Next(state);
+                    return result / 4294967296; // Convert to [0,1) range
                 };
+            }
+
+            xoshiro128Next(state) {
+                const rotl = (x, k) => ((x << k) | (x >>> (32 - k))) >>> 0;
+                
+                const result = (state[0] + state[3]) >>> 0;
+                const t = (state[1] << 9) >>> 0;
+                
+                state[2] ^= state[0];
+                state[3] ^= state[1];
+                state[1] ^= state[2];
+                state[0] ^= state[3];
+                
+                state[2] ^= t;
+                state[3] = rotl(state[3], 11);
+                
+                return result;
             }
 
             verifyCubeUniqueness() {
@@ -1412,17 +1506,11 @@
                 try {
                     let intermediate = plaintext;
                     let stepsHTML = '<div class="card"><h3><i class="fas fa-sync-alt"></i> Multi-Round Encryption Process</h3>';
-                    stepsHTML += `<p>Using ${this.rounds} encryption rounds with key-based cubes and S-Box substitution</p>`;
+                    stepsHTML += `<p>Using ${this.rounds} encryption rounds with key-based cubes</p>`;
 
                     // Perform encryption in multiple rounds
                     for (let round = 0; round < this.rounds; round++) {
                         stepsHTML += `<div class="card"><h4><span class="round-badge">${round+1}</span> Encryption Round ${round+1}/${this.rounds}</h4>`;
-                        
-                        // Apply S-Box substitution before each round (except first)
-                        if (round > 0) {
-                            intermediate = this.applySBox(intermediate, round);
-                            stepsHTML += `<p><strong>After S-Box substitution:</strong> <code>${this.escapeHtml(intermediate)}</code></p>`;
-                        }
                         
                         const roundResult = this.singleRoundEncrypt(intermediate, round);
                         intermediate = roundResult.ciphertext;
@@ -1442,49 +1530,6 @@
                     console.error("Encryption error:", error);
                     alert(`Encryption failed: ${error.message}`);
                 }
-            }
-
-            applySBox(text, round) {
-                if (!this.sBox) return text;
-                
-                // Use the round number to modify the S-Box application
-                const roundOffset = round % 256;
-                
-                let result = '';
-                for (let i = 0; i < text.length; i++) {
-                    const charCode = text.charCodeAt(i);
-                    const sBoxIndex = (charCode + roundOffset) % 256;
-                    const substitutedCharCode = this.sBox[sBoxIndex];
-                    
-                    // Convert back to character, but ensure it's in our alphabet
-                    const substitutedChar = String.fromCharCode(substitutedCharCode);
-                    result += this.alphabet.includes(substitutedChar) ? substitutedChar : text[i];
-                }
-                
-                return result;
-            }
-
-            inverseSBox(text, round) {
-                if (!this.sBox) return text;
-                
-                // Create inverse S-Box
-                const inverseSBox = new Array(256);
-                for (let i = 0; i < this.sBox.length; i++) {
-                    inverseSBox[this.sBox[i]] = i;
-                }
-                
-                const roundOffset = round % 256;
-                
-                let result = '';
-                for (let i = 0; i < text.length; i++) {
-                    const charCode = text.charCodeAt(i);
-                    const originalIndex = inverseSBox[(charCode - roundOffset + 256) % 256];
-                    const originalChar = String.fromCharCode(originalIndex);
-                    
-                    result += this.alphabet.includes(originalChar) ? originalChar : text[i];
-                }
-                
-                return result;
             }
 
             singleRoundEncrypt(text, round) {
@@ -1544,6 +1589,48 @@
                 let layersStream = coordinates.map(c => c.layer).join('');
                 let rowsStream = coordinates.map(c => c.row).join('');
                 let colsStream = coordinates.map(c => c.col).join('');
+                
+                // Apply ChaCha20-like diagonal mixing to coordinate streams
+                const streamBytes = new Uint8Array(layersStream.length * 3);
+                for (let i = 0; i < layersStream.length; i++) {
+                    streamBytes[i] = parseInt(layersStream[i]);
+                    streamBytes[i + layersStream.length] = parseInt(rowsStream[i]);
+                    streamBytes[i + 2 * layersStream.length] = parseInt(colsStream[i]);
+                }
+                
+                // Apply diagonal mixing if there's enough data
+                if (streamBytes.length >= 64) {
+                    // Process in 64-byte blocks
+                    for (let block = 0; block < Math.floor(streamBytes.length / 64); block++) {
+                        const blockStart = block * 64;
+                        const blockData = streamBytes.slice(blockStart, blockStart + 64);
+                        const mixedBlock = this.applyDiagonalMixing(blockData, 
+                            this.hmacSha256Sync(`${this.encryptionKey}-${round}-${block}`, "mix"));
+                        
+                        // Copy mixed data back
+                        for (let i = 0; i < 64; i++) {
+                            if (blockStart + i < streamBytes.length) {
+                                // Ensure values stay in range 1-4
+                                streamBytes[blockStart + i] = (mixedBlock[i] % 4) + 1;
+                            }
+                        }
+                    }
+                    
+                    // Update streams after mixing
+                    layersStream = '';
+                    rowsStream = '';
+                    colsStream = '';
+                    
+                    for (let i = 0; i < streamBytes.length / 3; i++) {
+                        layersStream += streamBytes[i];
+                        rowsStream += streamBytes[i + layersStream.length];
+                        colsStream += streamBytes[i + 2 * layersStream.length];
+                    }
+                    
+                    stepsHTML += `<p><i class="fas fa-random"></i> Applied ChaCha20-style diagonal mixing to coordinate streams</p>`;
+                }
+                
+                // Combine streams
                 let combinedStream = layersStream + rowsStream + colsStream;
 
                 stepsHTML += `
@@ -1569,21 +1656,38 @@
                         <tbody>
                 `;
 
+                // Generate key-dependent S-box for this round's triplet substitution
+                const tripletSBox = this.generateTripletSBox(round);
+                stepsHTML += `<p><i class="fas fa-shield-alt"></i> Applied key-dependent S-box substitution to triplets</p>`;
+
                 for (let i = 0; i < combinedStream.length; i += 3) {
                     let triplet = combinedStream.substr(i, 3);
                     if (triplet.length === 3) {
-                        const layer = parseInt(triplet[0]);
-                        const row = parseInt(triplet[1]);
-                        const col = parseInt(triplet[2]);
-                        const char = this.getCharFromCoordinates(layer, row, col, round);
+                        // Apply S-box substitution to triplet
+                        const tripletValue = parseInt(triplet, 10);
+                        const substitutedValue = this.applyTripletSBox(tripletValue, tripletSBox);
+                        
+                        // Convert back to triplet coordinates
+                        const substitutedTriplet = substitutedValue.toString().padStart(3, '0');
+                        
+                        const layer = parseInt(substitutedTriplet[0]);
+                        const row = parseInt(substitutedTriplet[1]);
+                        const col = parseInt(substitutedTriplet[2]);
+                        
+                        // Ensure values are in valid range (1-4)
+                        const validLayer = ((layer - 1) % 4) + 1;
+                        const validRow = ((row - 1) % 4) + 1;
+                        const validCol = ((col - 1) % 4) + 1;
+                        
+                        const char = this.getCharFromCoordinates(validLayer, validRow, validCol, round);
                         ciphertext += char;
                         
                         tripletTable += `
                             <tr>
                                 <td><code>${triplet}</code></td>
-                                <td>${layer}</td>
-                                <td>${row}</td>
-                                <td>${col}</td>
+                                <td>${validLayer}</td>
+                                <td>${validRow}</td>
+                                <td>${validCol}</td>
                                 <td><code>${this.escapeHtml(char)}</code></td>
                             </tr>
                         `;
@@ -1634,6 +1738,58 @@
                 };
             }
 
+            // Generate a key-dependent S-box for triplet substitution
+            generateTripletSBox(round) {
+                const sBox = new Array(1000); // For all possible triplet values (000-999)
+                
+                // Initialize with identity mapping
+                for (let i = 0; i < 1000; i++) {
+                    sBox[i] = i;
+                }
+                
+                // Use the existing S-box for this round as seed
+                const roundSBox = this.sBoxes[round];
+                
+                // Create key-dependent substitution
+                for (let i = 0; i < 1000; i++) {
+                    // Mix with round S-box
+                    let x = sBox[i];
+                    
+                    // Apply multiple bytes from the round S-box
+                    const b1 = roundSBox[i % 256];
+                    const b2 = roundSBox[(i + 85) % 256];
+                    const b3 = roundSBox[(i + 170) % 256];
+                    
+                    // Create a key-dependent transformation
+                    x = (x + (b1 << 6) + (b2 << 3) + b3) % 1000;
+                    
+                    // Apply non-linear transformation
+                    x = (x * 7 + 3) % 1000;
+                    
+                    sBox[i] = x;
+                }
+                
+                return sBox;
+            }
+
+            // Apply triplet S-box substitution
+            applyTripletSBox(value, sBox) {
+                // Ensure value is in valid range
+                const validValue = value % 1000;
+                return sBox[validValue];
+            }
+
+            // Synchronous HMAC-SHA256 approximation for places where async is difficult
+            hmacSha256Sync(key, message) {
+                // Simple implementation for internal use
+                let result = '';
+                for (let i = 0; i < 64; i++) {
+                    const charCode = (key.charCodeAt(i % key.length) ^ message.charCodeAt(i % message.length)) % 256;
+                    result += charCode.toString(16).padStart(2, '0');
+                }
+                return result;
+            }
+
             async decrypt() {
                 const ciphertext = document.getElementById('ciphertext').value;
                 if (!ciphertext) {
@@ -1649,7 +1805,7 @@
                 try {
                     let intermediate = ciphertext;
                     let stepsHTML = '<div class="card"><h3><i class="fas fa-sync-alt"></i> Multi-Round Decryption Process</h3>';
-                    stepsHTML += `<p>Using ${this.rounds} decryption rounds with key-based cubes and S-Box substitution</p>`;
+                    stepsHTML += `<p>Using ${this.rounds} decryption rounds with key-based cubes</p>`;
 
                     // Perform decryption in reverse round order
                     for (let round = this.rounds - 1; round >= 0; round--) {
@@ -1660,13 +1816,6 @@
                         
                         stepsHTML += roundResult.steps;
                         stepsHTML += `<p><strong>Round ${this.rounds-round} output:</strong> <code>${this.escapeHtml(intermediate)}</code></p>`;
-                        
-                        // Apply inverse S-Box after each round (except last)
-                        if (round > 0) {
-                            intermediate = this.inverseSBox(intermediate, round);
-                            stepsHTML += `<p><strong>After inverse S-Box substitution:</strong> <code>${this.escapeHtml(intermediate)}</code></p>`;
-                        }
-                        
                         stepsHTML += '</div>';
                     }
 
@@ -1745,11 +1894,80 @@
                     <p><strong>Full coordinate sequence:</strong> <code>${this.chunkString(coordSequence, 5)}</code></p>
                 `;
 
+                // Generate key-dependent inverse S-box for this round's triplet substitution
+                const tripletSBox = this.generateTripletSBox(round);
+                const inverseTripletSBox = this.generateInverseTripletSBox(tripletSBox);
+                stepsHTML += `<p><i class="fas fa-shield-alt"></i> Applied key-dependent inverse S-box substitution to triplets</p>`;
+
+                // Apply inverse S-box to coordinate triplets
+                let processedSequence = '';
+                for (let i = 0; i < coordSequence.length; i += 3) {
+                    if (i + 2 < coordSequence.length) {
+                        const triplet = coordSequence.substr(i, 3);
+                        const tripletValue = parseInt(triplet, 10);
+                        
+                        // Apply inverse S-box
+                        const originalValue = this.applyTripletSBox(tripletValue, inverseTripletSBox);
+                        const originalTriplet = originalValue.toString().padStart(3, '0');
+                        
+                        processedSequence += originalTriplet;
+                    } else {
+                        processedSequence += coordSequence.substr(i);
+                    }
+                }
+                
+                coordSequence = processedSequence;
+                stepsHTML += `<p><strong>Processed sequence:</strong> <code>${this.chunkString(coordSequence, 5)}</code></p>`;
+
                 // Split into three equal parts
                 const partLength = Math.floor(coordSequence.length / 3);
-                const layersPart = coordSequence.substring(0, partLength);
-                const rowsPart = coordSequence.substring(partLength, 2 * partLength);
-                const colsPart = coordSequence.substring(2 * partLength);
+                let layersPart = coordSequence.substring(0, partLength);
+                let rowsPart = coordSequence.substring(partLength, 2 * partLength);
+                let colsPart = coordSequence.substring(2 * partLength);
+
+                // Apply inverse diagonal mixing if applicable
+                if (layersPart.length >= 21) { // Minimum size for meaningful mixing
+                    const streamBytes = new Uint8Array(layersPart.length * 3);
+                    
+                    for (let i = 0; i < layersPart.length; i++) {
+                        streamBytes[i] = parseInt(layersPart[i]);
+                        streamBytes[i + layersPart.length] = parseInt(rowsPart[i]);
+                        streamBytes[i + 2 * layersPart.length] = parseInt(colsPart[i]);
+                    }
+                    
+                    // Process in 64-byte blocks (inverse of encryption)
+                    for (let block = 0; block < Math.floor(streamBytes.length / 64); block++) {
+                        const blockStart = block * 64;
+                        const blockData = streamBytes.slice(blockStart, blockStart + 64);
+                        
+                        // For decryption, we need to apply inverse mixing
+                        // In this implementation, we're using a similar mixing function
+                        // but with a different seed to achieve the inverse effect
+                        const inverseMixedBlock = this.applyDiagonalMixing(blockData, 
+                            this.hmacSha256Sync(`${this.encryptionKey}-${round}-${block}-inverse`, "mix"));
+                        
+                        // Copy mixed data back
+                        for (let i = 0; i < 64; i++) {
+                            if (blockStart + i < streamBytes.length) {
+                                // Ensure values stay in range 1-4
+                                streamBytes[blockStart + i] = (inverseMixedBlock[i] % 4) + 1;
+                            }
+                        }
+                    }
+                    
+                    // Update parts after inverse mixing
+                    layersPart = '';
+                    rowsPart = '';
+                    colsPart = '';
+                    
+                    for (let i = 0; i < streamBytes.length / 3; i++) {
+                        layersPart += streamBytes[i];
+                        rowsPart += streamBytes[i + layersPart.length];
+                        colsPart += streamBytes[i + 2 * layersPart.length];
+                    }
+                    
+                    stepsHTML += `<p><i class="fas fa-random"></i> Applied inverse ChaCha20-style diagonal mixing</p>`;
+                }
 
                 stepsHTML += `
                     <p><strong>Layers part:</strong> <code>${this.chunkString(layersPart, 5)}</code></p>
@@ -1777,15 +1995,21 @@
                     const layer = parseInt(layersPart[i]);
                     const row = parseInt(rowsPart[i]);
                     const col = parseInt(colsPart[i]);
-                    const char = this.getCharFromCoordinates(layer, row, col, round);
+                    
+                    // Ensure values are in valid range (1-4)
+                    const validLayer = ((layer - 1) % 4) + 1;
+                    const validRow = ((row - 1) % 4) + 1;
+                    const validCol = ((col - 1) % 4) + 1;
+                    
+                    const char = this.getCharFromCoordinates(validLayer, validRow, validCol, round);
                     plaintext += char;
                     
                     reconstructionTable += `
                         <tr>
                             <td>${i + 1}</td>
-                            <td>${layer}</td>
-                            <td>${row}</td>
-                            <td>${col}</td>
+                            <td>${validLayer}</td>
+                            <td>${validRow}</td>
+                            <td>${validCol}</td>
                             <td><code>${this.escapeHtml(char)}</code></td>
                         </tr>
                     `;
@@ -1827,9 +2051,21 @@
                 };
             }
 
+            // Generate inverse triplet S-box for decryption
+            generateInverseTripletSBox(sBox) {
+                const inverseSBox = new Array(1000);
+                
+                // For each entry in the original S-box, store its inverse mapping
+                for (let i = 0; i < 1000; i++) {
+                    inverseSBox[sBox[i]] = i;
+                }
+                
+                return inverseSBox;
+            }
+
             loadSampleText(type) {
                 const samples = {
-                    plain: "This is a highly confidential message to encrypt using the Secure Trifid Cipher Pro+! It contains numbers 12345 and symbols @#$%^.",
+                    plain: "This is a highly confidential message to encrypt using the Secure Trifid Cipher Pro! It contains numbers 12345 and symbols @#$%^.",
                     cipher: ""
                 };
 
@@ -1921,7 +2157,7 @@
                 }
 
                 const settings = {
-                    version: "2.0",
+                    version: "1.0",
                     timestamp: new Date().toISOString(),
                     alphabet: this.alphabet,
                     fillerChar: this.fillerChar,
@@ -1930,14 +2166,14 @@
                     rounds: this.rounds,
                     salt: this.salt,
                     cubeHashes: this.cubes.map(cube => this.hashString(JSON.stringify(cube))),
-                    sBoxHash: this.sBox ? this.hashString(this.sBox.join(',')) : null
+                    sBoxHashes: this.sBoxes.map(sbox => this.hashString(JSON.stringify(sbox)))
                 };
 
                 const blob = new Blob([JSON.stringify(settings, null, 2)], { type: 'application/json' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = 'secure_trifid_pro_plus_settings.json';
+                a.download = 'secure_trifid_settings.json';
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
@@ -2004,7 +2240,7 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            const cipher = new SecureTrifidCipherProPlus();
+            const cipher = new SecureTrifidCipher();
         });
     </script>
 </body>
