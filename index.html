@@ -3,854 +3,654 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SecureCrypt Pro - Military-Grade Encryption</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/argon2-browser@1.18.0/lib/argon2.js"></script>
+    <title>SecureCrypt - Простое и надежное шифрование</title>
     <style>
-        /* Оптимизированные стили */
-        :root {
-            --bg-primary: #0f0f12;
-            --bg-secondary: #1e1e24;
-            --bg-tertiary: #2c2c35;
-            --accent-blue: #3a7bf7;
-            --accent-green: #30d158;
-            --accent-purple: #bf5af2;
-            --accent-red: #ff453a;
-            --accent-orange: #ff9f0a;
-            --text-primary: #f5f5f7;
-            --text-secondary: #a1a1a6;
-            --border-radius: 16px;
-            --border-color: #3a3a44;
-            --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
-            --font-mono: 'SF Mono', Menlo, monospace;
-            --shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
-        /* Остальные стили остаются без изменений */
-        /* ... существующие стили ... */
+        body {
+            background: linear-gradient(135deg, #1a1a2e, #0f0f1a);
+            color: #f5f5f7;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
 
-        /* Новые элементы */
-        .progress-bar {
-            height: 6px;
-            background: var(--bg-tertiary);
-            border-radius: 3px;
-            margin-top: 10px;
+        .container {
+            width: 100%;
+            max-width: 650px;
+        }
+
+        .card {
+            background: #0f0f12;
+            border-radius: 16px;
+            border: 1px solid #2a2a35;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
             overflow: hidden;
         }
-        
-        .progress {
-            height: 100%;
-            background: linear-gradient(to right, var(--accent-purple), var(--accent-blue));
-            width: 0%;
-            transition: width 0.3s ease;
+
+        .header {
+            padding: 20px;
+            background: linear-gradient(to right, #2c2c35, #1a1a1f);
+            border-bottom: 1px solid #2a2a35;
+            text-align: center;
         }
-        
-        .key-visualizer {
+
+        .logo {
             display: flex;
-            gap: 2px;
-            height: 8px;
-            margin-top: 8px;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 15px;
         }
-        
-        .key-segment {
-            flex: 1;
-            background: var(--bg-tertiary);
-            border-radius: 2px;
-        }
-        
-        .history-item {
-            padding: 12px;
-            background: var(--bg-tertiary);
-            border-radius: 8px;
-            margin-bottom: 8px;
-            font-size: 13px;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-        
-        .history-item:hover {
-            background: #333340;
-        }
-        
-        .key-action {
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #3a7bf7, #bf5af2);
+            border-radius: 50%;
             display: flex;
-            gap: 10px;
-            margin-top: 10px;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
         }
-        
-        .key-action-btn {
+
+        h1 {
+            font-size: 24px;
+            font-weight: 600;
+            color: #f5f5f7;
+        }
+
+        .subtitle {
+            color: #a1a1a6;
+            font-size: 15px;
+            margin-top: 5px;
+        }
+
+        .content {
+            padding: 25px;
+        }
+
+        .tabs {
+            display: flex;
+            background: #1e1e24;
+            border-radius: 12px;
+            margin-bottom: 25px;
+        }
+
+        .tab {
             flex: 1;
-            padding: 10px;
-            background: rgba(255,255,255,0.08);
-            border-radius: 8px;
+            padding: 14px;
             text-align: center;
             cursor: pointer;
-            transition: var(--transition);
-        }
-        
-        .key-action-btn:hover {
-            background: rgba(255,255,255,0.15);
-        }
-        
-        .security-badge {
-            display: inline-block;
-            padding: 3px 8px;
-            border-radius: 4px;
-            font-size: 11px;
+            border-radius: 12px;
             font-weight: 500;
-            margin-left: 8px;
+            transition: background 0.3s;
         }
-        
-        .security-high {
-            background: rgba(48, 209, 88, 0.15);
-            color: var(--accent-green);
+
+        .tab.active {
+            background: #2c2c35;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
         }
-        
-        .security-medium {
-            background: rgba(255, 159, 10, 0.15);
-            color: var(--accent-orange);
+
+        .form-group {
+            margin-bottom: 20px;
         }
-        
-        .security-low {
-            background: rgba(255, 69, 58, 0.15);
-            color: var(--accent-red);
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: #a1a1a6;
         }
-        
-        .operations-counter {
+
+        input, textarea {
+            width: 100%;
+            padding: 14px;
+            background: #1e1e24;
+            border: 1px solid #2a2a35;
+            border-radius: 12px;
+            color: #f5f5f7;
+            font-size: 15px;
+        }
+
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+            font-family: monospace;
+        }
+
+        .password-container {
+            position: relative;
+        }
+
+        .toggle-password {
             position: absolute;
-            top: 10px;
-            right: 10px;
-            background: rgba(255,69,58,0.2);
-            color: var(--accent-red);
-            padding: 4px 8px;
+            right: 15px;
+            top: 14px;
+            cursor: pointer;
+            color: #a1a1a6;
+        }
+
+        .strength-meter {
+            height: 6px;
+            background: #1e1e24;
+            border-radius: 3px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+
+        .strength-level {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(to right, #ff453a, #ff9f0a, #30d158);
+            border-radius: 3px;
+            transition: width 0.5s ease;
+        }
+
+        .strength-text {
+            font-size: 13px;
+            margin-top: 5px;
+            color: #a1a1a6;
+        }
+
+        .btn {
+            background: linear-gradient(to right, #3a7bf7, #bf5af2);
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(58, 123, 247, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .result-container {
+            margin-top: 25px;
+            background: #1e1e24;
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid #2a2a35;
+        }
+
+        .result-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            color: #a1a1a6;
+        }
+
+        .result {
+            padding: 15px;
+            background: #0a0a0d;
             border-radius: 10px;
-            font-size: 12px;
-            display: none;
+            font-family: monospace;
+            white-space: pre-wrap;
+            word-break: break-word;
+            max-height: 200px;
+            overflow: auto;
+            border-left: 3px solid #3a7bf7;
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 10px;
+            background: #2c2c35;
+            border-radius: 10px;
+            border: 1px solid #2a2a35;
+            color: #f5f5f7;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+
+        .action-btn:hover {
+            background: #333340;
+        }
+
+        .status {
+            padding: 15px;
+            border-radius: 12px;
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+        }
+
+        .status.success {
+            background: rgba(48, 209, 88, 0.1);
+            border-left: 3px solid #30d158;
+            color: #30d158;
+        }
+
+        .status.error {
+            background: rgba(255, 69, 58, 0.1);
+            border-left: 3px solid #ff453a;
+            color: #ff453a;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #a1a1a6;
+            font-size: 13px;
+            border-top: 1px solid #2a2a35;
+        }
+
+        @media (max-width: 600px) {
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .actions {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="window">
-            <div class="operations-counter" id="attempt-counter">Попыток: 0/5</div>
-            
-            <div class="title-bar">
+        <div class="card">
+            <div class="header">
                 <div class="logo">
                     <div class="logo-icon">
                         <i class="fas fa-lock"></i>
                     </div>
-                    <h1>SecureCrypt Pro</h1>
+                    <h1>SecureCrypt</h1>
                 </div>
-                <div class="badge">
-                    <i class="fas fa-shield-alt"></i>
-                    AES-256-GCM | Argon2id | Military-Grade
-                </div>
+                <div class="subtitle">AES-256 шифрование в вашем браузере</div>
             </div>
 
-            <div class="tabs">
-                <div class="tab active" onclick="switchTab('encrypt')">
-                    <i class="fas fa-lock"></i> Шифрование
+            <div class="content">
+                <div class="tabs">
+                    <div class="tab active" id="encrypt-tab">Шифрование</div>
+                    <div class="tab" id="decrypt-tab">Дешифрование</div>
                 </div>
-                <div class="tab" onclick="switchTab('decrypt')">
-                    <i class="fas fa-unlock"></i> Дешифрование
-                </div>
-                <div class="tab" onclick="switchTab('settings')">
-                    <i class="fas fa-cog"></i> Настройки
-                </div>
-                <div class="tab" onclick="switchTab('history')">
-                    <i class="fas fa-history"></i> История
-                </div>
-            </div>
 
-            <div id="encrypt-panel" class="panel active">
-                <div class="card">
-                    <div class="card-header">
-                        <h2><i class="fas fa-key"></i> Шифрование текста</h2>
-                        <div class="key-action">
-                            <div class="key-action-btn" onclick="generateStrongPassword()">
-                                <i class="fas fa-key"></i> Сгенерировать ключ
-                            </div>
-                            <div class="key-action-btn" onclick="saveKeyToFile()">
-                                <i class="fas fa-save"></i> Экспорт ключа
-                            </div>
-                        </div>
-                    </div>
-                    
+                <div id="encrypt-section">
                     <div class="form-group">
-                        <label for="encrypt-key">Ключ шифрования <span id="key-strength-badge" class="security-badge security-low">Слабый</span></label>
-                        <input type="password" id="encrypt-key" placeholder="Введите секретный ключ (минимум 12 символов)" 
-                               oninput="updateEntropyMeter(this.value)">
-                        <div class="key-visualizer" id="key-visualizer">
-                            <div class="key-segment"></div>
-                            <div class="key-segment"></div>
-                            <div class="key-segment"></div>
-                            <div class="key-segment"></div>
-                            <div class="key-segment"></div>
-                            <div class="key-segment"></div>
+                        <label for="password">Ключ шифрования</label>
+                        <div class="password-container">
+                            <input type="password" id="password" placeholder="Введите надежный ключ">
+                            <span class="toggle-password" id="toggle-password">
+                                <i class="fas fa-eye"></i>
+                            </span>
                         </div>
-                        <div class="entropy-meter">
-                            <div class="entropy-level" id="entropy-level"></div>
+                        <div class="strength-meter">
+                            <div class="strength-level" id="strength-level"></div>
                         </div>
-                        <div class="security-indicator">
-                            <div class="indicator-dot" id="security-dot"></div>
-                            <span id="security-text">Введите пароль</span>
-                        </div>
+                        <div class="strength-text" id="strength-text">Введите ключ</div>
                     </div>
 
                     <div class="form-group">
-                        <label for="plain-text">Текст для шифрования</label>
-                        <textarea id="plain-text" placeholder="Введите конфиденциальный текст...">Тестовый текст для шифрования</textarea>
-                    </div>
-                    
-                    <div class="settings-row">
-                        <div class="form-group">
-                            <label for="output-format">Формат вывода:</label>
-                            <select id="output-format">
-                                <option value="base64">Base64 (стандартный)</option>
-                                <option value="hex">HEX (шестнадцатеричный)</option>
-                                <option value="numeric">Числовой</option>
-                                <option value="alpha">Буквенный</option>
-                                <option value="matrix">Матричный</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="key-derivation">Деривация ключа:</label>
-                            <select id="key-derivation">
-                                <option value="argon2">Argon2id (рекомендуется)</option>
-                                <option value="pbkdf2">PBKDF2 (совместимость)</option>
-                            </select>
-                        </div>
+                        <label for="text">Текст для шифрования</label>
+                        <textarea id="text" placeholder="Введите конфиденциальный текст...">Тестовое сообщение</textarea>
                     </div>
 
-                    <button id="encrypt-btn" onclick="encryptText()">
-                        <i class="fas fa-lock"></i>
-                        Зашифровать
+                    <button class="btn" id="encrypt-btn">
+                        <i class="fas fa-lock"></i> Зашифровать
                     </button>
-                    
-                    <div class="progress-bar">
-                        <div class="progress" id="encrypt-progress"></div>
-                    </div>
 
                     <div class="result-container">
-                        <div class="result-label">
-                            <i class="fas fa-file-code"></i>
-                            Результат шифрования
+                        <div class="result-header">
+                            <i class="fas fa-file-code"></i> Результат
                         </div>
                         <div class="result" id="encrypted-result">Здесь появится зашифрованный текст...</div>
-                        <div class="result-actions">
-                            <div class="action-btn" onclick="copyResult('encrypted-result')">
+                        <div class="actions">
+                            <div class="action-btn" id="copy-encrypted">
                                 <i class="fas fa-copy"></i> Копировать
                             </div>
-                            <div class="action-btn" onclick="downloadResult()">
-                                <i class="fas fa-download"></i> Сохранить
-                            </div>
-                            <div class="action-btn" onclick="clearResult('encrypted-result')">
+                            <div class="action-btn" id="clear-encrypted">
                                 <i class="fas fa-trash"></i> Очистить
                             </div>
                         </div>
                     </div>
-                    
-                    <div class="status hidden" id="encrypt-status">
-                        <span class="error-message"></span>
-                        <div class="error-details" id="encrypt-error-details"></div>
-                    </div>
                 </div>
-            </div>
 
-            <!-- Остальные панели (decrypt, settings) остаются аналогичными -->
-            <!-- ... существующие панели ... -->
-            
-            <div id="history-panel" class="panel">
-                <div class="card">
-                    <div class="card-header">
-                        <h2><i class="fas fa-history"></i> История операций</h2>
-                    </div>
-                    
+                <div id="decrypt-section" style="display: none;">
                     <div class="form-group">
-                        <label>Последние операции:</label>
-                        <div id="operations-history">
-                            <!-- История будет добавляться динамически -->
+                        <label for="decrypt-password">Ключ дешифрования</label>
+                        <div class="password-container">
+                            <input type="password" id="decrypt-password" placeholder="Введите тот же ключ">
+                            <span class="toggle-password" id="toggle-decrypt-password">
+                                <i class="fas fa-eye"></i>
+                            </span>
                         </div>
                     </div>
-                    
-                    <button class="btn-secondary" onclick="clearHistory()">
-                        <i class="fas fa-trash"></i>
-                        Очистить историю
+
+                    <div class="form-group">
+                        <label for="encrypted-text">Зашифрованные данные</label>
+                        <textarea id="encrypted-text" placeholder="Введите зашифрованный текст..."></textarea>
+                    </div>
+
+                    <button class="btn" id="decrypt-btn">
+                        <i class="fas fa-unlock"></i> Дешифровать
                     </button>
+
+                    <div class="result-container">
+                        <div class="result-header">
+                            <i class="fas fa-file-alt"></i> Результат
+                        </div>
+                        <div class="result" id="decrypted-result">Здесь появится расшифрованный текст...</div>
+                        <div class="actions">
+                            <div class="action-btn" id="copy-decrypted">
+                                <i class="fas fa-copy"></i> Копировать
+                            </div>
+                            <div class="action-btn" id="clear-decrypted">
+                                <i class="fas fa-trash"></i> Очистить
+                            </div>
+                        </div>
+                    </div>
                 </div>
+
+                <div class="status" id="status-message" style="display: none;"></div>
             </div>
 
             <div class="footer">
-                <p>SecureCrypt Pro v8.1 | Military-Grade AES-256-GCM | Argon2id | © 2026</p>
-                <p>Все операции выполняются локально в вашем браузере | Нет трекеров | Нет сбора данных</p>
+                <p>Все операции выполняются локально в вашем браузере | Никакие данные не отправляются на сервер</p>
+                <p>© 2023 SecureCrypt | AES-256-GCM | PBKDF2</p>
             </div>
         </div>
     </div>
 
     <script>
-        // Конфигурация безопасности
-        const SECURITY_CONFIG = {
-            maxAttempts: 5,
-            blockTime: 300000, // 5 минут
-            minKeyLength: 16
+        // Элементы интерфейса
+        const elements = {
+            encryptTab: document.getElementById('encrypt-tab'),
+            decryptTab: document.getElementById('decrypt-tab'),
+            encryptSection: document.getElementById('encrypt-section'),
+            decryptSection: document.getElementById('decrypt-section'),
+            password: document.getElementById('password'),
+            decryptPassword: document.getElementById('decrypt-password'),
+            text: document.getElementById('text'),
+            encryptedText: document.getElementById('encrypted-text'),
+            encryptBtn: document.getElementById('encrypt-btn'),
+            decryptBtn: document.getElementById('decrypt-btn'),
+            encryptedResult: document.getElementById('encrypted-result'),
+            decryptedResult: document.getElementById('decrypted-result'),
+            strengthLevel: document.getElementById('strength-level'),
+            strengthText: document.getElementById('strength-text'),
+            statusMessage: document.getElementById('status-message'),
+            togglePassword: document.getElementById('toggle-password'),
+            toggleDecryptPassword: document.getElementById('toggle-decrypt-password')
         };
 
-        // Расширенные настройки
-        let settings = {
-            argonIterations: 5,
-            argonMemory: 128,
-            autoClear: 30,
-            keyDerivation: 'argon2',
-            historyLimit: 20
-        };
+        // Переключение вкладок
+        elements.encryptTab.addEventListener('click', () => {
+            elements.encryptTab.classList.add('active');
+            elements.decryptTab.classList.remove('active');
+            elements.encryptSection.style.display = 'block';
+            elements.decryptSection.style.display = 'none';
+        });
 
-        // Безопасное хранилище ключей
-        let keyCache = {
-            encryptKey: null,
-            decryptKey: null,
-            cacheTime: 0,
-            cacheDuration: 30000 // 30 секунд
-        };
+        elements.decryptTab.addEventListener('click', () => {
+            elements.decryptTab.classList.add('active');
+            elements.encryptTab.classList.remove('active');
+            elements.encryptSection.style.display = 'none';
+            elements.decryptSection.style.display = 'block';
+        });
 
-        // История операций
-        let operationsHistory = [];
-        
-        // Счетчик попыток
-        let decryptAttempts = 0;
-        let blockedUntil = 0;
+        // Переключение видимости пароля
+        elements.togglePassword.addEventListener('click', () => {
+            const type = elements.password.getAttribute('type') === 'password' ? 'text' : 'password';
+            elements.password.setAttribute('type', type);
+            elements.togglePassword.innerHTML = type === 'password' ? 
+                '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
+        });
 
-        // Расширенные форматы данных
-        const safeFormats = {
-            base64: {
-                encode: (data) => btoa(String.fromCharCode(...new Uint8Array(data))),
-                decode: (str) => {
-                    try {
-                        return Uint8Array.from(atob(str), c => c.charCodeAt(0));
-                    } catch (e) {
-                        throw new Error("Некорректный формат Base64");
-                    }
-                }
-            },
+        elements.toggleDecryptPassword.addEventListener('click', () => {
+            const type = elements.decryptPassword.getAttribute('type') === 'password' ? 'text' : 'password';
+            elements.decryptPassword.setAttribute('type', type);
+            elements.toggleDecryptPassword.innerHTML = type === 'password' ? 
+                '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
+        });
+
+        // Анализ сложности пароля
+        elements.password.addEventListener('input', function() {
+            const password = this.value;
+            let strength = 0;
             
-            hex: {
-                encode: (data) => Array.from(new Uint8Array(data)).map(b => 
-                    b.toString(16).padStart(2, '0')).join(''),
-                decode: (hex) => {
-                    if (hex.length % 2 !== 0) {
-                        throw new Error("Некорректная HEX строка (нечетная длина)");
-                    }
-                    
-                    const bytes = new Uint8Array(hex.length / 2);
-                    for (let i = 0; i < bytes.length; i++) {
-                        const byte = parseInt(hex.substr(i*2, 2), 16);
-                        if (isNaN(byte)) {
-                            throw new Error(`Некорректный HEX символ в позиции ${i*2}`);
-                        }
-                        bytes[i] = byte;
-                    }
-                    return bytes;
-                }
-            },
-            
-            numeric: {
-                encode: (data) => {
-                    const bytes = new Uint8Array(data);
-                    return Array.from(bytes)
-                        .map(b => b.toString().padStart(3, '0'))
-                        .join(' ');
-                },
-                decode: (str) => {
-                    const parts = str.split(' ');
-                    const bytes = new Uint8Array(parts.length);
-                    
-                    for (let i = 0; i < parts.length; i++) {
-                        const num = parseInt(parts[i], 10);
-                        if (isNaN(num) {
-                            throw new Error(`Некорректное число: ${parts[i]}`);
-                        }
-                        if (num < 0 || num > 255) {
-                            throw new Error(`Число вне диапазона: ${num} (должно быть 0-255)`);
-                        }
-                        bytes[i] = num;
-                    }
-                    return bytes;
-                }
-            },
-            
-            alpha: {
-                encode: (data) => {
-                    const bytes = new Uint8Array(data);
-                    const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-                    let result = '';
-                    
-                    for (let i = 0; i < bytes.length; i++) {
-                        result += alphabet[bytes[i] % alphabet.length];
-                    }
-                    
-                    return result;
-                },
-                decode: (str) => {
-                    const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-                    const bytes = new Uint8Array(str.length);
-                    
-                    for (let i = 0; i < str.length; i++) {
-                        const char = str[i].toUpperCase();
-                        const index = alphabet.indexOf(char);
-                        
-                        if (index === -1) {
-                            throw new Error(`Недопустимый символ: ${char}`);
-                        }
-                        
-                        bytes[i] = index;
-                    }
-                    
-                    return bytes;
-                }
-            },
-            
-            matrix: {
-                encode: (data) => {
-                    const bytes = new Uint8Array(data);
-                    const size = Math.ceil(Math.sqrt(bytes.length));
-                    let result = '';
-                    
-                    for (let i = 0; i < size; i++) {
-                        for (let j = 0; j < size; j++) {
-                            const index = i * size + j;
-                            result += index < bytes.length ? 
-                                bytes[index].toString(16).padStart(2, '0') + ' ' : '00 ';
-                        }
-                        result = result.trim() + '\n';
-                    }
-                    return result.trim();
-                },
-                decode: (str) => {
-                    const lines = str.split('\n');
-                    const size = lines.length;
-                    const bytes = new Uint8Array(size * size);
-                    let index = 0;
-                    
-                    for (let i = 0; i < size; i++) {
-                        const hexValues = lines[i].split(' ');
-                        for (let j = 0; j < hexValues.length; j++) {
-                            if (hexValues[j]) {
-                                const byte = parseInt(hexValues[j], 16);
-                                if (isNaN(byte)) {
-                                    throw new Error(`Некорректный HEX байт: ${hexValues[j]}`);
-                                }
-                                bytes[index++] = byte;
-                            }
-                        }
-                    }
-                    
-                    return bytes.slice(0, index);
-                }
-            }
-        };
-
-        // Инициализация
-        window.onload = function() {
-            loadSettings();
-            loadSecurityState();
-            loadHistory();
-            updateSecurityUI();
-            
-            // Проверка поддержки Web Crypto API
-            if (!window.crypto || !crypto.subtle) {
-                showStatus("Ваш браузер не поддерживает необходимые криптографические функции", "encrypt-status", false);
-            }
-            
-            // Проверка Argon2
-            if (typeof argon2 === 'undefined') {
-                showStatus("Библиотека Argon2 не загружена", "encrypt-status", false);
-            }
-        };
-
-        // Загрузка настроек
-        function loadSettings() {
-            const savedSettings = localStorage.getItem('secureCryptSettings');
-            if (savedSettings) {
-                try {
-                    settings = JSON.parse(savedSettings);
-                    applySettings();
-                } catch (e) {
-                    console.error("Ошибка загрузки настроек:", e);
-                }
-            }
-        }
-
-        // Применение настроек
-        function applySettings() {
-            document.getElementById('argon-iterations').value = settings.argonIterations;
-            document.getElementById('argon-memory').value = settings.argonMemory;
-            document.getElementById('key-strength').value = settings.minKeyLength || 16;
-            document.getElementById('auto-clear').value = settings.autoClear || 30;
-            document.getElementById('key-derivation').value = settings.keyDerivation || 'argon2';
-        }
-
-        // Сохранение настроек
-        function saveSettings() {
-            settings.argonIterations = parseInt(document.getElementById('argon-iterations').value);
-            settings.argonMemory = parseInt(document.getElementById('argon-memory').value);
-            settings.minKeyLength = parseInt(document.getElementById('key-strength').value);
-            settings.autoClear = parseInt(document.getElementById('auto-clear').value);
-            settings.keyDerivation = document.getElementById('key-derivation').value;
-            
-            localStorage.setItem('secureCryptSettings', JSON.stringify(settings));
-            showStatus("Настройки сохранены", "settings-status", true);
-        }
-
-        // Загрузка состояния безопасности
-        function loadSecurityState() {
-            const securityData = localStorage.getItem('securityData');
-            if (securityData) {
-                try {
-                    const data = JSON.parse(securityData);
-                    decryptAttempts = data.attempts || 0;
-                    blockedUntil = data.blockedUntil || 0;
-                } catch (e) {
-                    console.error("Ошибка загрузки состояния безопасности:", e);
-                }
-            }
-        }
-
-        // Сохранение состояния безопасности
-        function saveSecurityState() {
-            const securityData = JSON.stringify({
-                attempts: decryptAttempts,
-                blockedUntil: blockedUntil
-            });
-            localStorage.setItem('securityData', securityData);
-        }
-
-        // Загрузка истории
-        function loadHistory() {
-            const history = localStorage.getItem('operationsHistory');
-            if (history) {
-                try {
-                    operationsHistory = JSON.parse(history) || [];
-                    renderHistory();
-                } catch (e) {
-                    console.error("Ошибка загрузки истории:", e);
-                }
-            }
-        }
-
-        // Сохранение истории
-        function saveHistory() {
-            localStorage.setItem('operationsHistory', JSON.stringify(operationsHistory));
-        }
-
-        // Отрисовка истории
-        function renderHistory() {
-            const container = document.getElementById('operations-history');
-            if (!container) return;
-            
-            container.innerHTML = '';
-            
-            if (operationsHistory.length === 0) {
-                container.innerHTML = '<div class="history-item">История операций пуста</div>';
-                return;
-            }
-            
-            operationsHistory.slice(0, settings.historyLimit).forEach((op, index) => {
-                const item = document.createElement('div');
-                item.className = 'history-item';
-                item.innerHTML = `
-                    <div><strong>${op.type === 'encrypt' ? 'Шифрование' : 'Дешифрование'}</strong></div>
-                    <div>${new Date(op.timestamp).toLocaleString()}</div>
-                    <div class="text-secondary">${op.data.substring(0, 40)}${op.data.length > 40 ? '...' : ''}</div>
-                `;
+            if (password.length > 0) {
+                // Учитываем длину
+                strength += Math.min(password.length / 4, 5);
                 
-                item.onclick = () => {
-                    if (op.type === 'encrypt') {
-                        document.getElementById('cipher-text').value = op.data;
-                        switchTab('decrypt');
-                    } else {
-                        document.getElementById('plain-text').value = op.data;
-                        switchTab('encrypt');
-                    }
-                };
+                // Учитываем разнообразие символов
+                if (/[A-Z]/.test(password)) strength += 2;
+                if (/[a-z]/.test(password)) strength += 2;
+                if (/[0-9]/.test(password)) strength += 2;
+                if (/[^A-Za-z0-9]/.test(password)) strength += 3;
                 
-                container.appendChild(item);
-            });
-        }
-
-        // Добавление операции в историю
-        function addToHistory(type, data) {
-            operationsHistory.unshift({
-                type: type,
-                data: data.substring(0, 500),
-                timestamp: Date.now()
-            });
-            
-            // Сохраняем только последние N операций
-            if (operationsHistory.length > settings.historyLimit) {
-                operationsHistory = operationsHistory.slice(0, settings.historyLimit);
+                // Максимальная сила = 15, преобразуем в проценты
+                strength = Math.min(strength, 15) / 15 * 100;
             }
             
-            saveHistory();
-            renderHistory();
-        }
-
-        // Очистка истории
-        function clearHistory() {
-            operationsHistory = [];
-            saveHistory();
-            renderHistory();
-            showStatus("История очищена", "settings-status", true);
-        }
-
-        // Обновление UI безопасности
-        function updateSecurityUI() {
-            const counter = document.getElementById('attempt-counter');
+            elements.strengthLevel.style.width = `${strength}%`;
             
-            if (blockedUntil > Date.now()) {
-                const timeLeft = Math.ceil((blockedUntil - Date.now()) / 1000);
-                counter.textContent = `Заблокировано (${timeLeft}с)`;
-                counter.style.display = 'block';
-                return;
-            }
-            
-            if (decryptAttempts > 0) {
-                counter.textContent = `Попыток: ${decryptAttempts}/${SECURITY_CONFIG.maxAttempts}`;
-                counter.style.display = 'block';
+            if (password.length === 0) {
+                elements.strengthText.textContent = 'Введите ключ';
+                elements.strengthLevel.style.background = '#ff453a';
+            } else if (strength < 40) {
+                elements.strengthText.textContent = 'Слабый ключ';
+                elements.strengthLevel.style.background = '#ff453a';
+            } else if (strength < 70) {
+                elements.strengthText.textContent = 'Средний ключ';
+                elements.strengthLevel.style.background = '#ff9f0a';
             } else {
-                counter.style.display = 'none';
+                elements.strengthText.textContent = 'Сильный ключ';
+                elements.strengthLevel.style.background = '#30d158';
             }
+        });
+
+        // Показать статус
+        function showStatus(message, isSuccess) {
+            elements.statusMessage.textContent = message;
+            elements.statusMessage.className = `status ${isSuccess ? 'success' : 'error'}`;
+            elements.statusMessage.style.display = 'flex';
+            
+            setTimeout(() => {
+                elements.statusMessage.style.display = 'none';
+            }, 5000);
         }
 
-        // Генерация сильного пароля
-        function generateStrongPassword() {
-            const length = Math.max(16, settings.minKeyLength);
-            const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=[]{}|;:,.<>?";
-            let password = "";
+        // Шифрование текста
+        elements.encryptBtn.addEventListener('click', async () => {
+            const password = elements.password.value;
+            const text = elements.text.value;
             
-            // Гарантируем наличие разных категорий символов
-            password += getRandomChar("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
-            password += getRandomChar("abcdefghijklmnopqrstuvwxyz");
-            password += getRandomChar("0123456789");
-            password += getRandomChar("!@#$%^&*()_+-=[]{}|;:,.<>?");
-            
-            // Дополняем до нужной длины
-            for (let i = password.length; i < length; i++) {
-                password += getRandomChar(charset);
-            }
-            
-            // Перемешиваем
-            password = password.split('').sort(() => Math.random() - 0.5).join('');
-            
-            document.getElementById('encrypt-key').value = password;
-            updateEntropyMeter(password);
-        }
-        
-        function getRandomChar(charset) {
-            return charset.charAt(Math.floor(Math.random() * charset.length));
-        }
-
-        // Экспорт ключа в файл
-        function saveKeyToFile() {
-            const key = document.getElementById('encrypt-key').value;
-            if (!key) {
-                showStatus("Сначала введите ключ", "encrypt-status", false);
+            if (!password || password.length < 8) {
+                showStatus('Ключ должен быть не менее 8 символов', false);
                 return;
             }
             
-            const blob = new Blob([key], { type: 'text/plain' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'securecrypt_key.txt';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        }
-
-        // Шифрование текста (оптимизированная версия)
-        async function encryptText() {
-            const text = document.getElementById('plain-text').value;
-            const key = document.getElementById('encrypt-key').value;
-            const format = document.getElementById('output-format').value;
-            const derivation = document.getElementById('key-derivation').value;
-            
-            // Сброс статуса
-            document.getElementById('encrypt-status').classList.add('hidden');
-            
-            // Проверка блокировки
-            if (blockedUntil > Date.now()) {
-                const timeLeft = Math.ceil((blockedUntil - Date.now()) / 1000);
-                showStatus(`Система заблокирована. Попробуйте через ${timeLeft} секунд`, "encrypt-status", false);
+            if (!text) {
+                showStatus('Введите текст для шифрования', false);
                 return;
             }
             
-            // Базовые проверки
-            if (!text || !key) {
-                showStatus("Ошибка: нужен текст и ключ", "encrypt-status", false);
-                return;
-            }
-
-            const minLength = settings.minKeyLength || 16;
-            if (key.length < minLength) {
-                showStatus(`Ключ должен быть не менее ${minLength} символов`, "encrypt-status", false);
-                return;
-            }
-
             try {
-                const resultElement = document.getElementById('encrypted-result');
-                const progressBar = document.getElementById('encrypt-progress');
-                const btn = document.getElementById('encrypt-btn');
+                elements.encryptBtn.disabled = true;
+                elements.encryptedResult.textContent = 'Шифрование...';
                 
-                // Блокировка кнопки
-                btn.disabled = true;
-                resultElement.innerHTML = '<span class="loader"></span> Шифрование...';
+                // Генерация соли
+                const salt = crypto.getRandomValues(new Uint8Array(16));
                 
-                // Параметры
-                const params = {
-                    argonIterations: settings.argonIterations,
-                    argonMemory: settings.argonMemory,
-                    minKeyLength: minLength,
-                    keyDerivation: derivation
-                };
+                // Генерация ключа с помощью PBKDF2
+                const baseKey = await crypto.subtle.importKey(
+                    'raw',
+                    new TextEncoder().encode(password),
+                    'PBKDF2',
+                    false,
+                    ['deriveKey']
+                );
                 
-                // Обновление прогресса
-                const updateProgress = (percent) => {
-                    progressBar.style.width = `${percent}%`;
-                };
+                const key = await crypto.subtle.deriveKey(
+                    {
+                        name: 'PBKDF2',
+                        salt: salt,
+                        iterations: 100000,
+                        hash: 'SHA-256'
+                    },
+                    baseKey,
+                    { name: 'AES-GCM', length: 256 },
+                    false,
+                    ['encrypt']
+                );
                 
-                updateProgress(10);
+                // Шифрование данных
+                const iv = crypto.getRandomValues(new Uint8Array(12));
+                const encryptedData = await crypto.subtle.encrypt(
+                    { name: 'AES-GCM', iv: iv },
+                    key,
+                    new TextEncoder().encode(text)
+                );
                 
-                // Шифрование
-                const encryptedData = await secureEncrypt(text, key, params, updateProgress);
-                updateProgress(90);
+                // Форматирование результата (соль + iv + зашифрованные данные)
+                const result = new Uint8Array(salt.length + iv.length + encryptedData.byteLength);
+                result.set(salt, 0);
+                result.set(iv, salt.length);
+                result.set(new Uint8Array(encryptedData), salt.length + iv.length);
                 
-                // Форматирование результата
-                const formattedResult = safeFormats[format].encode(encryptedData);
+                // Преобразование в Base64
+                const base64Result = btoa(String.fromCharCode(...result));
+                elements.encryptedResult.textContent = base64Result;
                 
-                // Обновление UI
-                resultElement.textContent = formattedResult;
-                resultElement.className = 'result';
-                
-                // Применяем стили формата
-                if (format === 'hex') resultElement.classList.add('hex-format');
-                if (format === 'numeric') resultElement.classList.add('numeric-format');
-                if (format === 'alpha') resultElement.classList.add('alpha-format');
-                if (format === 'matrix') resultElement.classList.add('matrix-format');
-                
-                updateProgress(100);
-                showStatus("Текст успешно зашифрован", "encrypt-status", true);
-                addToHistory('encrypt', formattedResult);
-                
-                // Автоочистка
-                if (settings.autoClear > 0) {
-                    setTimeout(() => {
-                        document.getElementById('encrypt-key').value = '';
-                        showStatus("Ключ очищен для безопасности", "encrypt-status", true);
-                    }, settings.autoClear * 1000);
-                }
-            } catch (e) {
-                showStatus("Ошибка шифрования", "encrypt-status", false, e.message);
-                document.getElementById('encrypted-result').textContent = "Ошибка шифрования";
+                showStatus('Текст успешно зашифрован', true);
+            } catch (error) {
+                console.error('Ошибка шифрования:', error);
+                showStatus('Ошибка при шифровании', false);
+                elements.encryptedResult.textContent = 'Ошибка шифрования';
             } finally {
-                document.getElementById('encrypt-btn').disabled = false;
+                elements.encryptBtn.disabled = false;
             }
-        }
+        });
 
-        // Оптимизированное шифрование
-        async function secureEncrypt(text, password, params, progressCallback) {
-            // ... реализация аналогична предыдущей, но с вызовами progressCallback ...
-            // Добавлены вызовы progressCallback в ключевых точках
-        }
-
-        // Обработка ошибок дешифрования
-        async function decryptText() {
-            // ... существующая реализация ...
+        // Дешифрование текста
+        elements.decryptBtn.addEventListener('click', async () => {
+            const password = elements.decryptPassword.value;
+            const encryptedText = elements.encryptedText.value;
+            
+            if (!password) {
+                showStatus('Введите ключ дешифрования', false);
+                return;
+            }
+            
+            if (!encryptedText) {
+                showStatus('Введите зашифрованные данные', false);
+                return;
+            }
             
             try {
-                // ... попытка дешифрования ...
+                elements.decryptBtn.disabled = true;
+                elements.decryptedResult.textContent = 'Дешифрование...';
                 
-                // При успехе
-                decryptAttempts = 0;
-                saveSecurityState();
-                updateSecurityUI();
+                // Декодирование из Base64
+                const binaryData = Uint8Array.from(atob(encryptedText), c => c.charCodeAt(0));
                 
-            } catch (e) {
-                decryptAttempts++;
+                // Извлечение компонентов
+                const salt = binaryData.slice(0, 16);
+                const iv = binaryData.slice(16, 28);
+                const data = binaryData.slice(28);
                 
-                if (decryptAttempts >= SECURITY_CONFIG.maxAttempts) {
-                    blockedUntil = Date.now() + SECURITY_CONFIG.blockTime;
-                    showStatus(`Слишком много попыток. Система заблокирована до ${new Date(blockedUntil).toLocaleTimeString()}`, "decrypt-status", false);
-                } else {
-                    showStatus(`Неверный ключ (попытка ${decryptAttempts}/${SECURITY_CONFIG.maxAttempts})`, "decrypt-status", false, e.message);
-                }
+                // Генерация ключа с помощью PBKDF2
+                const baseKey = await crypto.subtle.importKey(
+                    'raw',
+                    new TextEncoder().encode(password),
+                    'PBKDF2',
+                    false,
+                    ['deriveKey']
+                );
                 
-                saveSecurityState();
-                updateSecurityUI();
+                const key = await crypto.subtle.deriveKey(
+                    {
+                        name: 'PBKDF2',
+                        salt: salt,
+                        iterations: 100000,
+                        hash: 'SHA-256'
+                    },
+                    baseKey,
+                    { name: 'AES-GCM', length: 256 },
+                    false,
+                    ['decrypt']
+                );
+                
+                // Дешифрование данных
+                const decryptedData = await crypto.subtle.decrypt(
+                    { name: 'AES-GCM', iv: iv },
+                    key,
+                    data
+                );
+                
+                const result = new TextDecoder().decode(decryptedData);
+                elements.decryptedResult.textContent = result;
+                
+                showStatus('Текст успешно дешифрован', true);
+            } catch (error) {
+                console.error('Ошибка дешифрования:', error);
+                showStatus('Неверный ключ или поврежденные данные', false);
+                elements.decryptedResult.textContent = 'Ошибка дешифрования';
+            } finally {
+                elements.decryptBtn.disabled = false;
             }
-        }
+        });
 
-        // Визуализатор ключа
-        function updateEntropyMeter(password) {
-            // ... существующая реализация ...
-            
-            // Обновление визуализатора
-            const visualizer = document.getElementById('key-visualizer');
-            const segments = visualizer.querySelectorAll('.key-segment');
-            const badge = document.getElementById('key-strength-badge');
-            
-            let strengthClass = '';
-            let strengthText = '';
-            
-            if (entropyPercent < 30) {
-                strengthClass = 'security-low';
-                strengthText = 'Слабый';
-            } else if (entropyPercent < 70) {
-                strengthClass = 'security-medium';
-                strengthText = 'Средний';
-            } else {
-                strengthClass = 'security-high';
-                strengthText = 'Сильный';
-            }
-            
-            // Обновление бейджа
-            badge.className = `security-badge ${strengthClass}`;
-            badge.textContent = strengthText;
-            
-            // Обновление сегментов
-            const activeSegments = Math.ceil(entropyPercent / 100 * segments.length);
-            
-            segments.forEach((seg, i) => {
-                if (i < activeSegments) {
-                    seg.style.background = getSegmentColor(i, activeSegments);
-                } else {
-                    seg.style.background = '';
-                }
-            });
-        }
-        
-        function getSegmentColor(index, total) {
-            const hue = Math.floor(120 * (index / total)); // 0-120 (красный-зеленый)
-            return `hsl(${hue}, 80%, 60%)`;
-        }
+        // Копирование результатов
+        document.getElementById('copy-encrypted').addEventListener('click', () => {
+            navigator.clipboard.writeText(elements.encryptedResult.textContent)
+                .then(() => showStatus('Текст скопирован', true))
+                .catch(err => showStatus('Ошибка копирования', false));
+        });
 
-        // Очистка конфиденциальных данных из памяти
-        function secureWipe(buffer) {
-            if (buffer instanceof ArrayBuffer) {
-                const view = new Uint8Array(buffer);
-                for (let i = 0; i < view.length; i++) {
-                    view[i] = 0;
-                }
-            } else if (typeof buffer === 'string') {
-                // Строки неизменяемы, поэтому создаем новый буфер
-                const encoder = new TextEncoder();
-                const buffer = encoder.encode(buffer);
-                for (let i = 0; i < buffer.length; i++) {
-                    buffer[i] = 0;
-                }
-            }
-        }
+        document.getElementById('copy-decrypted').addEventListener('click', () => {
+            navigator.clipboard.writeText(elements.decryptedResult.textContent)
+                .then(() => showStatus('Текст скопирован', true))
+                .catch(err => showStatus('Ошибка копирования', false));
+        });
+
+        // Очистка результатов
+        document.getElementById('clear-encrypted').addEventListener('click', () => {
+            elements.encryptedResult.textContent = '';
+        });
+
+        document.getElementById('clear-decrypted').addEventListener('click', () => {
+            elements.decryptedResult.textContent = '';
+        });
+
+        // Загрузка иконок Font Awesome
+        const faScript = document.createElement('script');
+        faScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js';
+        document.head.appendChild(faScript);
     </script>
 </body>
 </html>
