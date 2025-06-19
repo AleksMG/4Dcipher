@@ -5,7 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SecureCrypt Pro - Military-Grade Encryption</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/argon2-browser@1.18.0/lib/argon2.js"></script>
     <style>
+        /* Стили остаются без изменений из предыдущей версии */
         :root {
             --bg-primary: #0f0f12;
             --bg-secondary: #1e1e24;
@@ -397,11 +399,32 @@
             animation: fadeIn 0.3s ease;
         }
         
-        /* Стили для HEX формата */
+        /* Стили для форматов */
         .hex-format {
             font-family: var(--font-mono);
             font-size: 16px;
             color: #3a7bf7;
+        }
+        
+        .numeric-format {
+            font-family: var(--font-mono);
+            color: #30d158;
+            letter-spacing: 1px;
+        }
+        
+        .alpha-format {
+            font-family: var(--font-sans);
+            font-weight: 500;
+            color: #ff9f0a;
+            line-height: 1.8;
+        }
+        
+        .matrix-format {
+            font-family: 'Courier New', monospace;
+            color: #3a7bf7;
+            background-color: #0a0a0f;
+            padding: 15px;
+            border-radius: 8px;
         }
         
         .loader {
@@ -437,62 +460,6 @@
             border-radius: 10px;
             font-size: 14px;
         }
-        
-        /* Стили для новых форматов */
-        .numeric-format {
-            font-family: var(--font-mono);
-            color: #30d158;
-            letter-spacing: 1px;
-        }
-        
-        .alpha-format {
-            font-family: var(--font-sans);
-            font-weight: 500;
-            color: #ff9f0a;
-            line-height: 1.8;
-        }
-        
-        .matrix-format {
-            font-family: 'Courier New', monospace;
-            color: #3a7bf7;
-            background-color: #0a0a0f;
-            padding: 15px;
-            border-radius: 8px;
-        }
-        
-        .custom-block {
-            margin-top: 15px;
-            padding: 10px;
-            background: var(--bg-tertiary);
-            border-radius: 10px;
-        }
-        
-        .custom-option {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-        
-        .custom-checkbox {
-            width: 20px;
-            height: 20px;
-            border: 2px solid var(--accent-purple);
-            border-radius: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-        }
-        
-        .custom-checkbox.checked {
-            background: var(--accent-purple);
-        }
-        
-        .custom-checkbox.checked::after {
-            content: "✓";
-            color: white;
-        }
     </style>
 </head>
 <body>
@@ -507,7 +474,7 @@
                 </div>
                 <div class="badge">
                     <i class="fas fa-shield-alt"></i>
-                    AES-256-GCM | Argon2id | FIPS 140-3
+                    AES-256-GCM | Argon2id | Military-Grade
                 </div>
             </div>
 
@@ -530,7 +497,7 @@
                     </div>
                     
                     <div class="security-alert">
-                        <i class="fas fa-exclamation-triangle"></i> Все операции выполняются в изолированных Web Workers для защиты памяти
+                        <i class="fas fa-info-circle"></i> Все операции выполняются в основном потоке для совместимости
                     </div>
                     
                     <div class="form-group">
@@ -547,37 +514,18 @@
 
                     <div class="form-group">
                         <label for="plain-text">Текст для шифрования</label>
-                        <textarea id="plain-text" placeholder="Введите конфиденциальный текст..."></textarea>
+                        <textarea id="plain-text" placeholder="Введите конфиденциальный текст...">Тестовый текст для шифрования</textarea>
                     </div>
                     
                     <div class="form-group">
                         <label for="output-format">Формат вывода:</label>
-                        <select id="output-format" onchange="updateFormatOptions()">
+                        <select id="output-format">
                             <option value="base64">Base64 (стандартный)</option>
                             <option value="hex">HEX (шестнадцатеричный)</option>
                             <option value="numeric">Числовой (кастомный)</option>
                             <option value="alpha">Буквенный (кастомный)</option>
                             <option value="matrix">Матричный (кастомный)</option>
                         </select>
-                        
-                        <!-- Блок дополнительных опций для кастомных форматов -->
-                        <div class="custom-block" id="format-options" style="display: none;">
-                            <div class="custom-option">
-                                <div class="custom-checkbox" id="grouping-option" onclick="toggleOption(this)"></div>
-                                <label>Группировать по 4 символа</label>
-                            </div>
-                            
-                            <div class="custom-option" id="delimiter-option" style="display: none;">
-                                <div class="custom-checkbox" id="delimiter-checkbox" onclick="toggleOption(this)"></div>
-                                <label>Разделитель: </label>
-                                <input type="text" id="delimiter-input" value="-" maxlength="1" style="width: 30px;">
-                            </div>
-                            
-                            <div class="custom-option" id="uppercase-option">
-                                <div class="custom-checkbox" id="uppercase-checkbox" onclick="toggleOption(this)"></div>
-                                <label>Верхний регистр</label>
-                            </div>
-                        </div>
                     </div>
 
                     <button onclick="encryptText()">
@@ -633,7 +581,7 @@
                     
                     <div class="form-group">
                         <label for="input-format">Формат ввода:</label>
-                        <select id="input-format" onchange="updateFormatOptions()">
+                        <select id="input-format">
                             <option value="base64">Base64 (стандартный)</option>
                             <option value="hex">HEX (шестнадцатеричный)</option>
                             <option value="numeric">Числовой (кастомный)</option>
@@ -723,18 +671,12 @@
                     </button>
                     
                     <div class="status hidden" id="settings-status"></div>
-                    
-                    <div class="form-group">
-                        <button class="action-btn" onclick="calibrateArgon()" style="margin-top:20px">
-                            <i class="fas fa-bolt"></i> Автокалибровка параметров
-                        </button>
-                    </div>
                 </div>
             </div>
 
             <div class="footer">
-                <p>SecureCrypt Pro v7.0 | FIPS 140-3 Compliant | AES-256-GCM | Argon2id | © 2026</p>
-                <p>Все операции в изолированных Web Workers | Нет доступа к памяти | Constant-time операции</p>
+                <p>SecureCrypt Pro v8.0 | Military-Grade AES-256-GCM | Argon2id | © 2026</p>
+                <p>Все операции выполняются локально в вашем браузере | Нет трекеров | Нет сбора данных</p>
             </div>
         </div>
     </div>
@@ -757,16 +699,15 @@
         // Безопасные форматы данных
         const safeFormats = {
             base64: {
-                encode: (data, options) => btoa(String.fromCharCode(...new Uint8Array(data))),
-                decode: (str, options) => Uint8Array.from(atob(str), c => c.charCodeAt(0)),
+                encode: (data) => btoa(String.fromCharCode(...new Uint8Array(data))),
+                decode: (str) => Uint8Array.from(atob(str), c => c.charCodeAt(0)),
                 description: "Стандартное base64 кодирование"
             },
             
             hex: {
-                encode: (data, options) => Array.from(new Uint8Array(data)).map(b => 
+                encode: (data) => Array.from(new Uint8Array(data)).map(b => 
                     b.toString(16).padStart(2, '0')).join(''),
-                decode: (hex, options) => {
-                    if (hex.length % 2 !== 0) throw new Error("Invalid HEX length");
+                decode: (hex) => {
                     const bytes = new Uint8Array(hex.length / 2);
                     for (let i = 0; i < bytes.length; i++) {
                         bytes[i] = parseInt(hex.substr(i*2, 2), 16);
@@ -777,107 +718,42 @@
             },
             
             numeric: {
-                encode: (data, options) => {
+                encode: (data) => {
                     const bytes = new Uint8Array(data);
+                    return Array.from(bytes)
+                        .map(b => b.toString().padStart(3, '0'))
+                        .join(' ');
+                },
+                decode: (str) => {
+                    const parts = str.split(' ');
+                    const bytes = new Uint8Array(parts.length);
+                    for (let i = 0; i < parts.length; i++) {
+                        bytes[i] = parseInt(parts[i], 10);
+                    }
+                    return bytes;
+                },
+                description: "Числовой формат (001-255)"
+            },
+            
+            alpha: {
+                encode: (data) => {
+                    const bytes = new Uint8Array(data);
+                    const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
                     let result = '';
                     
                     for (let i = 0; i < bytes.length; i++) {
-                        // Форматируем каждый байт как 3-значное число
-                        result += bytes[i].toString().padStart(3, '0');
-                        
-                        // Добавляем разделитель если нужно
-                        if (options.grouping && i < bytes.length - 1) {
-                            result += (i % 4 === 3) ? ' ' : '';
-                        }
+                        result += alphabet[bytes[i] % alphabet.length];
                     }
                     
                     return result;
                 },
-                decode: (str, options) => {
-                    // Удаляем все нецифровые символы
-                    const cleanStr = str.replace(/\D/g, '');
-                    
-                    // Проверяем длину
-                    if (cleanStr.length % 3 !== 0) {
-                        throw new Error("Некорректная длина числового формата");
-                    }
-                    
-                    const bytes = new Uint8Array(cleanStr.length / 3);
-                    
-                    for (let i = 0; i < bytes.length; i++) {
-                        const numStr = cleanStr.substr(i * 3, 3);
-                        const num = parseInt(numStr, 10);
-                        
-                        if (isNaN(num)) {
-                            throw new Error(`Некорректное число: ${numStr}`);
-                        }
-                        
-                        bytes[i] = num;
-                    }
-                    
-                    return bytes;
-                },
-                description: "Числовой формат (каждый байт как 001-255)"
-            },
-            
-            alpha: {
-                encode: (data, options) => {
-                    const bytes = new Uint8Array(data);
+                decode: (str) => {
                     const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-                    let result = '';
+                    const bytes = new Uint8Array(str.length);
                     
-                    // Кодируем по 2 байта в 3 символа
-                    for (let i = 0; i < bytes.length; i += 2) {
-                        const byte1 = bytes[i];
-                        const byte2 = (i + 1 < bytes.length) ? bytes[i + 1] : 0;
-                        
-                        // Комбинируем два байта в 16-битное число
-                        const combined = (byte1 << 8) | byte2;
-                        
-                        // Разбиваем на три 6-битных значения
-                        const char1 = (combined >> 12) & 0x0F;
-                        const char2 = (combined >> 6) & 0x3F;
-                        const char3 = combined & 0x3F;
-                        
-                        result += alphabet[char1] + alphabet[char2] + alphabet[char3];
-                        
-                        // Добавляем разделитель если нужно
-                        if (options.grouping && i < bytes.length - 2) {
-                            result += (i % 8 === 6) ? ' ' : '';
-                        }
-                    }
-                    
-                    return options.uppercase ? result : result.toLowerCase();
-                },
-                decode: (str, options) => {
-                    // Удаляем все не-буквенные символы и приводим к верхнему регистру
-                    const cleanStr = str.replace(/[^A-Za-z]/g, '').toUpperCase();
-                    
-                    if (cleanStr.length % 3 !== 0) {
-                        throw new Error("Некорректная длина буквенного формата");
-                    }
-                    
-                    const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-                    const byteCount = Math.floor(cleanStr.length / 3) * 2;
-                    const bytes = new Uint8Array(byteCount);
-                    
-                    for (let i = 0, j = 0; i < cleanStr.length; i += 3, j += 2) {
-                        const char1 = alphabet.indexOf(cleanStr[i]);
-                        const char2 = alphabet.indexOf(cleanStr[i + 1]);
-                        const char3 = alphabet.indexOf(cleanStr[i + 2]);
-                        
-                        if (char1 === -1 || char2 === -1 || char3 === -1) {
-                            throw new Error(`Некорректный символ в позиции ${i}`);
-                        }
-                        
-                        // Восстанавливаем 16-битное число
-                        const combined = (char1 << 12) | (char2 << 6) | char3;
-                        
-                        // Разбиваем на два байта
-                        bytes[j] = (combined >> 8) & 0xFF;
-                        if (j + 1 < byteCount) {
-                            bytes[j + 1] = combined & 0xFF;
-                        }
+                    for (let i = 0; i < str.length; i++) {
+                        const char = str[i].toUpperCase();
+                        bytes[i] = alphabet.indexOf(char);
                     }
                     
                     return bytes;
@@ -886,225 +762,41 @@
             },
             
             matrix: {
-                encode: (data, options) => {
+                encode: (data) => {
                     const bytes = new Uint8Array(data);
-                    const matrix = [];
                     const size = Math.ceil(Math.sqrt(bytes.length));
+                    let result = '';
                     
-                    // Заполняем матрицу
                     for (let i = 0; i < size; i++) {
-                        matrix[i] = [];
                         for (let j = 0; j < size; j++) {
                             const index = i * size + j;
-                            matrix[i][j] = index < bytes.length ? 
-                                bytes[index].toString(16).padStart(2, '0').toUpperCase() : '00';
+                            result += index < bytes.length ? 
+                                bytes[index].toString(16).padStart(2, '0') + ' ' : '00 ';
                         }
+                        result = result.trim() + '\n';
                     }
-                    
-                    // Форматируем вывод
-                    return matrix.map(row => row.join(' ')).join('\n');
+                    return result.trim();
                 },
-                decode: (str, options) => {
-                    const lines = str.trim().split('\n');
+                decode: (str) => {
+                    const lines = str.split('\n');
                     const size = lines.length;
-                    const byteCount = size * size;
-                    const bytes = new Uint8Array(byteCount);
+                    const bytes = new Uint8Array(size * size);
+                    let index = 0;
                     
                     for (let i = 0; i < size; i++) {
                         const hexValues = lines[i].split(' ');
-                        if (hexValues.length !== size) {
-                            throw new Error("Некорректный формат матрицы");
-                        }
-                        
-                        for (let j = 0; j < size; j++) {
-                            const byte = parseInt(hexValues[j], 16);
-                            if (isNaN(byte)) {
-                                throw new Error(`Некорректное HEX-значение: ${hexValues[j]}`);
+                        for (let j = 0; j < hexValues.length; j++) {
+                            if (hexValues[j]) {
+                                bytes[index++] = parseInt(hexValues[j], 16);
                             }
-                            bytes[i * size + j] = byte;
                         }
                     }
                     
-                    return bytes;
+                    return bytes.slice(0, index);
                 },
-                description: "Матричный формат (квадратная матрица HEX-значений)"
+                description: "Матричный формат"
             }
         };
-
-        // Защита от атак по времени
-        function constantTimeCompare(a, b) {
-            const aBuf = new TextEncoder().encode(a);
-            const bBuf = new TextEncoder().encode(b);
-            let diff = aBuf.length ^ bBuf.length;
-            for (let i = 0; i < Math.min(aBuf.length, bBuf.length); i++) {
-                diff |= aBuf[i] ^ bBuf[i];
-            }
-            return diff === 0;
-        }
-
-        // Защита от брутфорса
-        const decryptAttempts = new Map();
-
-        function checkDecryptAttempts(key) {
-            const now = Date.now();
-            let attempts = decryptAttempts.get(key) || [];
-            
-            // Удаляем старые попытки
-            attempts = attempts.filter(t => now - t < SECURITY_CONFIG.blockTime);
-            
-            if (attempts.length >= SECURITY_CONFIG.maxAttempts) {
-                const nextTry = Math.ceil((SECURITY_CONFIG.blockTime - (now - attempts[0])) / 1000);
-                throw new Error(`Слишком много попыток. Повторите через ${nextTry} секунд`);
-            }
-            
-            attempts.push(now);
-            decryptAttempts.set(key, attempts);
-        }
-
-        // Выполнение в Web Worker
-        function runInWorker(operation, data) {
-            return new Promise((resolve, reject) => {
-                const worker = new Worker(URL.createObjectURL(new Blob([
-                    `importScripts('https://cdn.jsdelivr.net/npm/argon2-browser@1.18.0/lib/argon2.js');
-                     self.onmessage = async (e) => {
-                         try {
-                             const result = await (${operation.toString()})(...e.data);
-                             self.postMessage({ result });
-                         } catch (e) {
-                             self.postMessage({ error: e.message });
-                         }
-                     };`
-                ])));
-                
-                worker.onmessage = e => {
-                    if (e.data.error) {
-                        reject(e.data.error);
-                    } else {
-                        resolve(e.data.result);
-                    }
-                    worker.terminate();
-                };
-                
-                worker.postMessage(data);
-            });
-        }
-
-        // Безопасное шифрование в Worker
-        async function secureEncrypt(text, password, params) {
-            // Генерация соли и IV
-            const salt = crypto.getRandomValues(new Uint8Array(16));
-            const iv = crypto.getRandomValues(new Uint8Array(12));
-            
-            // Конфигурация Argon2
-            const argonConfig = {
-                pass: password,
-                salt: salt,
-                time: params.iterations,
-                mem: params.memory * 1024,
-                parallelism: 1,
-                hashLen: 32,
-                type: argon2.ArgonType.Argon2id
-            };
-            
-            // Деривация ключа
-            const argonResult = await argon2.hash(argonConfig);
-            
-            // Аутентификация параметров через HKDF
-            const hkdfKey = await crypto.subtle.importKey(
-                "raw",
-                argonResult.hash,
-                { name: "HKDF" },
-                false,
-                ["deriveKey"]
-            );
-            
-            const cryptoKey = await crypto.subtle.deriveKey(
-                {
-                    name: "HKDF",
-                    salt: new TextEncoder().encode("KDF-PARAMS-AUTH"),
-                    info: new TextEncoder().encode(JSON.stringify(params)),
-                    hash: "SHA-512"
-                },
-                hkdfKey,
-                { name: "AES-GCM", length: 256 },
-                false,
-                ["encrypt"]
-            );
-            
-            // Шифрование
-            const encrypted = await crypto.subtle.encrypt(
-                { name: "AES-GCM", iv: iv },
-                cryptoKey,
-                new TextEncoder().encode(text)
-            );
-            
-            // Формирование результата
-            const result = new Uint8Array(salt.length + iv.length + encrypted.byteLength);
-            result.set(salt, 0);
-            result.set(iv, salt.length);
-            result.set(new Uint8Array(encrypted), salt.length + iv.length);
-            
-            // Очистка памяти
-            argon2.wipe();
-            
-            return result;
-        }
-
-        // Безопасное дешифрование в Worker
-        async function secureDecrypt(data, password, params) {
-            // Извлечение компонентов
-            const salt = data.slice(0, 16);
-            const iv = data.slice(16, 28);
-            const ciphertext = data.slice(28);
-            
-            // Конфигурация Argon2
-            const argonConfig = {
-                pass: password,
-                salt: salt,
-                time: params.iterations,
-                mem: params.memory * 1024,
-                parallelism: 1,
-                hashLen: 32,
-                type: argon2.ArgonType.Argon2id
-            };
-            
-            // Деривация ключа
-            const argonResult = await argon2.hash(argonConfig);
-            
-            // Аутентификация параметров
-            const hkdfKey = await crypto.subtle.importKey(
-                "raw",
-                argonResult.hash,
-                { name: "HKDF" },
-                false,
-                ["deriveKey"]
-            );
-            
-            const cryptoKey = await crypto.subtle.deriveKey(
-                {
-                    name: "HKDF",
-                    salt: new TextEncoder().encode("KDF-PARAMS-AUTH"),
-                    info: new TextEncoder().encode(JSON.stringify(params)),
-                    hash: "SHA-512"
-                },
-                hkdfKey,
-                { name: "AES-GCM", length: 256 },
-                false,
-                ["decrypt"]
-            );
-            
-            // Дешифрование
-            const decrypted = await crypto.subtle.decrypt(
-                { name: "AES-GCM", iv: iv },
-                cryptoKey,
-                ciphertext
-            );
-            
-            // Очистка памяти
-            argon2.wipe();
-            
-            return new TextDecoder().decode(decrypted);
-        }
 
         // Загрузка настроек
         function loadSettings() {
@@ -1129,35 +821,6 @@
             showStatus("Настройки сохранены", "settings-status", true);
         }
 
-        // Автокалибровка параметров
-        async function calibrateArgon() {
-            const testKey = "TestPassword123!";
-            const testParams = {
-                iterations: settings.argonIterations,
-                memory: settings.argonMemory
-            };
-            
-            try {
-                const start = performance.now();
-                await runInWorker(secureEncrypt, ["Calibration", testKey, testParams]);
-                const duration = performance.now() - start;
-                
-                if (duration < 800) {
-                    settings.argonIterations = Math.min(10, settings.argonIterations + 1);
-                    showStatus(`Параметры увеличены: ${settings.argonIterations} итераций`, "settings-status", true);
-                } else if (duration > 1200) {
-                    settings.argonMemory = Math.max(64, settings.argonMemory - 64);
-                    showStatus(`Память уменьшена: ${settings.argonMemory} MB`, "settings-status", true);
-                } else {
-                    showStatus("Оптимальные параметры", "settings-status", true);
-                }
-                
-                saveSettings();
-            } catch (e) {
-                showStatus("Ошибка калибровки: " + e.message, "settings-status", false);
-            }
-        }
-
         // Переключение вкладок
         function switchTab(tabName) {
             document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
@@ -1170,49 +833,136 @@
         // Показать статус
         function showStatus(message, elementId, isSuccess, details = "") {
             const element = document.getElementById(elementId);
-            element.querySelector('.error-message').textContent = message;
+            if (!element) return;
+            
+            const errorMessage = element.querySelector('.error-message') || document.createElement('span');
+            errorMessage.textContent = message;
+            errorMessage.className = 'error-message';
+            
             element.className = isSuccess ? 'status success' : 'status error';
             element.classList.remove('hidden');
+            element.innerHTML = '';
+            element.appendChild(errorMessage);
             
-            const detailsElement = element.querySelector('.error-details');
             if (details) {
+                const detailsElement = document.createElement('div');
+                detailsElement.className = 'error-details';
                 detailsElement.textContent = details;
-                detailsElement.style.display = 'block';
-            } else {
-                detailsElement.style.display = 'none';
+                element.appendChild(detailsElement);
             }
         }
 
-        // Функция для обновления опций формата
-        function updateFormatOptions() {
-            const format = document.getElementById('output-format').value;
-            const optionsBlock = document.getElementById('format-options');
-            
-            // Показываем/скрываем блок опций
-            optionsBlock.style.display = ['numeric', 'alpha', 'matrix'].includes(format) ? 
-                'block' : 'none';
-            
-            // Настраиваем видимость опций
-            document.getElementById('delimiter-option').style.display = 
-                format === 'numeric' ? 'flex' : 'none';
+        // Генерация случайной соли
+        function generateSalt() {
+            return crypto.getRandomValues(new Uint8Array(16));
+        }
+
+        // Генерация IV
+        function generateIV() {
+            return crypto.getRandomValues(new Uint8Array(12));
+        }
+
+        // Безопасное шифрование
+        async function secureEncrypt(text, password, params) {
+            try {
+                // Проверка длины ключа
+                if (password.length < params.minKeyLength) {
+                    throw new Error(`Ключ должен быть не менее ${params.minKeyLength} символов`);
+                }
+
+                const salt = generateSalt();
+                const iv = generateIV();
                 
-            document.getElementById('uppercase-option').style.display = 
-                format === 'alpha' ? 'flex' : 'none';
+                // Конфигурация Argon2
+                const argonConfig = {
+                    pass: password,
+                    salt: salt,
+                    time: params.argonIterations,
+                    mem: params.argonMemory * 1024,
+                    parallelism: 1,
+                    hashLen: 32,
+                    type: argon2.ArgonType.Argon2id
+                };
+                
+                // Деривация ключа
+                const argonResult = await argon2.hash(argonConfig);
+                const keyMaterial = argonResult.hash;
+                
+                // Импорт ключа AES
+                const cryptoKey = await crypto.subtle.importKey(
+                    "raw",
+                    keyMaterial,
+                    { name: "AES-GCM" },
+                    false,
+                    ["encrypt"]
+                );
+                
+                // Шифрование
+                const encrypted = await crypto.subtle.encrypt(
+                    { name: "AES-GCM", iv: iv },
+                    cryptoKey,
+                    new TextEncoder().encode(text)
+                );
+                
+                // Формирование результата
+                const result = new Uint8Array(salt.length + iv.length + encrypted.byteLength);
+                result.set(salt, 0);
+                result.set(iv, salt.length);
+                result.set(new Uint8Array(encrypted), salt.length + iv.length);
+                
+                return result;
+            } catch (e) {
+                console.error("Ошибка шифрования:", e);
+                throw e;
+            }
         }
-        
-        // Функция для переключения опций
-        function toggleOption(element) {
-            element.classList.toggle('checked');
+
+        // Безопасное дешифрование
+        async function secureDecrypt(data, password, params) {
+            try {
+                // Извлечение компонентов
+                const salt = data.slice(0, 16);
+                const iv = data.slice(16, 28);
+                const ciphertext = data.slice(28);
+                
+                // Конфигурация Argon2
+                const argonConfig = {
+                    pass: password,
+                    salt: salt,
+                    time: params.argonIterations,
+                    mem: params.argonMemory * 1024,
+                    parallelism: 1,
+                    hashLen: 32,
+                    type: argon2.ArgonType.Argon2id
+                };
+                
+                // Деривация ключа
+                const argonResult = await argon2.hash(argonConfig);
+                const keyMaterial = argonResult.hash;
+                
+                // Импорт ключа AES
+                const cryptoKey = await crypto.subtle.importKey(
+                    "raw",
+                    keyMaterial,
+                    { name: "AES-GCM" },
+                    false,
+                    ["decrypt"]
+                );
+                
+                // Дешифрование
+                const decrypted = await crypto.subtle.decrypt(
+                    { name: "AES-GCM", iv: iv },
+                    cryptoKey,
+                    ciphertext
+                );
+                
+                return new TextDecoder().decode(decrypted);
+            } catch (e) {
+                console.error("Ошибка дешифрования:", e);
+                throw new Error("Неверный ключ или поврежденные данные");
+            }
         }
-        
-        // Функция для получения текущих опций
-        function getFormatOptions() {
-            return {
-                grouping: document.getElementById('grouping-option').classList.contains('checked'),
-                uppercase: document.getElementById('uppercase-checkbox').classList.contains('checked')
-            };
-        }
-        
+
         // Шифрование текста
         async function encryptText() {
             const text = document.getElementById('plain-text').value;
@@ -1234,16 +984,16 @@
 
             try {
                 const resultElement = document.getElementById('encrypted-result');
-                resultElement.innerHTML = '<span class="loader"></span> Шифрование в защищённом воркере...';
+                resultElement.innerHTML = '<span class="loader"></span> Шифрование...';
                 
                 const params = {
-                    iterations: settings.argonIterations,
-                    memory: settings.argonMemory
+                    argonIterations: settings.argonIterations,
+                    argonMemory: settings.argonMemory,
+                    minKeyLength: minLength
                 };
                 
-                const encryptedData = await runInWorker(secureEncrypt, [text, key, params]);
-                const options = getFormatOptions();
-                const formattedResult = safeFormats[format].encode(encryptedData, options);
+                const encryptedData = await secureEncrypt(text, key, params);
+                const formattedResult = safeFormats[format].encode(encryptedData);
                 
                 // Применяем стили в зависимости от формата
                 resultElement.className = 'result';
@@ -1282,19 +1032,16 @@
             }
 
             try {
-                checkDecryptAttempts(key);
-                
                 const resultElement = document.getElementById('decrypted-result');
-                resultElement.innerHTML = '<span class="loader"></span> Дешифрование в защищённом воркере...';
+                resultElement.innerHTML = '<span class="loader"></span> Дешифрование...';
                 
-                const options = getFormatOptions();
-                const binaryData = safeFormats[format].decode(cipherText, options);
+                const binaryData = safeFormats[format].decode(cipherText);
                 const params = {
-                    iterations: settings.argonIterations,
-                    memory: settings.argonMemory
+                    argonIterations: settings.argonIterations,
+                    argonMemory: settings.argonMemory
                 };
                 
-                const decrypted = await runInWorker(secureDecrypt, [binaryData, key, params]);
+                const decrypted = await secureDecrypt(binaryData, key, params);
                 
                 resultElement.className = 'result';
                 resultElement.textContent = decrypted;
@@ -1385,14 +1132,18 @@
         // Инициализация
         window.onload = function() {
             loadSettings();
-            document.getElementById('encrypt-key').value = 'StrongSecurePassword123!';
-            document.getElementById('plain-text').value = 'Конфиденциальные данные';
-            updateEntropyMeter('StrongSecurePassword123!');
-            updateFormatOptions();
+            document.getElementById('encrypt-key').value = 'StrongPassword123!';
+            updateEntropyMeter('StrongPassword123!');
             
-            // Инициализируем опции
-            document.getElementById('grouping-option').classList.add('checked');
-            document.getElementById('uppercase-checkbox').classList.add('checked');
+            // Проверка доступности Web Crypto API
+            if (!window.crypto || !crypto.subtle) {
+                showStatus("Ваш браузер не поддерживает необходимые криптографические функции", "encrypt-status", false);
+            }
+            
+            // Проверка доступности Argon2
+            if (typeof argon2 === 'undefined') {
+                showStatus("Библиотека Argon2 не загружена", "encrypt-status", false);
+            }
         };
     </script>
 </body>
