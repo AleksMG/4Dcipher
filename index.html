@@ -563,6 +563,18 @@
             padding: 0 15px;
         }
 
+        .attempt-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255, 69, 58, 0.2);
+            color: var(--error);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            display: none;
+        }
+
         /* Адаптивность */
         @media (max-width: 768px) {
             .settings-grid {
@@ -604,6 +616,8 @@
     <div class="container">
         <div class="crypto-vault">
             <div class="vault-bg"></div>
+            
+            <div class="attempt-counter" id="attempt-counter">Попыток: 0/5</div>
             
             <div class="header">
                 <div class="logo">
@@ -716,6 +730,7 @@
                             <select id="output-format">
                                 <option value="base64">Base64 (стандарт)</option>
                                 <option value="hex">HEX</option>
+                                <option value="binary">Бинарный</option>
                             </select>
                         </div>
                     </div>
@@ -807,6 +822,7 @@
                                 <option value="auto">Автоопределение</option>
                                 <option value="base64">Base64</option>
                                 <option value="hex">HEX</option>
+                                <option value="binary">Бинарный</option>
                             </select>
                         </div>
                     </div>
@@ -1018,6 +1034,13 @@
     </div>
 
     <script>
+        // Конфигурация безопасности
+        const SECURITY_CONFIG = {
+            maxAttempts: 5,
+            blockTime: 300000, // 5 минут
+            minKeyLength: 12
+        };
+
         // Конфигурация приложения
         const config = {
             minKeyLength: 12,
@@ -1040,7 +1063,9 @@
             encryptionKey: null,
             securityLevel: 0,
             isProcessing: false,
-            operationsHistory: []
+            operationsHistory: [],
+            decryptAttempts: 0,
+            blockedUntil: 0
         };
         
         // Элементы DOM
@@ -1066,6 +1091,7 @@
             decryptProgress: document.getElementById('decrypt-progress'),
             decryptProgressValue: document.getElementById('decrypt-progress-value'),
             decryptStatus: document.getElementById('decrypt-status'),
+            attemptCounter: document.getElementById('attempt-counter'),
             
             // Генерация ключей
             generatedKey: document.getElementById('generated-key'),
@@ -1081,16 +1107,18 @@
             keyStrength: document.getElementById('key-strength'),
             securityDot: document.getElementById('security-dot'),
             securityText: document.getElementById('security-text'),
-            keySegments: document.querySelectorAll('.key-segment'),
+            keySegments: document.querySelectorAll('#key-visualizer .key-segment'),
             formatIndicator: document.getElementById('format-indicator')
         };
         
         // Инициализация приложения
         function initApp() {
             loadSettings();
+            loadSecurityState();
             setupEventListeners();
             setupPasswordToggles();
             updateKeySecurityUI(0);
+            updateSecurityUI();
             
             // Проверка поддержки Web Crypto API
             if (!window.crypto || !crypto.subtle) {
@@ -1128,6 +1156,29 @@
             }
         }
         
+        // Загрузка состояния безопасности
+        function loadSecurityState() {
+            const securityData = localStorage.getItem('cryptoVaultSecurity');
+            if (securityData) {
+                try {
+                    const data = JSON.parse(securityData);
+                    state.decryptAttempts = data.attempts || 0;
+                    state.blockedUntil = data.blockedUntil || 0;
+                } catch (e) {
+                    console.error('Ошибка загрузки состояния безопасности:', e);
+                }
+            }
+        }
+        
+        // Сохранение состояния безопасности
+        function saveSecurityState() {
+            const securityData = JSON.stringify({
+                attempts: state.decryptAttempts,
+                blockedUntil: state.blockedUntil
+            });
+            localStorage.setItem('cryptoVaultSecurity', securityData);
+        }
+        
         // Сохранение настроек
         function saveSettings() {
             config.argon2Params.time = parseInt(document.getElementById('argon-iterations').value);
@@ -1162,6 +1213,9 @@
                 saveToFile(elements.encryptedResult.textContent, 'encrypted_data.txt');
             });
             document.getElementById('clear-encrypt').addEventListener('click', clearEncrypt);
+            document.getElementById('save-key').addEventListener('click', () => {
+                saveToFile(elements.encryptKey.value, 'cryptovault_key.txt');
+            });
             
             // Дешифрование
             elements.decryptBtn.addEventListener('click', decryptData);
@@ -1169,6 +1223,10 @@
                 copyToClipboard(elements.decryptedResult.textContent, 'decrypt-status');
             });
             document.getElementById('clear-decrypt').addEventListener('click', clearDecrypt);
+            document.getElementById('import-key').addEventListener('click', () => {
+                document.getElementById('import-key-file').click();
+            });
+            document.getElementById('import-key-file').addEventListener('change', handleKeyImport);
             
             // Генерация ключей
             elements.generateKeyBtn.addEventListener('click', generateRandomKey);
@@ -1269,6 +1327,23 @@
             elements.securityText.textContent = text;
         }
         
+        // Обновление UI безопасности
+        function updateSecurityUI() {
+            if (state.blockedUntil > Date.now()) {
+                const timeLeft = Math.ceil((state.blockedUntil - Date.now()) / 1000);
+                elements.attemptCounter.textContent = `Заблокировано (${timeLeft}с)`;
+                elements.attemptCounter.style.display = 'block';
+                return;
+            }
+            
+            if (state.decryptAttempts > 0) {
+                elements.attemptCounter.textContent = `Попыток: ${state.decryptAttempts}/${SECURITY_CONFIG.maxAttempts}`;
+                elements.attemptCounter.style.display = 'block';
+            } else {
+                elements.attemptCounter.style.display = 'none';
+            }
+        }
+        
         // Шифрование данных
         async function encryptData() {
             if (state.isProcessing) return;
@@ -1352,6 +1427,13 @@
             const key = elements.decryptKey.value;
             const encryptedData = elements.encryptedText.value.trim();
             
+            // Проверка блокировки
+            if (state.blockedUntil > Date.now()) {
+                const timeLeft = Math.ceil((state.blockedUntil - Date.now()) / 1000);
+                showStatus(`Система заблокирована. Попробуйте через ${timeLeft} секунд`, 'error', 'decrypt-status');
+                return;
+            }
+            
             // Валидация
             if (!key) {
                 showStatus('Введите ключ дешифрования', 'error', 'decrypt-status');
@@ -1374,8 +1456,11 @@
                 if (format === 'hex' || /^[0-9a-fA-F]+$/.test(encryptedData)) {
                     // HEX формат
                     binaryData = new Uint8Array(encryptedData.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
+                } else if (format === 'binary') {
+                    // Бинарный формат
+                    binaryData = new Uint8Array([...encryptedData].map(c => c.charCodeAt(0)));
                 } else {
-                    // Base64 формат
+                    // Base64 формат (по умолчанию)
                     binaryData = new Uint8Array([...atob(encryptedData)].map(c => c.charCodeAt(0)));
                 }
                 
@@ -1406,6 +1491,11 @@
                 updateProgress(100, 'decrypt');
                 showStatus('Данные успешно дешифрованы', 'success', 'decrypt-status');
                 
+                // Сброс счетчика попыток
+                state.decryptAttempts = 0;
+                saveSecurityState();
+                updateSecurityUI();
+                
                 // Автоочистка
                 if (config.autoClear > 0) {
                     setTimeout(() => {
@@ -1416,7 +1506,18 @@
                 
             } catch (error) {
                 console.error('Ошибка дешифрования:', error);
-                showStatus('Неверный ключ или поврежденные данные', 'error', 'decrypt-status');
+                state.decryptAttempts++;
+                
+                if (state.decryptAttempts >= SECURITY_CONFIG.maxAttempts) {
+                    state.blockedUntil = Date.now() + SECURITY_CONFIG.blockTime;
+                    const timeLeft = Math.ceil(SECURITY_CONFIG.blockTime / 1000);
+                    showStatus(`Слишком много попыток. Система заблокирована на ${timeLeft} секунд`, 'error', 'decrypt-status');
+                } else {
+                    showStatus(`Неверный ключ (попытка ${state.decryptAttempts}/${SECURITY_CONFIG.maxAttempts})`, 'error', 'decrypt-status');
+                }
+                
+                saveSecurityState();
+                updateSecurityUI();
                 elements.decryptedResult.textContent = 'Ошибка дешифрования';
             } finally {
                 state.isProcessing = false;
@@ -1479,6 +1580,8 @@
                 case 'hex':
                     return Array.from(data).map(b => 
                         b.toString(16).padStart(2, '0')).join('');
+                case 'binary':
+                    return String.fromCharCode(...data);
                 case 'base64':
                 default:
                     return btoa(String.fromCharCode(...data));
@@ -1556,6 +1659,22 @@
             entropyText.textContent = text;
         }
         
+        // Обработка импорта ключа
+        function handleKeyImport(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                elements.decryptKey.value = e.target.result;
+                showStatus('Ключ успешно импортирован', 'success', 'decrypt-status');
+            };
+            reader.readAsText(file);
+            
+            // Сброс значения для возможности повторного выбора того же файла
+            event.target.value = '';
+        }
+        
         // Обновление прогресса
         function updateProgress(percent, operation) {
             if (operation === 'encrypt') {
@@ -1628,5 +1747,8 @@
         // Инициализация при загрузке
         window.addEventListener('DOMContentLoaded', initApp);
     </script>
+    
+    <!-- Скрытый элемент для импорта ключей -->
+    <input type="file" id="import-key-file" accept=".txt" style="display: none;">
 </body>
-    </html>
+</html>
