@@ -1047,25 +1047,29 @@
             argon2Params: {
                 time: 5,
                 mem: 128 * 1024,
-                parallelism: 1
+                parallelism: 1,
+                hashLen: 32,
+                saltLen: 16
             },
             pbkdf2Params: {
                 iterations: 100000,
                 hash: 'SHA-256'
             },
             autoClear: 30,
-            historySize: 25
+            historySize: 25,
+            cipherAlgo: 'AES-GCM',
+            ivLength: 12
         };
         
         // Состояние приложения
         const state = {
             currentTab: 'encrypt',
-            encryptionKey: null,
             securityLevel: 0,
             isProcessing: false,
             operationsHistory: [],
             decryptAttempts: 0,
-            blockedUntil: 0
+            blockedUntil: 0,
+            secureBuffers: [] // Для безопасного хранения криптографических данных
         };
         
         // Элементы DOM
@@ -1367,20 +1371,20 @@
                 updateProgress(0, 'encrypt');
                 
                 // Генерация криптографической соли
-                const salt = crypto.getRandomValues(new Uint8Array(16));
+                const salt = crypto.getRandomValues(new Uint8Array(config.argon2Params.saltLen));
                 
                 // Деривация ключа
                 updateProgress(20, 'encrypt');
                 const cryptoKey = await deriveKey(key, salt);
                 
                 // Генерация IV
-                const iv = crypto.getRandomValues(new Uint8Array(12));
+                const iv = crypto.getRandomValues(new Uint8Array(config.ivLength));
                 
                 // Шифрование данных
                 updateProgress(50, 'encrypt');
                 const encrypted = await crypto.subtle.encrypt(
                     { 
-                        name: 'AES-GCM',
+                        name: config.cipherAlgo,
                         iv: iv,
                         tagLength: 128
                     },
@@ -1403,6 +1407,9 @@
                 elements.encryptedResult.textContent = formattedResult;
                 updateProgress(100, 'encrypt');
                 showStatus('Данные успешно зашифрованы', 'success', 'encrypt-status');
+                
+                // Добавление в историю
+                addToHistory('encrypt', text, formattedResult);
                 
                 // Автоочистка
                 if (config.autoClear > 0) {
@@ -1455,7 +1462,7 @@
                 
                 if (format === 'hex' || /^[0-9a-fA-F]+$/.test(encryptedData)) {
                     // HEX формат
-                    binaryData = new Uint8Array(encryptedData.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
+                    binaryData = new Uint8Array(encryptedData.match(/.{1,2}/g).map(byte => parseInt(byte, 16));
                 } else if (format === 'binary') {
                     // Бинарный формат
                     binaryData = new Uint8Array([...encryptedData].map(c => c.charCodeAt(0)));
@@ -1465,9 +1472,9 @@
                 }
                 
                 // Извлечение компонентов
-                const salt = binaryData.slice(0, 16);
-                const iv = binaryData.slice(16, 28);
-                const data = binaryData.slice(28);
+                const salt = binaryData.slice(0, config.argon2Params.saltLen);
+                const iv = binaryData.slice(config.argon2Params.saltLen, config.argon2Params.saltLen + config.ivLength);
+                const data = binaryData.slice(config.argon2Params.saltLen + config.ivLength);
                 
                 // Деривация ключа
                 updateProgress(30, 'decrypt');
@@ -1477,7 +1484,7 @@
                 updateProgress(60, 'decrypt');
                 const decrypted = await crypto.subtle.decrypt(
                     { 
-                        name: 'AES-GCM',
+                        name: config.cipherAlgo,
                         iv: iv,
                         tagLength: 128
                     },
@@ -1490,6 +1497,9 @@
                 elements.decryptedResult.textContent = result;
                 updateProgress(100, 'decrypt');
                 showStatus('Данные успешно дешифрованы', 'success', 'decrypt-status');
+                
+                // Добавление в историю
+                addToHistory('decrypt', encryptedData, result);
                 
                 // Сброс счетчика попыток
                 state.decryptAttempts = 0;
@@ -1538,14 +1548,14 @@
                     time: config.argon2Params.time,
                     mem: config.argon2Params.mem,
                     parallelism: config.argon2Params.parallelism,
-                    hashLen: 32,
+                    hashLen: config.argon2Params.hashLen,
                     type: argon2.ArgonType.Argon2id
                 });
                 
                 return crypto.subtle.importKey(
                     'raw',
                     argonResult.hash,
-                    { name: 'AES-GCM' },
+                    { name: config.cipherAlgo },
                     false,
                     ['encrypt', 'decrypt']
                 );
@@ -1567,7 +1577,7 @@
                         hash: config.pbkdf2Params.hash
                     },
                     baseKey,
-                    { name: 'AES-GCM', length: 256 },
+                    { name: config.cipherAlgo, length: 256 },
                     false,
                     ['encrypt', 'decrypt']
                 );
@@ -1673,6 +1683,28 @@
             
             // Сброс значения для возможности повторного выбора того же файла
             event.target.value = '';
+        }
+        
+        // Добавление записи в историю
+        function addToHistory(type, input, output) {
+            const now = new Date();
+            const historyItem = {
+                type: type,
+                time: now.toLocaleString(),
+                input: input.length > 50 ? input.substring(0, 47) + '...' : input,
+                output: output.length > 50 ? output.substring(0, 47) + '...' : output,
+                fullInput: input,
+                fullOutput: output
+            };
+            
+            state.operationsHistory.unshift(historyItem);
+            
+            // Ограничение размера истории
+            if (state.operationsHistory.length > config.historySize) {
+                state.operationsHistory.pop();
+            }
+            
+            // TODO: Реализовать отображение истории в UI
         }
         
         // Обновление прогресса
