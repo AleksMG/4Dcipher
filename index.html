@@ -1,1656 +1,203 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quantum PolyCrypt | Military-Grade Polynomial Encryption</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>Аномальный Алгебраический Шифратор</title>
     <style>
-        :root {
-            --bg-primary: #0f0f12;
-            --bg-secondary: #1e1e24;
-            --bg-tertiary: #2c2c35;
-            --accent-blue: #3a7bf7;
-            --accent-green: #30d158;
-            --accent-red: #ff453a;
-            --accent-orange: #ff9f0a;
-            --text-primary: #f5f5f7;
-            --text-secondary: #a1a1a6;
-            --border-radius: 16px;
-            --border-color: #3a3a44;
-            --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
-            --font-mono: 'SF Mono', Menlo, monospace;
-            --shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: var(--font-sans);
-        }
-
         body {
-            background: linear-gradient(135deg, #1a1a2e, #0f0f1a);
-            color: var(--text-primary);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            line-height: 1.6;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 1000px;
+            font-family: 'Courier New', monospace;
+            max-width: 800px;
             margin: 0 auto;
+            padding: 20px;
+            background-color: #f0f0f0;
         }
-
-        .window {
-            background: var(--bg-primary);
-            border-radius: var(--border-radius);
-            border: 1px solid var(--border-color);
-            box-shadow: var(--shadow);
-            overflow: hidden;
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
         }
-
-        .title-bar {
-            padding: 14px 20px;
-            background: linear-gradient(to right, #2c2c35, #1a1a1f);
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .logo-icon {
-            width: 32px;
-            height: 32px;
-            background: linear-gradient(135deg, var(--accent-blue), var(--accent-orange));
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-        }
-
-        h1 {
-            font-size: 22px;
-            font-weight: 600;
-            background: linear-gradient(to right, var(--accent-blue), var(--accent-orange));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 6px 14px;
-            background: rgba(58, 123, 247, 0.15);
-            color: var(--accent-blue);
-            border-radius: 20px;
-            font-size: 13px;
-            font-weight: 500;
-            border: 1px solid rgba(58, 123, 247, 0.3);
-        }
-
-        .tabs {
-            display: flex;
-            background: var(--bg-secondary);
-            border-radius: var(--border-radius);
-            padding: 6px;
-            margin: 20px;
-        }
-
-        .tab {
-            padding: 12px 24px;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: var(--transition);
-            font-weight: 500;
-            flex: 1;
-            text-align: center;
-            font-size: 15px;
-        }
-
-        .tab:hover {
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        .tab.active {
-            background: var(--bg-tertiary);
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-        }
-
-        .panel {
-            display: none;
-            padding: 0 20px 20px;
-        }
-
-        .panel.active {
-            display: block;
-        }
-
-        .card {
-            background: var(--bg-secondary);
-            border-radius: var(--border-radius);
-            padding: 24px;
-            margin-bottom: 20px;
-            border: 1px solid var(--border-color);
-        }
-
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        h2 {
-            font-size: 20px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 10px;
-            font-size: 14px;
-            color: var(--text-secondary);
-            font-weight: 500;
-        }
-
-        input, textarea, select {
-            width: 100%;
-            padding: 14px 18px;
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border-color);
-            border-radius: var(--border-radius);
-            color: var(--text-primary);
-            font-size: 15px;
-            transition: var(--transition);
-        }
-
-        input:focus, textarea:focus, select:focus {
-            outline: none;
-            border-color: var(--accent-blue);
-            box-shadow: 0 0 0 3px rgba(58, 123, 247, 0.2);
-        }
-
         textarea {
-            min-height: 140px;
-            resize: vertical;
-            font-family: var(--font-mono);
+            width: 100%;
+            height: 100px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
         }
-
-        .settings-row {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .settings-row > * {
-            flex: 1;
-        }
-
         button {
-            background: linear-gradient(to right, var(--accent-blue), var(--accent-orange));
+            background-color: #4CAF50;
             color: white;
             border: none;
-            padding: 16px 24px;
-            border-radius: var(--border-radius);
-            font-size: 16px;
-            font-weight: 600;
+            padding: 10px 15px;
+            border-radius: 5px;
             cursor: pointer;
-            transition: var(--transition);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            width: 100%;
-            box-shadow: 0 4px 15px rgba(58, 123, 247, 0.3);
+            margin: 5px 0;
         }
-
         button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(58, 123, 247, 0.4);
+            background-color: #45a049;
         }
-
-        button:active {
-            transform: translateY(0);
-        }
-
-        .btn-secondary {
-            background: var(--bg-tertiary);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-        }
-
-        .btn-secondary:hover {
-            background: #333340;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
-        }
-
-        .result-container {
-            margin-top: 24px;
-            background: var(--bg-tertiary);
-            border-radius: var(--border-radius);
-            padding: 20px;
-            border: 1px solid var(--border-color);
-        }
-
-        .result-label {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 12px;
-            font-size: 14px;
-            color: var(--text-secondary);
-            font-weight: 500;
-        }
-
-        .result {
-            padding: 16px;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 12px;
-            font-family: var(--font-mono);
-            white-space: pre-wrap;
-            word-break: break-word;
-            max-height: 200px;
-            overflow: auto;
-            border-left: 3px solid var(--accent-blue);
-            font-size: 15px;
-            line-height: 1.8;
-        }
-
-        .result-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-        }
-
-        .action-btn {
-            padding: 10px 16px;
-            border-radius: 10px;
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid var(--border-color);
-            color: var(--text-primary);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 14px;
-            transition: var(--transition);
-        }
-
-        .action-btn:hover {
-            background: rgba(255, 255, 255, 0.15);
-        }
-
-        .status {
-            padding: 14px 18px;
-            border-radius: var(--border-radius);
+        .output {
             margin-top: 20px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 14px;
-            border-left: 3px solid;
-        }
-
-        .status.success {
-            background: rgba(48, 209, 88, 0.1);
-            border-color: var(--accent-green);
-            color: var(--accent-green);
-        }
-
-        .status.error {
-            background: rgba(255, 69, 58, 0.1);
-            border-color: var(--accent-red);
-            color: var(--accent-red);
-        }
-
-        .footer {
-            text-align: center;
-            margin-top: 30px;
-            color: var(--text-secondary);
-            font-size: 13px;
-            padding: 20px;
-            border-top: 1px solid var(--border-color);
-        }
-
-        .entropy-meter {
-            height: 6px;
-            background: #333;
-            border-radius: 3px;
-            margin-top: 8px;
-            overflow: hidden;
-            position: relative;
-        }
-
-        .entropy-level {
-            height: 100%;
-            width: 0%;
-            background: linear-gradient(to right, var(--accent-red), var(--accent-orange), var(--accent-green));
-            border-radius: 3px;
-            transition: width 0.5s ease;
-        }
-
-        .security-indicator {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 13px;
-            margin-top: 8px;
-        }
-
-        .indicator-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: var(--accent-red);
-        }
-
-        @media (max-width: 768px) {
-            .settings-row {
-                flex-direction: column;
-            }
-            
-            .tabs {
-                flex-direction: column;
-            }
-            
-            .window {
-                border-radius: 12px;
-            }
-            
-            .title-bar {
-                flex-direction: column;
-                gap: 10px;
-                text-align: center;
-            }
-        }
-
-        /* Animations */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .panel.active {
-            animation: fadeIn 0.4s ease forwards;
-        }
-        
-        .result {
-            animation: fadeIn 0.3s ease;
-        }
-        
-        /* Special styles for quantum code */
-        .quantum-code {
-            letter-spacing: 2px;
-            font-size: 18px;
-            font-weight: 500;
-            color: var(--accent-orange);
-            text-shadow: 0 0 5px rgba(255, 159, 10, 0.3);
-        }
-        
-        /* Polynomial format styles */
-        .poly-format {
-            font-family: var(--font-mono);
-            letter-spacing: 1px;
-            font-size: 18px;
-            color: var(--text-secondary);
-        }
-        
-        /* Matrix format styles */
-        .matrix-format {
-            font-family: var(--font-mono);
-            font-size: 18px;
-            color: var(--accent-green);
-        }
-        
-        /* HEX format styles */
-        .hex-format {
-            font-family: var(--font-mono);
-            font-size: 16px;
-            color: var(--accent-blue);
-        }
-        
-        .loader {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255,255,255,.3);
-            border-radius: 50%;
-            border-top-color: var(--accent-blue);
-            animation: spin 1s ease-in-out infinite;
-            margin-right: 10px;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        
-        .error-details {
-            background: rgba(255, 69, 58, 0.1);
-            border-left: 3px solid var(--accent-red);
-            padding: 10px;
-            margin-top: 10px;
-            border-radius: 8px;
-            font-size: 13px;
-            display: none;
-        }
-        
-        /* Security rating */
-        .security-rating {
-            display: flex;
-            gap: 5px;
-            margin-top: 8px;
-        }
-        
-        .security-bar {
-            height: 4px;
-            flex: 1;
-            background: var(--border-color);
-            border-radius: 2px;
-            overflow: hidden;
-        }
-        
-        .security-bar.active {
-            background: var(--accent-green);
+            padding: 15px;
+            background-color: #f8f8f8;
+            border-radius: 5px;
+            border-left: 4px solid #4CAF50;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="window">
-            <div class="title-bar">
-                <div class="logo">
-                    <div class="logo-icon">
-                        <i class="fas fa-atom" aria-hidden="true"></i>
-                    </div>
-                    <h1>Quantum PolyCrypt</h1>
-                </div>
-                <div class="badge">
-                    <i class="fas fa-shield-alt" aria-hidden="true"></i>
-                    Military-Grade Polynomial Encryption | FIPS 140-3 Compliant
-                </div>
-            </div>
-
-            <div class="tabs" role="tablist">
-                <div class="tab active" onclick="switchTab('encrypt')" role="tab" aria-selected="true" aria-controls="encrypt-panel" id="tab-encrypt">
-                    <i class="fas fa-lock" aria-hidden="true"></i> Encrypt
-                </div>
-                <div class="tab" onclick="switchTab('decrypt')" role="tab" aria-selected="false" aria-controls="decrypt-panel" id="tab-decrypt" tabindex="0">
-                    <i class="fas fa-unlock" aria-hidden="true"></i> Decrypt
-                </div>
-                <div class="tab" onclick="switchTab('settings')" role="tab" aria-selected="false" aria-controls="settings-panel" id="tab-settings" tabindex="0">
-                    <i class="fas fa-cog" aria-hidden="true"></i> Settings
-                </div>
-            </div>
-
-            <div id="encrypt-panel" class="panel active" role="tabpanel" aria-labelledby="tab-encrypt">
-                <div class="card">
-                    <div class="card-header">
-                        <h2><i class="fas fa-key" aria-hidden="true"></i> Polynomial Encryption</h2>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="encrypt-key">Encryption Key</label>
-                        <input type="password" id="encrypt-key" placeholder="Enter secret key (minimum 32 characters)" oninput="updateEntropyMeter(this.value)" aria-describedby="security-text">
-                        <div class="entropy-meter">
-                            <div class="entropy-level" id="entropy-level" role="progressbar" aria-valuemin="0" aria-valuemax="100"></div>
-                        </div>
-                        <div class="security-indicator">
-                            <div class="indicator-dot" id="security-dot"></div>
-                            <span id="security-text">Enter password</span>
-                        </div>
-                        <div class="security-rating">
-                            <div class="security-bar" id="security-bar-1"></div>
-                            <div class="security-bar" id="security-bar-2"></div>
-                            <div class="security-bar" id="security-bar-3"></div>
-                            <div class="security-bar" id="security-bar-4"></div>
-                            <div class="security-bar" id="security-bar-5"></div>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="plain-text">Text to encrypt</label>
-                        <textarea id="plain-text" placeholder="Enter confidential text..."></textarea>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="output-format">Output format:</label>
-                        <select id="output-format">
-                            <option value="poly">Polynomial coefficients</option>
-                            <option value="matrix">Matrix form</option>
-                            <option value="hex">HEX (hexadecimal)</option>
-                            <option value="quantum">Quantum notation</option>
-                            <option value="base64">Base64 (recommended)</option>
-                        </select>
-                    </div>
-
-                    <button onclick="encryptText()" id="encrypt-button">
-                        <i class="fas fa-lock" aria-hidden="true"></i>
-                        Encrypt
-                    </button>
-
-                    <div class="result-container">
-                        <div class="result-label">
-                            <i class="fas fa-file-code" aria-hidden="true"></i>
-                            Encryption Result
-                        </div>
-                        <div class="result" id="encrypted-result" aria-live="polite">Encrypted text will appear here...</div>
-                        <div class="result-actions">
-                            <button class="action-btn" onclick="copyResult('encrypted-result')">
-                                <i class="fas fa-copy" aria-hidden="true"></i> Copy
-                            </button>
-                            <button class="action-btn" onclick="downloadResult()">
-                                <i class="fas fa-download" aria-hidden="true"></i> Save
-                            </button>
-                            <button class="action-btn" onclick="clearResult('encrypted-result')">
-                                <i class="fas fa-trash" aria-hidden="true"></i> Clear
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div class="status hidden" id="encrypt-status" role="alert">
-                        <span class="error-message"></span>
-                        <div class="error-details" id="encrypt-error-details"></div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="decrypt-panel" class="panel" role="tabpanel" aria-labelledby="tab-decrypt" hidden>
-                <div class="card">
-                    <div class="card-header">
-                        <h2><i class="fas fa-unlock" aria-hidden="true"></i> Polynomial Decryption</h2>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="decrypt-key">Decryption Key</label>
-                        <input type="password" id="decrypt-key" placeholder="Enter the same key">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="cipher-text">Encrypted Data</label>
-                        <textarea id="cipher-text" placeholder="Enter encrypted text..."></textarea>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="input-format">Input format:</label>
-                        <select id="input-format">
-                            <option value="poly">Polynomial coefficients</option>
-                            <option value="matrix">Matrix form</option>
-                            <option value="hex">HEX (hexadecimal)</option>
-                            <option value="quantum">Quantum notation</option>
-                            <option value="base64">Base64 (recommended)</option>
-                        </select>
-                    </div>
-
-                    <button class="btn-secondary" onclick="decryptText()" id="decrypt-button">
-                        <i class="fas fa-unlock" aria-hidden="true"></i>
-                        Decrypt
-                    </button>
-
-                    <div class="result-container">
-                        <div class="result-label">
-                            <i class="fas fa-file-alt" aria-hidden="true"></i>
-                            Decryption Result
-                        </div>
-                        <div class="result" id="decrypted-result" aria-live="polite">Decrypted text will appear here...</div>
-                        <div class="result-actions">
-                            <button class="action-btn" onclick="copyResult('decrypted-result')">
-                                <i class="fas fa-copy" aria-hidden="true"></i> Copy
-                            </button>
-                            <button class="action-btn" onclick="clearResult('decrypted-result')">
-                                <i class="fas fa-trash" aria-hidden="true"></i> Clear
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div class="status hidden" id="decrypt-status" role="alert">
-                        <span class="error-message"></span>
-                        <div class="error-details" id="decrypt-error-details"></div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="settings-panel" class="panel" role="tabpanel" aria-labelledby="tab-settings" hidden>
-                <div class="card">
-                    <div class="card-header">
-                        <h2><i class="fas fa-shield-alt" aria-hidden="true"></i> Security Settings</h2>
-                    </div>
-                    
-                    <div class="settings-row">
-                        <div class="form-group">
-                            <label for="poly-degree">Polynomial Degree</label>
-                            <select id="poly-degree">
-                                <option value="5">5 (basic)</option>
-                                <option value="7" selected>7 (recommended)</option>
-                                <option value="11">11 (high security)</option>
-                                <option value="13">13 (maximum)</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="key-strength">Minimum Key Length</label>
-                            <select id="key-strength">
-                                <option value="32" selected>32 characters (military-grade)</option>
-                                <option value="48">48 characters (NSA-level)</option>
-                                <option value="64">64 characters (quantum-resistant)</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div class="settings-row">
-                        <div class="form-group">
-                            <label for="field-size">Galois Field Size</label>
-                            <select id="field-size">
-                                <option value="256">GF(2⁸) - 256 (basic)</option>
-                                <option value="65536" selected>GF(2¹⁶) - 65536 (recommended)</option>
-                                <option value="4294967296">GF(2³²) - 4294967296 (military-grade)</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="auto-clear">Auto-clear Keys</label>
-                            <select id="auto-clear">
-                                <option value="10">10 seconds</option>
-                                <option value="30" selected>30 seconds</option>
-                                <option value="60">1 minute</option>
-                                <option value="300">5 minutes</option>
-                                <option value="0">Never (not recommended)</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div class="settings-row">
-                        <div class="form-group">
-                            <label for="iterations">PBKDF2 Iterations</label>
-                            <select id="iterations">
-                                <option value="100000">100,000 (basic)</option>
-                                <option value="600000" selected>600,000 (military-grade)</option>
-                                <option value="1000000">1,000,000 (NSA-level)</option>
-                                <option value="2000000">2,000,000 (maximum)</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="hmac-algo">HMAC Algorithm</label>
-                            <select id="hmac-algo">
-                                <option value="SHA-256">SHA-256</option>
-                                <option value="SHA-384" selected>SHA-384 (recommended)</option>
-                                <option value="SHA-512">SHA-512</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <button class="btn-secondary" onclick="saveSettings()" id="save-settings-button">
-                        <i class="fas fa-save" aria-hidden="true"></i>
-                        Save Settings
-                    </button>
-                    
-                    <div class="status hidden" id="settings-status" role="alert"></div>
-                </div>
-            </div>
-
-            <div class="footer">
-                <p>Quantum PolyCrypt v4.0 | Military-Grade Polynomial Encryption | © 2026</p>
-                <p>All data is processed locally in your browser | No trackers | No data collection</p>
-                <p>Security audited by NSA Cryptography Group | FIPS 140-3 compliant implementation</p>
-            </div>
+        <h1>Аномальный Алгебраический Шифратор</h1>
+        <p>Шифрование на основе неассоциативной октонионной алгебры</p>
+        
+        <div>
+            <h3>Исходный текст:</h3>
+            <textarea id="plaintext" placeholder="Введите текст для шифрования"></textarea>
+        </div>
+        
+        <div>
+            <h3>Ключ (8 чисел через запятую):</h3>
+            <input type="text" id="key" placeholder="Например: 1,-1,0,0.5,2,-0.5,1,0" style="width:100%">
+        </div>
+        
+        <button onclick="encrypt()">Зашифровать</button>
+        <button onclick="decrypt()">Дешифровать</button>
+        
+        <div class="output">
+            <h3>Результат:</h3>
+            <textarea id="result" readonly></textarea>
         </div>
     </div>
 
     <script>
-        // ========== Secure Cryptographic Constants ==========
-        const CRYPTO = {
-            MIN_KEY_LENGTH: 32,      // 256-bit minimum
-            SALT_LENGTH: 32,         // 256-bit salt
-            IV_LENGTH: 16,           // 128-bit IV
-            HMAC_LENGTH: 32,         // 256-bit HMAC
-            ITERATIONS: 600000,      // OWASP minimum
-            BLOCK_SIZE: 16           // AES block size
-        };
-
-        // ========== Enhanced Security Utilities ==========
-        const SecureUtils = {
-            /**
-             * Constant-time comparison (HMAC-safe)
-             * @param {ArrayBuffer} a First buffer
-             * @param {ArrayBuffer} b Second buffer
-             * @returns {boolean} True if equal
-             */
-            constantTimeCompare: function(a, b) {
-                const aBuf = new Uint8Array(a);
-                const bBuf = new Uint8Array(b);
-                
-                if (aBuf.length !== bBuf.length) return false;
-                
-                let result = 0;
-                for (let i = 0; i < aBuf.length; i++) {
-                    result |= aBuf[i] ^ bBuf[i];
-                }
-                return result === 0;
-            },
-            
-            /**
-             * Securely wipe memory
-             * @param {Uint8Array} array Array to wipe
-             */
-            wipeArray: function(array) {
-                if (!array || !array.length) return;
-                crypto.getRandomValues(array);
-                for (let i = 0; i < array.length; i++) {
-                    array[i] = 0;
-                }
-            },
-            
-            /**
-             * Generate secure random bytes
-             * @param {number} length Bytes to generate
-             * @returns {Uint8Array} Random bytes
-             */
-            getRandomBytes: function(length) {
-                const array = new Uint8Array(length);
-                window.crypto.getRandomValues(array);
-                return array;
-            },
-            
-            /**
-             * Convert buffer to hex
-             * @param {ArrayBuffer} buffer Input buffer
-             * @returns {string} Hex string
-             */
-            arrayToHex: function(buffer) {
-                return Array.from(new Uint8Array(buffer))
-                    .map(b => b.toString(16).padStart(2, '0'))
-                    .join('');
-            },
-            
-            /**
-             * Convert hex to buffer
-             * @param {string} hex Hex string
-             * @returns {Uint8Array} Byte array
-             */
-            hexToArray: function(hex) {
-                if (hex.length % 2 !== 0) throw new Error('Invalid hex length');
-                const result = new Uint8Array(hex.length / 2);
-                for (let i = 0; i < hex.length; i += 2) {
-                    result[i/2] = parseInt(hex.substr(i, 2), 16);
-                }
-                return result;
-            },
-            
-            /**
-             * PKCS#7 padding
-             * @param {Uint8Array} data Data to pad
-             * @param {number} blockSize Block size
-             * @returns {Uint8Array} Padded data
-             */
-            padPKCS7: function(data, blockSize) {
-                const padLength = blockSize - (data.length % blockSize);
-                const padded = new Uint8Array(data.length + padLength);
-                padded.set(data);
-                for (let i = data.length; i < padded.length; i++) {
-                    padded[i] = padLength;
-                }
-                return padded;
-            },
-            
-            /**
-             * Remove PKCS#7 padding
-             * @param {Uint8Array} data Padded data
-             * @returns {Uint8Array} Unpadded data
-             */
-            unpadPKCS7: function(data) {
-                const padLength = data[data.length - 1];
-                if (padLength > data.length) throw new Error('Invalid padding');
-                
-                for (let i = data.length - padLength; i < data.length; i++) {
-                    if (data[i] !== padLength) throw new Error('Invalid padding');
-                }
-                
-                return data.slice(0, data.length - padLength);
-            },
-            
-            /**
-             * String to ArrayBuffer
-             * @param {string} str Input string
-             * @returns {ArrayBuffer} Encoded buffer
-             */
-            stringToArrayBuffer: function(str) {
-                return new TextEncoder().encode(str).buffer;
-            },
-            
-            /**
-             * ArrayBuffer to string
-             * @param {ArrayBuffer} buffer Input buffer
-             * @returns {string} Decoded string
-             */
-            arrayBufferToString: function(buffer) {
-                return new TextDecoder().decode(buffer);
-            }
-        };
-
-        // ========== Military-Grade Polynomial Cipher ==========
-        class QuantumPolyCipher {
-            constructor(key, options = {}) {
-                if (!key || typeof key !== 'string') {
-                    throw new Error('Key must be a non-empty string');
-                }
-                
-                if (key.length < CRYPTO.MIN_KEY_LENGTH) {
-                    throw new Error(`Key must be at least ${CRYPTO.MIN_KEY_LENGTH} characters`);
-                }
-                
-                this.options = Object.assign({
-                    degree: 7,
-                    fieldSize: 65536,
-                    iterations: CRYPTO.ITERATIONS,
-                    hmacAlgorithm: 'SHA-384'
-                }, options);
-                
-                // Validate parameters
-                if (this.options.degree < 5 || this.options.degree > 13) {
-                    throw new Error('Polynomial degree must be between 5 and 13');
-                }
-                
-                if (![256, 65536, 4294967296].includes(this.options.fieldSize)) {
-                    throw new Error('Invalid field size');
-                }
-                
-                // Initialize cryptographic materials
-                this.keyMaterial = null;
-                this.derivationSalt = SecureUtils.getRandomBytes(CRYPTO.SALT_LENGTH);
-                this.iv = SecureUtils.getRandomBytes(CRYPTO.IV_LENGTH);
-                
-                // Derive key material
-                this.deriveKeyMaterial(key).then(keyMaterial => {
-                    this.keyMaterial = keyMaterial;
-                    this.polyModulus = this.generatePolyModulus();
-                    this.roundPolynomials = this.generateRoundPolynomials();
-                }).catch(err => {
-                    throw new Error(`Key derivation failed: ${err.message}`);
-                });
+        // Октонионная алгебра (неассоциативная)
+        class Octonion {
+            constructor(e0, e1, e2, e3, e4, e5, e6, e7) {
+                this.coeff = [e0, e1, e2, e3, e4, e5, e6, e7];
             }
             
-            async deriveKeyMaterial(key) {
-                try {
-                    const keyBuffer = SecureUtils.stringToArrayBuffer(key);
-                    const importedKey = await crypto.subtle.importKey(
-                        'raw', 
-                        keyBuffer, 
-                        {name: 'PBKDF2'}, 
-                        false, 
-                        ['deriveBits']
-                    );
-                    
-                    const derivedBits = await crypto.subtle.deriveBits(
-                        {
-                            name: 'PBKDF2',
-                            salt: this.derivationSalt,
-                            iterations: this.options.iterations,
-                            hash: this.options.hmacAlgorithm
-                        },
-                        importedKey,
-                        this.options.degree * 32
-                    );
-                    
-                    // Securely wipe the original key
-                    const zeroBuffer = new Uint8Array(keyBuffer.byteLength);
-                    crypto.getRandomValues(zeroBuffer);
-                    
-                    return new Uint8Array(derivedBits);
-                } catch (err) {
-                    console.error('Key derivation error:', err);
-                    throw err;
-                }
-            }
-            
-            generatePolyModulus() {
-                // NSA-recommended irreducible polynomials
-                const IRREDUCIBLE_POLYNOMIALS = {
-                    256: 0x11d,       // x⁸ + x⁴ + x³ + x² + 1
-                    65536: 0x1100b,   // x¹⁶ + x¹² + x³ + x + 1
-                    4294967296: 0x100400007 // x³² + x²² + x² + x + 1
-                };
-                
-                return IRREDUCIBLE_POLYNOMIALS[this.options.fieldSize] || 0x11d;
-            }
-            
-            galoisMultiply(a, b) {
-                let p = 0;
-                const modulus = this.polyModulus;
-                const highBit = 1 << 31;
-                
-                for (let i = 0; i < 32; i++) {
-                    const mask = -((b >> i) & 1);
-                    p ^= a & mask;
-                    
-                    const carry = a & highBit;
-                    a <<= 1;
-                    a ^= (modulus & -(carry >>> 31));
-                }
-                
-                return p % this.options.fieldSize;
-            }
-            
-            evaluatePolynomial(coeffs, x) {
-                let result = 0;
-                for (let i = coeffs.length - 1; i >= 0; i--) {
-                    result = this.galoisMultiply(result, x) ^ coeffs[i];
-                }
-                return result;
-            }
-            
-            generateRoundPolynomials() {
-                const rounds = [];
-                const coeffSize = Math.floor(this.keyMaterial.length / this.options.degree);
-                
-                for (let i = 0; i < this.options.degree; i++) {
-                    const roundCoeffs = [];
-                    for (let j = 0; j < this.options.degree; j++) {
-                        const start = (i * this.options.degree + j) * 4;
-                        const end = Math.min(start + 4, this.keyMaterial.length);
-                        const slice = this.keyMaterial.slice(start, end);
-                        
-                        let coeff = 0;
-                        for (let k = 0; k < slice.length; k++) {
-                            coeff = (coeff << 8) | slice[k];
-                        }
-                        coeff = coeff % this.options.fieldSize;
-                        
-                        roundCoeffs.push(coeff);
-                    }
-                    rounds.push(roundCoeffs);
-                }
-                
-                return rounds;
-            }
-            
-            async generateHMAC(data) {
-                try {
-                    const hmacKeyMaterial = this.keyMaterial.slice(0, 32);
-                    const hmacKey = await crypto.subtle.importKey(
-                        'raw',
-                        hmacKeyMaterial,
-                        {name: 'HMAC', hash: {name: this.options.hmacAlgorithm}},
-                        false,
-                        ['sign']
-                    );
-                    
-                    const signature = await crypto.subtle.sign('HMAC', hmacKey, data);
-                    return new Uint8Array(signature);
-                } catch (err) {
-                    console.error('HMAC generation error:', err);
-                    throw err;
-                }
-            }
-            
-            async verifyHMAC(data, hmacTag) {
-                try {
-                    const hmacKeyMaterial = this.keyMaterial.slice(0, 32);
-                    const hmacKey = await crypto.subtle.importKey(
-                        'raw',
-                        hmacKeyMaterial,
-                        {name: 'HMAC', hash: {name: this.options.hmacAlgorithm}},
-                        false,
-                        ['verify']
-                    );
-                    
-                    return await crypto.subtle.verify('HMAC', hmacKey, hmacTag, data);
-                } catch (err) {
-                    console.error('HMAC verification error:', err);
-                    return false;
-                }
-            }
-            
-            async encrypt(plaintext) {
-                if (!plaintext || typeof plaintext !== 'string') {
-                    throw new Error('Plaintext must be a non-empty string');
-                }
-                
-                try {
-                    const plaintextBytes = SecureUtils.stringToArrayBuffer(plaintext);
-                    const blockSize = this.options.degree * 4;
-                    const paddedData = SecureUtils.padPKCS7(new Uint8Array(plaintextBytes), blockSize);
-                    
-                    const ciphertext = new Uint8Array(paddedData.length);
-                    for (let i = 0; i < paddedData.length; i += blockSize) {
-                        const block = paddedData.slice(i, i + blockSize);
-                        let encryptedBlock = new Uint8Array(block);
-                        
-                        for (const poly of this.roundPolynomials) {
-                            const newBlock = new Uint8Array(blockSize);
-                            for (let j = 0; j < blockSize; j++) {
-                                const ivByte = this.iv[j % this.iv.length];
-                                const x = encryptedBlock[j] ^ ivByte;
-                                const polyVal = this.evaluatePolynomial(poly, x);
-                                newBlock[j] = polyVal % 256;
-                            }
-                            encryptedBlock = newBlock;
-                        }
-                        
-                        ciphertext.set(encryptedBlock, i);
-                    }
-                    
-                    const hmacData = new Uint8Array(this.iv.length + ciphertext.length);
-                    hmacData.set(this.iv, 0);
-                    hmacData.set(ciphertext, this.iv.length);
-                    
-                    const hmacTag = await this.generateHMAC(hmacData);
-                    
-                    const result = new Uint8Array(hmacData.length + hmacTag.length);
-                    result.set(hmacData, 0);
-                    result.set(hmacTag, hmacData.length);
-                    
-                    return result;
-                } catch (err) {
-                    console.error('Encryption error:', err);
-                    throw err;
-                }
-            }
-            
-            async decrypt(ciphertext) {
-                if (!ciphertext || !(ciphertext instanceof Uint8Array)) {
-                    throw new Error('Ciphertext must be a Uint8Array');
-                }
-                
-                const minLength = CRYPTO.IV_LENGTH + CRYPTO.HMAC_LENGTH;
-                if (ciphertext.length < minLength) {
-                    throw new Error('Ciphertext too short');
-                }
-                
-                try {
-                    const iv = ciphertext.slice(0, CRYPTO.IV_LENGTH);
-                    const hmacTag = ciphertext.slice(-CRYPTO.HMAC_LENGTH);
-                    const actualCiphertext = ciphertext.slice(
-                        CRYPTO.IV_LENGTH, 
-                        ciphertext.length - CRYPTO.HMAC_LENGTH
-                    );
-                    
-                    const hmacData = new Uint8Array(iv.length + actualCiphertext.length);
-                    hmacData.set(iv, 0);
-                    hmacData.set(actualCiphertext, iv.length);
-                    
-                    const isAuthentic = await this.verifyHMAC(hmacData, hmacTag);
-                    if (!isAuthentic) {
-                        throw new Error('Authentication failed');
-                    }
-                    
-                    const blockSize = this.options.degree * 4;
-                    const plaintext = new Uint8Array(actualCiphertext.length);
-                    
-                    for (let i = 0; i < actualCiphertext.length; i += blockSize) {
-                        const block = actualCiphertext.slice(i, i + blockSize);
-                        let decryptedBlock = new Uint8Array(block);
-                        
-                        for (const poly of [...this.roundPolynomials].reverse()) {
-                            const newBlock = new Uint8Array(blockSize);
-                            for (let j = 0; j < blockSize; j++) {
-                                const ivByte = iv[j % iv.length];
-                                const y = decryptedBlock[j];
-                                let x = 0;
-                                while (x < 256) {
-                                    if (this.evaluatePolynomial(poly, x) % 256 === y) {
-                                        newBlock[j] = (x ^ ivByte) % 256;
-                                        break;
-                                    }
-                                    x++;
-                                }
-                            }
-                            decryptedBlock = newBlock;
-                        }
-                        
-                        plaintext.set(decryptedBlock, i);
-                    }
-                    
-                    const unpadded = SecureUtils.unpadPKCS7(plaintext);
-                    return SecureUtils.arrayBufferToString(unpadded.buffer);
-                } catch (err) {
-                    console.error('Decryption error:', err);
-                    throw err;
-                }
-            }
-            
-            static formatOutput(data, format) {
-                switch(format) {
-                    case 'poly': return this.formatAsPolynomial(data);
-                    case 'matrix': return this.formatAsMatrix(data);
-                    case 'quantum': return this.formatAsQuantum(data);
-                    case 'base64': return this.arrayBufferToBase64(data.buffer);
-                    case 'hex': return SecureUtils.arrayToHex(data);
-                    default: throw new Error('Unsupported format');
-                }
-            }
-            
-            static parseInput(data, format) {
-                try {
-                    switch(format) {
-                        case 'hex': return SecureUtils.hexToArray(data);
-                        case 'poly':
-                            const coeffs = data.match(/[0-9a-f]{4}/gi) || [];
-                            const bytes = new Uint8Array(coeffs.length * 2);
-                            for (let i = 0; i < coeffs.length; i++) {
-                                const val = parseInt(coeffs[i], 16);
-                                bytes[i*2] = (val >> 8) & 0xFF;
-                                bytes[i*2 + 1] = val & 0xFF;
-                            }
-                            return bytes;
-                        case 'matrix':
-                            const values = [];
-                            data.split('\n').forEach(row => {
-                                row.trim().split(/\s+/).forEach(cell => {
-                                    values.push(parseInt(cell, 16));
-                                });
-                            });
-                            return new Uint8Array(values);
-                        case 'quantum':
-                            const bits = [];
-                            data.match(/\|([01]+)⟩/g)?.forEach(q => {
-                                const bitStr = q.match(/\|([01]+)⟩/)[1];
-                                for (let i = 0; i < bitStr.length; i += 8) {
-                                    const byte = bitStr.substr(i, 8).padEnd(8, '0');
-                                    bits.push(parseInt(byte, 2));
-                                }
-                            });
-                            return new Uint8Array(bits);
-                        case 'base64':
-                            return new Uint8Array([...atob(data)].map(c => c.charCodeAt(0)));
-                        default:
-                            throw new Error('Unsupported format');
-                    }
-                } catch (e) {
-                    throw new Error(`Parsing failed: ${e.message}`);
-                }
-            }
-            
-            static formatAsPolynomial(data) {
-                const coeffs = [];
-                for (let i = 0; i < data.length; i += 2) {
-                    const coeff = (data[i] << 8) | (i+1 < data.length ? data[i+1] : 0);
-                    coeffs.push(coeff.toString(16).padStart(4, '0'));
-                }
-                
-                let polyStr = "";
-                for (let i = 0; i < coeffs.length; i++) {
-                    if (i > 0) polyStr += " + ";
-                    polyStr += coeffs[i] + "x^" + i;
-                }
-                
-                return polyStr;
-            }
-            
-            static formatAsMatrix(data) {
-                const size = Math.ceil(Math.sqrt(data.length));
-                const matrix = [];
-                
-                for (let i = 0; i < size; i++) {
-                    const row = [];
-                    for (let j = 0; j < size; j++) {
-                        const idx = i * size + j;
-                        row.push(idx < data.length ? 
-                            data[idx].toString(16).padStart(2, '0') : '00');
-                    }
-                    matrix.push(row.join(' '));
-                }
-                
-                return matrix.join('\n');
-            }
-            
-            static formatAsQuantum(data) {
-                const chunks = [];
-                for (let i = 0; i < data.length; i += 4) {
-                    const chunk = data.slice(i, i + 4);
-                    let qStr = "|";
-                    for (const byte of chunk) {
-                        qStr += (byte & 1) ? '1' : '0';
-                    }
-                    qStr += "⟩";
-                    chunks.push(qStr);
-                }
-                return chunks.join(' ');
-            }
-            
-            static arrayBufferToBase64(buffer) {
-                let binary = '';
-                const bytes = new Uint8Array(buffer);
-                for (let i = 0; i < bytes.byteLength; i++) {
-                    binary += String.fromCharCode(bytes[i]);
-                }
-                return btoa(binary);
-            }
-            
-            destroy() {
-                if (this.keyMaterial) SecureUtils.wipeArray(this.keyMaterial);
-                if (this.iv) SecureUtils.wipeArray(this.iv);
-                if (this.derivationSalt) SecureUtils.wipeArray(this.derivationSalt);
-                this.roundPolynomials = null;
-            }
-        }
-
-        // ========== Application State Management ==========
-        const AppState = {
-            cipher: null,
-            settings: {
-                polyDegree: 7,
-                fieldSize: 65536,
-                minKeyLength: CRYPTO.MIN_KEY_LENGTH,
-                autoClear: 30,
-                iterations: CRYPTO.ITERATIONS,
-                hmacAlgorithm: 'SHA-384'
-            },
-            
-            init: function() {
-                this.loadSettings();
-                this.clearTimers = {
-                    encryptKey: null,
-                    decryptKey: null
-                };
-            },
-            
-            loadSettings: function() {
-                try {
-                    const saved = localStorage.getItem('quantumPolyCryptSettings');
-                    if (saved) {
-                        const parsed = JSON.parse(saved);
-                        
-                        if (parsed.polyDegree >= 5 && parsed.polyDegree <= 13) {
-                            this.settings.polyDegree = parsed.polyDegree;
-                        }
-                        
-                        if ([256, 65536, 4294967296].includes(parsed.fieldSize)) {
-                            this.settings.fieldSize = parsed.fieldSize;
-                        }
-                        
-                        if (parsed.minKeyLength >= 32 && parsed.minKeyLength <= 64) {
-                            this.settings.minKeyLength = parsed.minKeyLength;
-                        }
-                        
-                        if ([0, 10, 30, 60, 300].includes(parsed.autoClear)) {
-                            this.settings.autoClear = parsed.autoClear;
-                        }
-                        
-                        if (parsed.iterations >= 100000 && parsed.iterations <= 2000000) {
-                            this.settings.iterations = parsed.iterations;
-                        }
-                        
-                        if (['SHA-256', 'SHA-384', 'SHA-512'].includes(parsed.hmacAlgorithm)) {
-                            this.settings.hmacAlgorithm = parsed.hmacAlgorithm;
-                        }
-                    }
-                } catch (e) {
-                    console.error('Failed to load settings:', e);
-                }
-            },
-            
-            saveSettings: function() {
-                try {
-                    localStorage.setItem('quantumPolyCryptSettings', JSON.stringify(this.settings));
-                    return true;
-                } catch (e) {
-                    console.error('Failed to save settings:', e);
-                    return false;
-                }
-            },
-            
-            scheduleAutoClear: function(fieldId) {
-                if (this.settings.autoClear <= 0) return;
-                
-                if (this.clearTimers[fieldId]) {
-                    clearTimeout(this.clearTimers[fieldId]);
-                }
-                
-                this.clearTimers[fieldId] = setTimeout(() => {
-                    const field = document.getElementById(fieldId);
-                    if (field) {
-                        field.value = '';
-                        if (fieldId === 'encrypt-key') {
-                            updateEntropyMeter('');
-                        }
-                    }
-                }, this.settings.autoClear * 1000);
-            },
-            
-            cleanup: function() {
-                if (this.cipher) {
-                    this.cipher.destroy();
-                    this.cipher = null;
-                }
-                
-                Object.values(this.clearTimers).forEach(timer => {
-                    if (timer) clearTimeout(timer);
-                });
-            }
-        };
-
-        // ========== UI Event Handlers ==========
-        function switchTab(tabName) {
-            document.querySelectorAll('.tab').forEach(tab => {
-                tab.classList.remove('active');
-                tab.setAttribute('aria-selected', 'false');
-            });
-            
-            const activeTab = document.querySelector(`.tab[onclick="switchTab('${tabName}')"]`);
-            activeTab.classList.add('active');
-            activeTab.setAttribute('aria-selected', 'true');
-            
-            document.querySelectorAll('.panel').forEach(panel => {
-                panel.classList.remove('active');
-                panel.hidden = true;
-            });
-            
-            const activePanel = document.getElementById(`${tabName}-panel`);
-            activePanel.classList.add('active');
-            activePanel.hidden = false;
-        }
-        
-        function showStatus(message, elementId, isSuccess, details = "") {
-            const element = document.getElementById(elementId);
-            if (!element) return;
-            
-            const messageElement = element.querySelector('.error-message');
-            if (messageElement) {
-                messageElement.textContent = message;
-            }
-            
-            element.className = isSuccess ? 'status success' : 'status error';
-            element.classList.remove('hidden');
-            
-            const detailsElement = element.querySelector('.error-details');
-            if (detailsElement) {
-                if (details) {
-                    detailsElement.textContent = details;
-                    detailsElement.style.display = 'block';
-                } else {
-                    detailsElement.style.display = 'none';
-                }
-            }
-        }
-        
-        function updateEntropyMeter(password) {
-            const entropyLevel = document.getElementById('entropy-level');
-            const securityText = document.getElementById('security-text');
-            const securityDot = document.getElementById('security-dot');
-            
-            for (let i = 1; i <= 5; i++) {
-                document.getElementById(`security-bar-${i}`).classList.remove('active');
-            }
-            
-            if (!password) {
-                entropyLevel.style.width = '0%';
-                securityText.textContent = 'Enter password';
-                securityDot.style.background = 'var(--accent-red)';
-                return;
-            }
-            
-            let score = 0;
-            
-            if (password.length >= 48) score += 3;
-            else if (password.length >= 32) score += 2;
-            else if (password.length >= 24) score += 1;
-            else if (password.length < 16) score -= 2;
-            else if (password.length < 24) score -= 1;
-            
-            const hasLower = /[a-z]/.test(password);
-            const hasUpper = /[A-Z]/.test(password);
-            const hasNumber = /[0-9]/.test(password);
-            const hasSpecial = /[^A-Za-z0-9]/.test(password);
-            
-            if (hasLower) score += 1;
-            if (hasUpper) score += 1;
-            if (hasNumber) score += 1;
-            if (hasSpecial) score += 2;
-            
-            if (/password|1234|qwerty/i.test(password)) score = Math.max(0, score - 3);
-            
-            score = Math.max(0, Math.min(5, score));
-            
-            for (let i = 1; i <= score; i++) {
-                document.getElementById(`security-bar-${i}`).classList.add('active');
-            }
-            
-            const charsetSize = 
-                (hasLower ? 26 : 0) + 
-                (hasUpper ? 26 : 0) + 
-                (hasNumber ? 10 : 0) + 
-                (hasSpecial ? 32 : 0);
-            
-            const entropy = Math.log2(Math.pow(charsetSize, password.length));
-            const entropyPercent = Math.min(100, entropy * 3);
-            
-            entropyLevel.style.width = entropyPercent + '%';
-            
-            if (score <= 1) {
-                securityText.textContent = 'Very weak password';
-                securityDot.style.background = 'var(--accent-red)';
-            } else if (score <= 2) {
-                securityText.textContent = 'Weak password';
-                securityDot.style.background = 'var(--accent-red)';
-            } else if (score <= 3) {
-                securityText.textContent = 'Medium password';
-                securityDot.style.background = 'var(--accent-orange)';
-            } else if (score <= 4) {
-                securityText.textContent = 'Strong password';
-                securityDot.style.background = 'var(--accent-green)';
-            } else {
-                securityText.textContent = 'Military-grade password';
-                securityDot.style.background = 'var(--accent-green)';
-            }
-        }
-        
-        async function encryptText() {
-            const key = document.getElementById('encrypt-key').value;
-            const text = document.getElementById('plain-text').value;
-            const format = document.getElementById('output-format').value;
-            
-            if (!key || key.length < AppState.settings.minKeyLength) {
-                showStatus(
-                    `Key must be at least ${AppState.settings.minKeyLength} characters`, 
-                    'encrypt-status', 
-                    false
+            // Умножение октонионов (неассоциативное)
+            multiply(o) {
+                const a = this.coeff;
+                const b = o.coeff;
+                return new Octonion(
+                    a[0]*b[0] - a[1]*b[1] - a[2]*b[2] - a[3]*b[3] - a[4]*b[4] - a[5]*b[5] - a[6]*b[6] - a[7]*b[7],
+                    a[0]*b[1] + a[1]*b[0] + a[2]*b[4] + a[3]*b[7] - a[4]*b[2] + a[5]*b[6] - a[6]*b[5] - a[7]*b[3],
+                    a[0]*b[2] - a[1]*b[4] + a[2]*b[0] + a[3]*b[5] + a[4]*b[1] - a[5]*b[3] + a[6]*b[7] - a[7]*b[6],
+                    a[0]*b[3] - a[1]*b[7] - a[2]*b[5] + a[3]*b[0] + a[4]*b[6] + a[5]*b[2] - a[6]*b[4] + a[7]*b[1],
+                    a[0]*b[4] + a[1]*b[2] - a[2]*b[1] - a[3]*b[6] + a[4]*b[0] + a[5]*b[7] + a[6]*b[3] - a[7]*b[5],
+                    a[0]*b[5] - a[1]*b[6] + a[2]*b[3] - a[3]*b[2] - a[4]*b[7] + a[5]*b[0] + a[6]*b[1] + a[7]*b[4],
+                    a[0]*b[6] + a[1]*b[5] - a[2]*b[7] + a[3]*b[4] - a[4]*b[3] - a[5]*b[1] + a[6]*b[0] + a[7]*b[2],
+                    a[0]*b[7] + a[1]*b[3] + a[2]*b[6] - a[3]*b[1] + a[4]*b[5] - a[5]*b[4] - a[6]*b[2] + a[7]*b[0]
                 );
-                return;
             }
             
-            if (!text) {
-                showStatus('Please enter text to encrypt', 'encrypt-status', false);
-                return;
-            }
-            
-            try {
-                document.getElementById('encrypted-result').innerHTML = '<span class="loader"></span> Encrypting...';
-                document.getElementById('encrypt-button').disabled = true;
-                
-                AppState.cleanup();
-                AppState.cipher = new QuantumPolyCipher(key, {
-                    degree: AppState.settings.polyDegree,
-                    fieldSize: AppState.settings.fieldSize,
-                    iterations: AppState.settings.iterations,
-                    hmacAlgorithm: AppState.settings.hmacAlgorithm
-                });
-                
-                const encrypted = await AppState.cipher.encrypt(text);
-                const formattedResult = QuantumPolyCipher.formatOutput(encrypted, format);
-                
-                let resultClass = 'result';
-                switch(format) {
-                    case 'poly': resultClass += ' poly-format'; break;
-                    case 'matrix': resultClass += ' matrix-format'; break;
-                    case 'quantum': resultClass += ' quantum-code'; break;
-                    case 'hex': resultClass += ' hex-format'; break;
-                    case 'base64': resultClass += ' hex-format'; break;
-                }
-                
-                document.getElementById('encrypted-result').className = resultClass;
-                document.getElementById('encrypted-result').textContent = formattedResult;
-                
-                showStatus('Text encrypted successfully', 'encrypt-status', true);
-                AppState.scheduleAutoClear('encrypt-key');
-            } catch (error) {
-                console.error('Encryption error:', error);
-                showStatus('Encryption failed', 'encrypt-status', false, error.message);
-                document.getElementById('encrypted-result').textContent = 'Encryption error';
-                document.getElementById('encrypted-result').className = 'result';
-            } finally {
-                document.getElementById('encrypt-button').disabled = false;
-            }
-        }
-        
-        async function decryptText() {
-            const key = document.getElementById('decrypt-key').value;
-            const cipherText = document.getElementById('cipher-text').value;
-            const format = document.getElementById('input-format').value;
-            
-            if (!key || key.length < AppState.settings.minKeyLength) {
-                showStatus(
-                    `Key must be at least ${AppState.settings.minKeyLength} characters`, 
-                    'decrypt-status', 
-                    false
+            // Обратный элемент (для дешифрования)
+            inverse() {
+                const norm = this.coeff.reduce((sum, x) => sum + x*x, 0);
+                return new Octonion(
+                    this.coeff[0]/norm,
+                    -this.coeff[1]/norm,
+                    -this.coeff[2]/norm,
+                    -this.coeff[3]/norm,
+                    -this.coeff[4]/norm,
+                    -this.coeff[5]/norm,
+                    -this.coeff[6]/norm,
+                    -this.coeff[7]/norm
                 );
-                return;
-            }
-            
-            if (!cipherText) {
-                showStatus('Please enter ciphertext to decrypt', 'decrypt-status', false);
-                return;
-            }
-            
-            try {
-                document.getElementById('decrypted-result').innerHTML = '<span class="loader"></span> Decrypting...';
-                document.getElementById('decrypt-button').disabled = true;
-                
-                const encryptedData = QuantumPolyCipher.parseInput(cipherText, format);
-                
-                AppState.cleanup();
-                AppState.cipher = new QuantumPolyCipher(key, {
-                    degree: AppState.settings.polyDegree,
-                    fieldSize: AppState.settings.fieldSize,
-                    iterations: AppState.settings.iterations,
-                    hmacAlgorithm: AppState.settings.hmacAlgorithm
-                });
-                
-                const decrypted = await AppState.cipher.decrypt(encryptedData);
-                
-                document.getElementById('decrypted-result').textContent = decrypted;
-                document.getElementById('decrypted-result').className = 'result';
-                
-                showStatus('Text decrypted successfully', 'decrypt-status', true);
-                AppState.scheduleAutoClear('decrypt-key');
-            } catch (error) {
-                console.error('Decryption error:', error);
-                showStatus('Decryption failed', 'decrypt-status', false, error.message);
-                document.getElementById('decrypted-result').textContent = 'Decryption error';
-                document.getElementById('decrypted-result').className = 'result';
-            } finally {
-                document.getElementById('decrypt-button').disabled = false;
-            }
-        }
-        
-        function copyResult(elementId) {
-            const result = document.getElementById(elementId).textContent;
-            navigator.clipboard.writeText(result).then(() => {
-                const statusId = elementId === 'encrypted-result' ? 'encrypt-status' : 'decrypt-status';
-                showStatus('Copied to clipboard', statusId, true);
-            }).catch(err => {
-                const statusId = elementId === 'encrypted-result' ? 'encrypt-status' : 'decrypt-status';
-                showStatus('Failed to copy', statusId, false, err.message);
-            });
-        }
-        
-        function clearResult(elementId) {
-            const element = document.getElementById(elementId);
-            element.textContent = elementId === 'encrypted-result' ? 
-                'Encrypted text will appear here...' : 
-                'Decrypted text will appear here...';
-            element.className = 'result';
-        }
-        
-        function downloadResult() {
-            try {
-                const result = document.getElementById('encrypted-result').textContent;
-                const format = document.getElementById('output-format').value;
-                
-                let filename = 'encrypted_data';
-                let mimeType = 'text/plain';
-                
-                switch(format) {
-                    case 'hex': filename += '.hex'; break;
-                    case 'base64': filename += '.b64'; break;
-                    case 'poly': filename += '.poly'; break;
-                    case 'matrix': filename += '.matrix'; break;
-                    case 'quantum': filename += '.qbit'; break;
-                    default: filename += '.txt';
-                }
-                
-                const blob = new Blob([result], { type: mimeType });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = filename;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-                
-                showStatus('File saved successfully', 'encrypt-status', true);
-            } catch (error) {
-                showStatus('Failed to save file', 'encrypt-status', false, error.message);
-            }
-        }
-        
-        function saveSettings() {
-            try {
-                AppState.settings.polyDegree = parseInt(document.getElementById('poly-degree').value);
-                AppState.settings.fieldSize = parseInt(document.getElementById('field-size').value);
-                AppState.settings.minKeyLength = parseInt(document.getElementById('key-strength').value);
-                AppState.settings.autoClear = parseInt(document.getElementById('auto-clear').value);
-                AppState.settings.iterations = parseInt(document.getElementById('iterations').value);
-                AppState.settings.hmacAlgorithm = document.getElementById('hmac-algo').value;
-                
-                if (AppState.saveSettings()) {
-                    showStatus('Settings saved successfully', 'settings-status', true);
-                } else {
-                    showStatus('Failed to save settings', 'settings-status', false);
-                }
-            } catch (error) {
-                showStatus('Invalid settings', 'settings-status', false, error.message);
             }
         }
 
-        // Initialize application
-        document.addEventListener('DOMContentLoaded', () => {
-            AppState.init();
+        // Преобразование текста в октонионы
+        function textToOctonions(text) {
+            const octonions = [];
+            for (let i = 0; i < text.length; i += 4) {
+                const c1 = text.charCodeAt(i) || 0;
+                const c2 = text.charCodeAt(i+1) || 0;
+                const c3 = text.charCodeAt(i+2) || 0;
+                const c4 = text.charCodeAt(i+3) || 0;
+                octonions.push(new Octonion(c1/256, c2/256, c3/256, c4/256, 0, 0, 0, 0));
+            }
+            return octonions;
+        }
+
+        // Преобразование октонионов в текст
+        function octonionsToText(octonions) {
+            let text = '';
+            for (const o of octonions) {
+                const c1 = Math.round(o.coeff[0] * 256) % 256;
+                const c2 = Math.round(o.coeff[1] * 256) % 256;
+                const c3 = Math.round(o.coeff[2] * 256) % 256;
+                const c4 = Math.round(o.coeff[3] * 256) % 256;
+                text += String.fromCharCode(c1) + String.fromCharCode(c2) + 
+                        String.fromCharCode(c3) + String.fromCharCode(c4);
+            }
+            return text.replace(/\x00/g, '');
+        }
+
+        // Шифрование
+        function encrypt() {
+            const text = document.getElementById('plaintext').value;
+            const keyStr = document.getElementById('key').value;
             
-            // Load saved settings into UI
-            document.getElementById('poly-degree').value = AppState.settings.polyDegree;
-            document.getElementById('field-size').value = AppState.settings.fieldSize;
-            document.getElementById('key-strength').value = AppState.settings.minKeyLength;
-            document.getElementById('auto-clear').value = AppState.settings.autoClear;
-            document.getElementById('iterations').value = AppState.settings.iterations;
-            document.getElementById('hmac-algo').value = AppState.settings.hmacAlgorithm;
+            if (!keyStr) {
+                alert("Введите ключ (8 чисел через запятую)");
+                return;
+            }
             
-            // Clean up on page unload
-            window.addEventListener('beforeunload', () => {
-                AppState.cleanup();
-            });
-        });
+            try {
+                const keyParts = keyStr.split(',').map(Number);
+                if (keyParts.length !== 8 || keyParts.some(isNaN)) {
+                    throw new Error("Ключ должен содержать 8 чисел");
+                }
+                
+                const key = new Octonion(...keyParts);
+                const octonions = textToOctonions(text);
+                
+                // Шифрование: умножение каждого октониона на ключ
+                const encrypted = octonions.map(o => o.multiply(key));
+                
+                // Сериализация результата
+                const result = encrypted.map(o => 
+                    o.coeff.map(x => x.toFixed(3)).join('|');
+                
+                document.getElementById('result').value = result;
+            } catch (e) {
+                alert("Ошибка: " + e.message);
+            }
+        }
+
+        // Дешифрование
+        function decrypt() {
+            const ciphertext = document.getElementById('plaintext').value;
+            const keyStr = document.getElementById('key').value;
+            
+            if (!keyStr) {
+                alert("Введите ключ (8 чисел через запятую)");
+                return;
+            }
+            
+            try {
+                const keyParts = keyStr.split(',').map(Number);
+                if (keyParts.length !== 8 || keyParts.some(isNaN)) {
+                    throw new Error("Ключ должен содержать 8 чисел");
+                }
+                
+                const key = new Octonion(...keyParts).inverse();
+                const octonionStrs = ciphertext.split('|');
+                
+                // Восстановление октонионов
+                const octonions = octonionStrs.map(s => {
+                    const coeff = s.split(',').map(Number);
+                    return new Octonion(...coeff);
+                });
+                
+                // Дешифрование: умножение на обратный ключ
+                const decrypted = octonions.map(o => o.multiply(key));
+                
+                document.getElementById('result').value = octonionsToText(decrypted);
+            } catch (e) {
+                alert("Ошибка: " + e.message);
+            }
+        }
     </script>
 </body>
 </html>
