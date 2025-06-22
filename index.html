@@ -3,36 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QARC - Quantum Encryption</title>
+    <title>Quantum Cipher Pro</title>
     <style>
         :root {
-            --primary: #4a6fa5;
-            --secondary: #166088;
-            --accent: #4fc3f7;
-            --error: #f44336;
-            --success: #4caf50;
-            --background: #f5f7fa;
+            --primary: #2563eb;
+            --secondary: #1e40af;
+            --error: #dc2626;
+            --success: #16a34a;
+            --background: #f8fafc;
             --card: #ffffff;
-            --text: #2c3e50;
+            --text: #1e293b;
         }
         body {
-            font-family: 'Roboto', sans-serif;
+            font-family: 'Inter', sans-serif;
             background-color: var(--background);
             color: var(--text);
-            line-height: 1.6;
+            line-height: 1.5;
             margin: 0;
             padding: 20px;
         }
         .container {
-            max-width: 900px;
+            max-width: 800px;
             margin: 0 auto;
             background: var(--card);
-            border-radius: 10px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             padding: 30px;
         }
         h1 {
-            color: var(--secondary);
+            color: var(--primary);
             text-align: center;
             margin-bottom: 30px;
             font-weight: 700;
@@ -41,51 +40,43 @@
             margin-bottom: 25px;
             padding: 20px;
             border-radius: 8px;
-            background: rgba(255,255,255,0.8);
-            border: 1px solid #e0e0e0;
-        }
-        .grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-        @media (max-width: 768px) {
-            .grid { grid-template-columns: 1fr; }
+            background: var(--card);
+            border: 1px solid #e2e8f0;
         }
         label {
             display: block;
             margin-bottom: 8px;
-            font-weight: 500;
-            color: var(--secondary);
+            font-weight: 600;
+            color: var(--text);
         }
         input, textarea, select {
             width: 100%;
             padding: 12px;
-            border: 1px solid #ddd;
+            border: 1px solid #cbd5e1;
             border-radius: 6px;
             font-size: 16px;
             margin-bottom: 15px;
-            transition: border 0.3s;
+            transition: all 0.2s;
         }
         input:focus, textarea:focus {
-            border-color: var(--accent);
+            border-color: var(--primary);
             outline: none;
-            box-shadow: 0 0 0 2px rgba(79,195,247,0.2);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
         }
         textarea {
-            min-height: 150px;
-            font-family: 'Consolas', monospace;
+            min-height: 120px;
+            font-family: 'Roboto Mono', monospace;
         }
         button {
             background-color: var(--primary);
             color: white;
             border: none;
-            padding: 12px 24px;
+            padding: 12px 20px;
             border-radius: 6px;
             cursor: pointer;
             font-size: 16px;
-            font-weight: 500;
-            transition: all 0.3s;
+            font-weight: 600;
+            transition: all 0.2s;
             margin-right: 10px;
             margin-bottom: 10px;
         }
@@ -93,155 +84,81 @@
             background-color: var(--secondary);
             transform: translateY(-1px);
         }
-        button.secondary {
-            background-color: #607d8b;
-        }
-        button.danger {
-            background-color: var(--error);
+        button:disabled {
+            background-color: #94a3b8;
+            cursor: not-allowed;
+            transform: none;
         }
         .status {
-            padding: 15px;
+            padding: 12px;
             border-radius: 6px;
-            margin: 20px 0;
+            margin: 15px 0;
             display: none;
         }
         .success {
-            background-color: #e8f5e9;
+            background-color: #dcfce7;
             color: var(--success);
             border-left: 4px solid var(--success);
             display: block;
         }
         .error {
-            background-color: #ffebee;
+            background-color: #fee2e2;
             color: var(--error);
             border-left: 4px solid var(--error);
             display: block;
         }
-        .settings-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 15px;
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 8px;
         }
-        .tabs {
-            display: flex;
-            margin-bottom: 20px;
-            border-bottom: 1px solid #ddd;
-        }
-        .tab {
-            padding: 10px 20px;
-            cursor: pointer;
-            border-bottom: 3px solid transparent;
-        }
-        .tab.active {
-            border-bottom-color: var(--primary);
-            font-weight: 500;
-        }
-        .hidden {
-            display: none;
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>QARC - Quantum Encryption</h1>
+        <h1>Quantum Cipher Pro</h1>
         
-        <div class="tabs">
-            <div class="tab active" onclick="switchTab('encrypt')">Encryption</div>
-            <div class="tab" onclick="switchTab('settings')">Advanced Settings</div>
-            <div class="tab" onclick="switchTab('info')">About</div>
-        </div>
-        
-        <div id="encrypt-tab">
-            <div class="grid">
-                <div class="panel">
-                    <label for="inputText">Input Text</label>
-                    <textarea id="inputText" placeholder="Enter text to encrypt or ciphertext to decrypt"></textarea>
-                    
-                    <label for="key">Encryption Key (min 12 chars)</label>
-                    <input type="text" id="key" placeholder="Enter secret key" value="quantum-secure-key-123">
-                    
-                    <div class="button-group">
-                        <button onclick="encrypt()">Encrypt</button>
-                        <button onclick="decrypt()">Decrypt</button>
-                        <button class="secondary" onclick="clearAll()">Clear</button>
-                    </div>
-                </div>
-                
-                <div class="panel">
-                    <label for="outputText">Output</label>
-                    <textarea id="outputText" readonly></textarea>
-                    
-                    <label>Operation Details</label>
-                    <div id="operationDetails" style="font-family: monospace; white-space: pre; background: #f5f5f5; padding: 10px; border-radius: 4px; overflow-x: auto;">
-                        Operation results will appear here...
-                    </div>
-                </div>
+        <div class="panel">
+            <label for="inputText">Input Text</label>
+            <textarea id="inputText" placeholder="Enter text to encrypt or ciphertext to decrypt"></textarea>
+            
+            <label for="key">Encryption Key (minimum 12 characters)</label>
+            <input type="text" id="key" placeholder="Enter your secret key" value="quantum-secure-key-123">
+            
+            <div>
+                <button id="encryptBtn" onclick="encrypt()">Encrypt</button>
+                <button id="decryptBtn" onclick="decrypt()">Decrypt</button>
+                <button onclick="clearAll()">Clear All</button>
             </div>
         </div>
         
-        <div id="settings-tab" class="hidden">
-            <div class="panel">
-                <h3>Advanced Configuration</h3>
-                <div class="settings-grid">
-                    <div>
-                        <label for="rounds">Encryption Rounds</label>
-                        <select id="rounds">
-                            <option value="3">3 (Fast)</option>
-                            <option value="5" selected>5 (Standard)</option>
-                            <option value="8">8 (Secure)</option>
-                            <option value="12">12 (Paranoid)</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label for="blockSize">Block Size</label>
-                        <select id="blockSize">
-                            <option value="64">64 bits (Balanced)</option>
-                            <option value="128" selected>128 bits (Secure)</option>
-                            <option value="256">256 bits (High Security)</option>
-                        </select>
-                    </div>
-                </div>
-                
-                <button onclick="saveSettings()">Save Settings</button>
-            </div>
-        </div>
-        
-        <div id="info-tab" class="hidden">
-            <div class="panel">
-                <h3>About QARC Cipher</h3>
-                <p><strong>Quantum-Inspired Encryption</strong> combines:</p>
-                <ul>
-                    <li>Quantum gate operations</li>
-                    <li>Key stretching with SHA-256</li>
-                    <li>Nonlinear transformations</li>
-                </ul>
-                <p>For educational purposes only.</p>
-            </div>
+        <div class="panel">
+            <label for="outputText">Output</label>
+            <textarea id="outputText" readonly></textarea>
         </div>
         
         <div id="statusMessage" class="status"></div>
     </div>
 
     <script>
-        class QARCipher {
-            constructor(key, rounds = 5, blockSize = 128) {
+        class QuantumCipher {
+            constructor(key, rounds = 5) {
                 this.rounds = rounds;
-                this.blockSize = blockSize;
+                this.key = this.stringToArray(key);
                 this.salt = this.generateSalt();
-                this.keyPromise = this.keyStretch(key);
             }
             
-            async keyStretch(key) {
+            stringToArray(str) {
                 const encoder = new TextEncoder();
-                let stretchedKey = encoder.encode(key);
-                
-                for (let i = 0; i < 1000; i++) {
-                    const hash = await crypto.subtle.digest('SHA-256', stretchedKey);
-                    const hashArray = new Uint8Array(hash);
-                    stretchedKey = new Uint8Array([...stretchedKey, ...hashArray]);
-                }
-                
-                return stretchedKey.slice(0, 64);
+                return encoder.encode(str);
             }
             
             generateSalt() {
@@ -250,28 +167,70 @@
                 return salt;
             }
             
+            async deriveKey(masterKey) {
+                const keyMaterial = await crypto.subtle.importKey(
+                    'raw',
+                    masterKey,
+                    { name: 'PBKDF2' },
+                    false,
+                    ['deriveBits']
+                );
+                
+                const derivedBits = await crypto.subtle.deriveBits(
+                    {
+                        name: 'PBKDF2',
+                        salt: this.salt,
+                        iterations: 100000,
+                        hash: 'SHA-256'
+                    },
+                    keyMaterial,
+                    256
+                );
+                
+                return new Uint8Array(derivedBits);
+            }
+            
             async processBlock(block, key, encrypt = true) {
                 let state = new Uint8Array(block);
-                const roundKeys = this.generateRoundKeys(key);
                 
                 for (let round = 0; round < this.rounds; round++) {
-                    const rKey = roundKeys[encrypt ? round : this.rounds - 1 - round];
-                    state = await this.substitute(state, rKey);
-                    state = this.permute(state);
+                    // XOR with round key
+                    const roundKey = this.getRoundKey(key, round);
+                    for (let i = 0; i < state.length; i++) {
+                        state[i] ^= roundKey[i % roundKey.length];
+                    }
+                    
+                    // Substitute bytes
+                    state = this.substituteBytes(state, encrypt);
+                    
+                    // Permute bits
+                    state = this.permuteBits(state);
                 }
                 
                 return state;
             }
             
-            substitute(state, roundKey) {
+            getRoundKey(key, round) {
+                const roundKey = new Uint8Array(16);
+                for (let i = 0; i < 16; i++) {
+                    roundKey[i] = key[(round * 16 + i) % key.length] ^ (round * 0x11 + i * 0x5A);
+                }
+                return roundKey;
+            }
+            
+            substituteBytes(state, forward) {
                 const result = new Uint8Array(state.length);
                 for (let i = 0; i < state.length; i++) {
-                    result[i] = (state[i] + roundKey[i % roundKey.length] + i) % 256;
+                    if (forward) {
+                        result[i] = ((state[i] * 17 + 53) % 256) ^ (i % 251);
+                    } else {
+                        result[i] = (((state[i] ^ (i % 251)) - 53) * 121) % 256;
+                    }
                 }
                 return result;
             }
             
-            permute(state) {
+            permuteBits(state) {
                 const result = new Uint8Array(state.length);
                 for (let i = 0; i < state.length; i++) {
                     const j = (i * 13 + 7) % state.length;
@@ -280,77 +239,73 @@
                 return result;
             }
             
-            generateRoundKeys(key) {
-                const roundKeys = [];
-                for (let i = 0; i < this.rounds; i++) {
-                    const roundKey = new Uint8Array(16);
-                    for (let j = 0; j < 16; j++) {
-                        roundKey[j] = key[(i * 16 + j) % key.length] ^ (i * 0x11 + j * 0x5A);
-                    }
-                    roundKeys.push(roundKey);
-                }
-                return roundKeys;
-            }
-            
             async encrypt(plaintext) {
-                const key = await this.keyPromise;
-                const encoder = new TextEncoder();
-                const data = encoder.encode(plaintext);
-                const blockSize = this.blockSize / 8;
-                const paddedData = this.padData(data, blockSize);
-                
-                let ciphertext = new Uint8Array(paddedData.length + this.salt.length);
-                ciphertext.set(this.salt, 0);
-                
-                for (let i = 0; i < paddedData.length; i += blockSize) {
-                    const block = paddedData.slice(i, i + blockSize);
-                    const encryptedBlock = await this.processBlock(block, key, true);
-                    ciphertext.set(encryptedBlock, this.salt.length + i);
+                try {
+                    const data = this.stringToArray(plaintext);
+                    const derivedKey = await this.deriveKey(this.key);
+                    
+                    // Pad data to 16-byte blocks
+                    const blockSize = 16;
+                    const padLength = blockSize - (data.length % blockSize);
+                    const paddedData = new Uint8Array(data.length + padLength);
+                    paddedData.set(data);
+                    for (let i = data.length; i < paddedData.length; i++) {
+                        paddedData[i] = padLength;
+                    }
+                    
+                    // Encrypt each block
+                    const encrypted = new Uint8Array(paddedData.length + this.salt.length);
+                    encrypted.set(this.salt, 0);
+                    
+                    for (let i = 0; i < paddedData.length; i += blockSize) {
+                        const block = paddedData.slice(i, i + blockSize);
+                        const encryptedBlock = await this.processBlock(block, derivedKey, true);
+                        encrypted.set(encryptedBlock, this.salt.length + i);
+                    }
+                    
+                    return this.arrayToHex(encrypted);
+                } catch (error) {
+                    console.error('Encryption error:', error);
+                    throw error;
                 }
-                
-                return this.uint8ToHex(ciphertext);
             }
             
-            async decrypt(ciphertextHex) {
-                const key = await this.keyPromise;
-                const ciphertext = this.hexToUint8(ciphertextHex);
-                this.salt = ciphertext.slice(0, 16);
-                const data = ciphertext.slice(16);
-                const blockSize = this.blockSize / 8;
-                
-                let plaintext = new Uint8Array(data.length);
-                
-                for (let i = 0; i < data.length; i += blockSize) {
-                    const block = data.slice(i, i + blockSize);
-                    const decryptedBlock = await this.processBlock(block, key, false);
-                    plaintext.set(decryptedBlock, i);
+            async decrypt(ciphertext) {
+                try {
+                    const encrypted = this.hexToArray(ciphertext);
+                    this.salt = encrypted.slice(0, 16);
+                    const data = encrypted.slice(16);
+                    const derivedKey = await this.deriveKey(this.key);
+                    
+                    // Decrypt each block
+                    const blockSize = 16;
+                    const decrypted = new Uint8Array(data.length);
+                    
+                    for (let i = 0; i < data.length; i += blockSize) {
+                        const block = data.slice(i, i + blockSize);
+                        const decryptedBlock = await this.processBlock(block, derivedKey, false);
+                        decrypted.set(decryptedBlock, i);
+                    }
+                    
+                    // Remove padding
+                    const padLength = decrypted[decrypted.length - 1];
+                    if (padLength > blockSize) {
+                        throw new Error('Invalid padding');
+                    }
+                    
+                    const cleanData = decrypted.slice(0, decrypted.length - padLength);
+                    return new TextDecoder().decode(cleanData);
+                } catch (error) {
+                    console.error('Decryption error:', error);
+                    throw error;
                 }
-                
-                plaintext = this.unpadData(plaintext);
-                const decoder = new TextDecoder();
-                return decoder.decode(plaintext);
             }
             
-            padData(data, blockSize) {
-                const padLength = blockSize - (data.length % blockSize);
-                const padded = new Uint8Array(data.length + padLength);
-                padded.set(data);
-                for (let i = data.length; i < padded.length; i++) {
-                    padded[i] = padLength;
-                }
-                return padded;
-            }
-            
-            unpadData(data) {
-                const padLength = data[data.length - 1];
-                return data.slice(0, data.length - padLength);
-            }
-            
-            uint8ToHex(buffer) {
+            arrayToHex(buffer) {
                 return Array.from(buffer).map(b => b.toString(16).padStart(2, '0')).join('');
             }
             
-            hexToUint8(hex) {
+            hexToArray(hex) {
                 const bytes = [];
                 for (let i = 0; i < hex.length; i += 2) {
                     bytes.push(parseInt(hex.substr(i, 2), 16));
@@ -360,14 +315,6 @@
         }
 
         // UI Functions
-        function switchTab(tabName) {
-            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-            document.querySelectorAll('[id$="-tab"]').forEach(tab => tab.classList.add('hidden'));
-            
-            document.querySelector(`.tab:nth-child(${tabName === 'encrypt' ? 1 : tabName === 'settings' ? 2 : 3})`).classList.add('active');
-            document.getElementById(`${tabName}-tab`).classList.remove('hidden');
-        }
-        
         function showStatus(message, isError = false) {
             const status = document.getElementById('statusMessage');
             status.textContent = message;
@@ -377,24 +324,23 @@
                 status.textContent = '';
             }, 5000);
         }
-        
-        function getCipher() {
-            const key = document.getElementById('key').value;
-            if (!key || key.length < 12) {
-                showStatus('Key must be at least 12 characters', true);
-                return null;
-            }
-            
-            const rounds = parseInt(document.getElementById('rounds').value);
-            const blockSize = parseInt(document.getElementById('blockSize').value);
-            
-            return new QARCipher(key, rounds, blockSize);
+
+        function setLoading(button, isLoading) {
+            const btn = document.getElementById(button);
+            btn.disabled = isLoading;
+            btn.innerHTML = isLoading 
+                ? `<span class="loading"></span> Processing...` 
+                : button === 'encryptBtn' ? 'Encrypt' : 'Decrypt';
         }
-        
+
         async function encrypt() {
             try {
-                const cipher = getCipher();
-                if (!cipher) return;
+                setLoading('encryptBtn', true);
+                const key = document.getElementById('key').value;
+                if (!key || key.length < 12) {
+                    showStatus('Key must be at least 12 characters', true);
+                    return;
+                }
                 
                 const input = document.getElementById('inputText').value;
                 if (!input) {
@@ -402,23 +348,28 @@
                     return;
                 }
                 
-                document.getElementById('outputText').value = "Encrypting...";
-                const encrypted = await cipher.encrypt(input);
+                const cipher = new QuantumCipher(key);
+                document.getElementById('outputText').value = 'Encrypting...';
                 
+                const encrypted = await cipher.encrypt(input);
                 document.getElementById('outputText').value = encrypted;
-                document.getElementById('operationDetails').textContent = 
-                    `Encrypted successfully!\nKey hash: ${await cipher.keyPromise.then(k => cipher.uint8ToHex(k.slice(0, 8))}...`;
                 showStatus('Encryption successful!');
             } catch (error) {
                 showStatus('Encryption failed: ' + error.message, true);
                 console.error(error);
+            } finally {
+                setLoading('encryptBtn', false);
             }
         }
-        
+
         async function decrypt() {
             try {
-                const cipher = getCipher();
-                if (!cipher) return;
+                setLoading('decryptBtn', true);
+                const key = document.getElementById('key').value;
+                if (!key || key.length < 12) {
+                    showStatus('Key must be at least 12 characters', true);
+                    return;
+                }
                 
                 const input = document.getElementById('inputText').value;
                 if (!input) {
@@ -431,33 +382,25 @@
                     return;
                 }
                 
-                document.getElementById('outputText').value = "Decrypting...";
-                const decrypted = await cipher.decrypt(input);
+                const cipher = new QuantumCipher(key);
+                document.getElementById('outputText').value = 'Decrypting...';
                 
+                const decrypted = await cipher.decrypt(input);
                 document.getElementById('outputText').value = decrypted;
-                document.getElementById('operationDetails').textContent = 
-                    `Decrypted successfully!\nRecovered ${decrypted.length} characters`;
                 showStatus('Decryption successful!');
             } catch (error) {
                 showStatus('Decryption failed. Check your key and input format.', true);
                 console.error(error);
+            } finally {
+                setLoading('decryptBtn', false);
             }
         }
-        
-        function saveSettings() {
-            showStatus('Settings saved');
-            switchTab('encrypt');
-        }
-        
+
         function clearAll() {
             document.getElementById('inputText').value = '';
             document.getElementById('outputText').value = '';
-            document.getElementById('operationDetails').textContent = 'Operation results will appear here...';
             showStatus('Cleared all fields');
         }
-        
-        // Initialize
-        switchTab('encrypt');
     </script>
 </body>
 </html>
