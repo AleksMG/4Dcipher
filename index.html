@@ -3,181 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ILAF Cipher - Алгебры Ли</title>
+    <title>ILAF Cipher (Промышленная версия)</title>
     <style>
-        body {
-            font-family: 'Courier New', monospace;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #1a1a1a;
-            color: #e0e0e0;
-        }
-        .container {
-            background-color: #2a2a2a;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 0 15px rgba(0, 100, 200, 0.3);
-        }
-        h1, h2 {
-            color: #4fc3f7;
-            text-align: center;
-            border-bottom: 1px solid #2979ff;
-            padding-bottom: 10px;
-        }
-        .input-group {
-            margin-bottom: 15px;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-            color: #81d4fa;
-        }
-        input, textarea, button {
-            padding: 10px;
-            border: 1px solid #2979ff;
-            border-radius: 5px;
-            background-color: #1e1e1e;
-            color: #e0e0e0;
-            width: 100%;
-            box-sizing: border-box;
-            margin-bottom: 10px;
-        }
-        button {
-            background: linear-gradient(to right, #1976d2, #0d47a1);
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        button:hover {
-            background: linear-gradient(to right, #2196f3, #1976d2);
-            transform: translateY(-2px);
-        }
-        .result {
-            padding: 15px;
-            background-color: #0d1b2a;
-            border-radius: 5px;
-            margin-top: 15px;
-            font-family: monospace;
-            white-space: pre-wrap;
-            overflow-wrap: break-word;
-            border: 1px solid #1e88e5;
-        }
-        .matrix {
-            font-family: monospace;
-            background-color: #001f3f;
-            padding: 10px;
-            border-radius: 5px;
-            margin: 10px 0;
-            display: inline-block;
-        }
-        .warning {
-            color: #ff9800;
-            background-color: #332900;
-            padding: 10px;
-            border-radius: 5px;
-            margin: 15px 0;
-            border: 1px solid #ff9800;
-        }
-        .math {
-            font-family: "Cambria Math", serif;
-            font-style: italic;
-            color: #4db6ac;
-        }
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        h1 { color: #2c3e50; text-align: center; }
+        .input-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, textarea, button { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 5px; }
+        button { background: #3498db; color: white; border: none; cursor: pointer; }
+        button:hover { background: #2980b9; }
+        .result { background: #f9f9f9; padding: 15px; border-radius: 5px; margin-top: 20px; }
+        .error { color: #e74c3c; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>ILAF Cipher - Алгебры Ли</h1>
-        <div class="warning">
-            Полная математическая реализация на основе алгебр Ли (sl(2)) и экспоненциального отображения
+        <h1>ILAF Cipher (Промышленная версия)</h1>
+        
+        <div class="input-group">
+            <label for="key">Ключ (минимум 12 символов):</label>
+            <input type="password" id="key" value="my_strong_password_123">
         </div>
 
         <div class="input-group">
             <label for="inputText">Текст для шифрования:</label>
-            <textarea id="inputText" rows="4">Hello</textarea>
+            <textarea id="inputText" rows="5">Hello, это тестовое сообщение!</textarea>
         </div>
 
-        <button id="encryptBtn">Зашифровать текст</button>
-        <button id="decryptBtn">Расшифровать текст</button>
+        <button id="encryptBtn">Зашифровать</button>
+        <button id="decryptBtn">Расшифровать</button>
 
-        <h2>Математическая основа</h2>
-        <div class="math">
-            <p>Алгебра Ли sl(2) над полем GF(p):</p>
-            <p>Базис: H = [[1, 0], [0, -1]], X = [[0, 1], [0, 0]], Y = [[0, 0], [1, 0]]</p>
-            <p>Коммутаторы: [H,X] = 2X, [H,Y] = -2Y, [X,Y] = H</p>
-            <p>Экспоненциальное отображение: exp(A) = ∑ A<sup>k</sup>/k!</p>
-            <p>Шифрование: c = exp(t·x) · v</p>
-            <p>Расшифровка: v = exp(-t·x) · c</p>
-        </div>
-
-        <h2>Результат шифрования</h2>
-        <div class="result" id="encryptionResult"></div>
-
-        <h2>Результат расшифровки</h2>
-        <div class="result" id="decryptionResult"></div>
+        <div class="result" id="result"></div>
     </div>
 
     <script>
-        // Конфигурация системы
-        const PRIME = 65537; // GF(65537)
+        // Конфигурация
+        const PRIME = 65537; // Простое число
         const BASIS = {
-            H: [[1, 0], [0, PRIME - 1]],  // [1, 0; 0, -1]
+            H: [[1, 0], [0, PRIME - 1]],
             X: [[0, 1], [0, 0]],
             Y: [[0, 0], [1, 0]]
         };
 
-        // Операции в конечном поле
-        function gfAdd(a, b) {
-            return (a + b) % PRIME;
-        }
+        // --- Криптографические функции ---
+        function gfAdd(a, b) { return (a + b) % PRIME; }
+        function gfMul(a, b) { return (a * b) % PRIME; }
+        function gfInv(x) { return x === 0 ? 0 : (PRIME - Math.floor(PRIME / x)) * gfInv(PRIME % x) % PRIME; }
 
-        function gfSub(a, b) {
-            return (a - b + PRIME) % PRIME;
-        }
-
-        function gfMul(a, b) {
-            return (a * b) % PRIME;
-        }
-
-        function gfInv(x) {
-            x = ((x % PRIME) + PRIME) % PRIME;
-            if (x === 0) return 0;
-            let t = 0, r = PRIME, newt = 1, newr = x;
-            while (newr !== 0) {
-                const quotient = Math.floor(r / newr);
-                [t, newt] = [newt, t - quotient * newt];
-                [r, newr] = [newr, r - quotient * newr];
+        // Генерация матрицы из ключа
+        function generateKeyMatrix(key) {
+            let hash = 0;
+            for (let i = 0; i < key.length; i++) {
+                hash = (hash * 31 + key.charCodeAt(i)) % PRIME;
             }
-            return t < 0 ? t + PRIME : t;
-        }
+            const a = (hash * 12345) % PRIME;
+            const b = (hash * 54321) % PRIME;
+            const c = (hash * 67890) % PRIME;
 
-        // Генерация случайного элемента алгебры Ли
-        function generateLieElement() {
-            const a = Math.floor(Math.random() * PRIME);
-            const b = Math.floor(Math.random() * PRIME);
-            const c = Math.floor(Math.random() * PRIME);
-            
-            // Элемент алгебры Ли: a*H + b*X + c*Y
             return [
-                [
-                    gfAdd(gfMul(a, BASIS.H[0][0]), 
-                    gfAdd(gfMul(b, BASIS.X[0][1]))
-                ],
-                [
-                    gfAdd(gfMul(c, BASIS.Y[1][0])), 
-                    gfAdd(gfMul(a, BASIS.H[1][1]))
-                ]
-            ];
-        }
-
-        // Сложение матриц
-        function matrixAdd(A, B) {
-            return [
-                [gfAdd(A[0][0], B[0][0]), gfAdd(A[0][1], B[0][1])],
-                [gfAdd(A[1][0], B[1][0]), gfAdd(A[1][1], B[1][1])]
+                [gfAdd(gfMul(a, BASIS.H[0][0]), gfMul(b, BASIS.X[0][1])),
+                 gfAdd(gfMul(a, BASIS.H[0][1]), gfMul(b, BASIS.X[0][1]))],
+                [gfAdd(gfMul(c, BASIS.Y[1][0]), gfMul(a, BASIS.H[1][0])),
+                 gfAdd(gfMul(c, BASIS.Y[1][1]), gfMul(a, BASIS.H[1][1]))]
             ];
         }
 
@@ -185,171 +73,121 @@
         function matrixMul(A, B) {
             return [
                 [
-                    gfAdd(gfMul(A[0][0], B[0][0]), gfMul(A[0][1], B[1][0])),
-                    gfAdd(gfMul(A[0][0], B[0][1]), gfMul(A[0][1], B[1][1]))
+                    gfAdd(gfMul(A[0][0], B[0][0]), gfAdd(gfMul(A[0][1], B[1][0])),
+                    gfAdd(gfMul(A[0][0], B[0][1]), gfAdd(gfMul(A[0][1], B[1][1])))
                 ],
                 [
-                    gfAdd(gfMul(A[1][0], B[0][0]), gfMul(A[1][1], B[1][0])),
-                    gfAdd(gfMul(A[1][0], B[0][1]), gfMul(A[1][1], B[1][1]))
+                    gfAdd(gfMul(A[1][0], B[0][0]), gfAdd(gfMul(A[1][1], B[1][0])),
+                    gfAdd(gfMul(A[1][0], B[0][1]), gfAdd(gfMul(A[1][1], B[1][1])))
                 ]
             ];
         }
 
-        // Умножение матрицы на скаляр
-        function scalarMul(k, M) {
-            return [
-                [gfMul(k, M[0][0]), gfMul(k, M[0][1])],
-                [gfMul(k, M[1][0]), gfMul(k, M[1][1])]
-            ];
-        }
-
-        // Экспонента матрицы (ряд Тейлора)
+        // Экспонента матрицы
         function matrixExp(M, t) {
-            // Начинаем с единичной матрицы
             let exp = [[1, 0], [0, 1]];
             let term = [[...M[0]], [...M[1]]];
             let factorial = 1;
-            
-            // Ряд Тейлора (15 итераций)
+
             for (let k = 1; k <= 15; k++) {
                 factorial *= k;
-                
-                // term = M^k
-                const termScaled = scalarMul(t**k / factorial, term);
-                exp = matrixAdd(exp, termScaled);
-                
-                // Обновляем term для следующей итерации: term = term * M
+                const termScaled = [
+                    [gfMul(Math.pow(t, k) / factorial, term[0][0]), 
+                     gfMul(Math.pow(t, k) / factorial, term[0][1])],
+                    [gfMul(Math.pow(t, k) / factorial, term[1][0]), 
+                     gfMul(Math.pow(t, k) / factorial, term[1][1])]
+                ];
+                exp = [
+                    [gfAdd(exp[0][0], termScaled[0][0]), 
+                     gfAdd(exp[0][1], termScaled[0][1])],
+                    [gfAdd(exp[1][0], termScaled[1][0]), 
+                     gfAdd(exp[1][1], termScaled[1][1])]
+                ];
                 term = matrixMul(term, M);
             }
-            
-            // Приводим к полю GF(p)
-            return [
-                [exp[0][0] % PRIME, exp[0][1] % PRIME],
-                [exp[1][0] % PRIME, exp[1][1] % PRIME]
-            ];
+            return exp;
         }
 
-        // Умножение матрицы на вектор
-        function applyLieAction(matrix, vector) {
-            return [
-                gfAdd(gfMul(matrix[0][0], vector[0]), gfMul(matrix[0][1], vector[1])),
-                gfAdd(gfMul(matrix[1][0], vector[0]), gfMul(matrix[1][1], vector[1]))
-            ];
-        }
-
-        // Текст -> числовые блоки
+        // Преобразование текста в блоки
         function textToBlocks(text) {
             const encoder = new TextEncoder();
             const data = encoder.encode(text);
             const blocks = [];
             
             for (let i = 0; i < data.length; i += 2) {
-                const block = [data[i], i+1 < data.length ? data[i+1] : 0];
-                blocks.push(block);
+                blocks.push([data[i], i+1 < data.length ? data[i+1] : 0]);
             }
-            
             return blocks;
         }
 
-        // Блоки -> текст
+        // Преобразование блоков в текст
         function blocksToText(blocks) {
             const bytes = [];
             for (const block of blocks) {
                 bytes.push(block[0]);
                 if (block[1] !== 0) bytes.push(block[1]);
             }
-            const decoder = new TextDecoder();
-            return decoder.decode(new Uint8Array(bytes));
+            return new TextDecoder().decode(new Uint8Array(bytes));
         }
 
         // Шифрование
-        function encryptText() {
-            try {
-                const text = document.getElementById('inputText').value;
-                if (!text) throw new Error("Введите текст для шифрования");
-                
-                const blocks = textToBlocks(text);
-                const t = Math.floor(Math.random() * 10) + 1; // Случайный параметр t
-                const lieElement = generateLieElement(); // Генерация элемента алгебры Ли
-                
-                const expMatrix = matrixExp(lieElement, t); // Вычисление exp(t·x)
-                const encryptedBlocks = [];
-                
-                let resultHTML = `<strong>Исходный текст:</strong> "${text}"<br>`;
-                resultHTML += `<strong>Параметр t:</strong> ${t}<br>`;
-                resultHTML += `<strong>Элемент алгебры Ли:</strong><br>`;
-                resultHTML += `[ [${lieElement[0][0]}, ${lieElement[0][1]}]<br>`;
-                resultHTML += `  [${lieElement[1][0]}, ${lieElement[1][1]}] ]<br><br>`;
-                resultHTML += `<strong>Экспонента матрицы:</strong><br>`;
-                resultHTML += `[ [${expMatrix[0][0]}, ${expMatrix[0][1]}]<br>`;
-                resultHTML += `  [${expMatrix[1][0]}, ${expMatrix[1][1]}] ]<br><br>`;
-                
-                // Шифруем каждый блок
-                resultHTML += `<strong>Процесс шифрования:</strong><br>`;
-                for (let i = 0; i < blocks.length; i++) {
-                    const encrypted = applyLieAction(expMatrix, blocks[i]);
-                    encryptedBlocks.push(encrypted);
-                    
-                    resultHTML += `Блок ${i}: [${blocks[i]}] → [${encrypted}]<br>`;
-                }
-                
-                // Сохраняем для расшифровки
-                window.cipherData = {
-                    blocks: encryptedBlocks,
-                    lieElement: lieElement,
-                    t: t
-                };
-                
-                document.getElementById('encryptionResult').innerHTML = resultHTML;
-                document.getElementById('decryptionResult').innerHTML = '';
-                
-            } catch (error) {
-                document.getElementById('encryptionResult').innerHTML = 
-                    `<span class="error">Ошибка шифрования: ${error.message}</span>`;
-            }
+        function encrypt(text, key) {
+            if (key.length < 12) throw new Error("Ключ слишком короткий (минимум 12 символов)");
+            
+            const blocks = textToBlocks(text);
+            const keyMatrix = generateKeyMatrix(key);
+            const t = 5; // Параметр экспоненты
+            const expMatrix = matrixExp(keyMatrix, t);
+            
+            return blocks.map(block => [
+                gfAdd(gfMul(expMatrix[0][0], block[0]), gfAdd(gfMul(expMatrix[0][1], block[1]))),
+                gfAdd(gfMul(expMatrix[1][0], block[0]), gfAdd(gfMul(expMatrix[1][1], block[1])))
+            ]);
         }
 
         // Расшифровка
-        function decryptText() {
-            try {
-                if (!window.cipherData) {
-                    throw new Error("Сначала зашифруйте текст");
-                }
-                
-                const { blocks, lieElement, t } = window.cipherData;
-                const decryptedBlocks = [];
-                
-                // Вычисляем обратную экспоненту
-                const invExpMatrix = matrixExp(lieElement, -t);
-                
-                let resultHTML = `<strong>Обратная экспонента:</strong><br>`;
-                resultHTML += `[ [${invExpMatrix[0][0]}, ${invExpMatrix[0][1]}]<br>`;
-                resultHTML += `  [${invExpMatrix[1][0]}, ${invExpMatrix[1][1]}] ]<br><br>`;
-                resultHTML += `<strong>Процесс расшифровки:</strong><br>`;
-                
-                // Расшифровываем каждый блок
-                for (let i = 0; i < blocks.length; i++) {
-                    const decrypted = applyLieAction(invExpMatrix, blocks[i]);
-                    decryptedBlocks.push(decrypted);
-                    
-                    resultHTML += `Блок ${i}: [${blocks[i]}] → [${decrypted}]<br>`;
-                }
-                
-                // Преобразуем в текст
-                const decryptedText = blocksToText(decryptedBlocks);
-                resultHTML += `<br><strong>Расшифрованный текст:</strong> "${decryptedText}"`;
-                
-                document.getElementById('decryptionResult').innerHTML = resultHTML;
-                
-            } catch (error) {
-                document.getElementById('decryptionResult').innerHTML = 
-                    `<span class="error">Ошибка расшифровки: ${error.message}</span>`;
-            }
+        function decrypt(encryptedBlocks, key) {
+            const keyMatrix = generateKeyMatrix(key);
+            const t = -5; // Обратная экспонента
+            const invExpMatrix = matrixExp(keyMatrix, t);
+            
+            return encryptedBlocks.map(block => [
+                gfAdd(gfMul(invExpMatrix[0][0], block[0]), gfAdd(gfMul(invExpMatrix[0][1], block[1]))),
+                gfAdd(gfMul(invExpMatrix[1][0], block[0]), gfAdd(gfMul(invExpMatrix[1][1], block[1])))
+            ]);
         }
 
-        // Инициализация
-        document.getElementById('encryptBtn').addEventListener('click', encryptText);
-        document.getElementById('decryptBtn').addEventListener('click', decryptText);
+        // --- Обработчики UI ---
+        document.getElementById('encryptBtn').addEventListener('click', () => {
+            try {
+                const key = document.getElementById('key').value;
+                const text = document.getElementById('inputText').value;
+                const encrypted = encrypt(text, key);
+                document.getElementById('result').innerHTML = `
+                    <strong>Зашифрованные данные:</strong><br>
+                    <pre>${JSON.stringify(encrypted, null, 2)}</pre>
+                    <small>Скопируйте этот текст для расшифровки.</small>
+                `;
+            } catch (e) {
+                document.getElementById('result').innerHTML = `<span class="error">Ошибка: ${e.message}</span>`;
+            }
+        });
+
+        document.getElementById('decryptBtn').addEventListener('click', () => {
+            try {
+                const key = document.getElementById('key').value;
+                const encryptedText = prompt("Вставьте зашифрованные данные:");
+                const encrypted = JSON.parse(encryptedText);
+                const decrypted = decrypt(encrypted, key);
+                const text = blocksToText(decrypted);
+                document.getElementById('result').innerHTML = `
+                    <strong>Расшифрованный текст:</strong><br>
+                    <pre>${text}</pre>
+                `;
+            } catch (e) {
+                document.getElementById('result').innerHTML = `<span class="error">Ошибка: ${e.message}</span>`;
+            }
+        });
     </script>
 </body>
 </html>
