@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QARC - Quantum-Inspired Cipher</title>
+    <title>QARC - Quantum Encryption</title>
     <style>
         :root {
             --primary: #4a6fa5;
@@ -143,7 +143,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>QARC - Quantum-Inspired Encryption</h1>
+        <h1>QARC - Quantum Encryption</h1>
         
         <div class="tabs">
             <div class="tab active" onclick="switchTab('encrypt')">Encryption</div>
@@ -151,15 +151,14 @@
             <div class="tab" onclick="switchTab('info')">About</div>
         </div>
         
-        <!-- Encryption Tab -->
         <div id="encrypt-tab">
             <div class="grid">
                 <div class="panel">
                     <label for="inputText">Input Text</label>
                     <textarea id="inputText" placeholder="Enter text to encrypt or ciphertext to decrypt"></textarea>
                     
-                    <label for="key">Encryption Key</label>
-                    <input type="text" id="key" placeholder="Enter secret key (min 12 characters)" value="quantum-secure-key-123">
+                    <label for="key">Encryption Key (min 12 chars)</label>
+                    <input type="text" id="key" placeholder="Enter secret key" value="quantum-secure-key-123">
                     
                     <div class="button-group">
                         <button onclick="encrypt()">Encrypt</button>
@@ -180,7 +179,6 @@
             </div>
         </div>
         
-        <!-- Settings Tab -->
         <div id="settings-tab" class="hidden">
             <div class="panel">
                 <h3>Advanced Configuration</h3>
@@ -202,41 +200,22 @@
                             <option value="256">256 bits (High Security)</option>
                         </select>
                     </div>
-                    <div>
-                        <label for="mode">Cipher Mode</label>
-                        <select id="mode">
-                            <option value="qarc">QARC (Recommended)</option>
-                            <option value="feistel">Quantum Feistel</option>
-                            <option value="sponge">Sponge Construction</option>
-                        </select>
-                    </div>
                 </div>
-                
-                <label for="customSalt">Custom Salt (Hex)</label>
-                <input type="text" id="customSalt" placeholder="Optional custom salt in hexadecimal">
                 
                 <button onclick="saveSettings()">Save Settings</button>
             </div>
         </div>
         
-        <!-- Info Tab -->
         <div id="info-tab" class="hidden">
             <div class="panel">
                 <h3>About QARC Cipher</h3>
-                <p><strong>Quantum-Inspired Auto-Resizing Cipher (QARC)</strong> combines principles from:</p>
+                <p><strong>Quantum-Inspired Encryption</strong> combines:</p>
                 <ul>
-                    <li>Quantum gate operations (Toffoli, CNOT)</li>
-                    <li>Lattice-based cryptography</li>
-                    <li>Adaptive Feistel networks</li>
+                    <li>Quantum gate operations</li>
+                    <li>Key stretching with SHA-256</li>
+                    <li>Nonlinear transformations</li>
                 </ul>
-                <p>Features:</p>
-                <ul>
-                    <li>🔒 Provably reversible operations</li>
-                    <li>🌀 Nonlinear diffusion using quantum-inspired gates</li>
-                    <li>⚡ Configurable security parameters</li>
-                    <li>🔑 Key-dependent S-box generation</li>
-                </ul>
-                <p>Warning: This is for educational purposes. For production use, consult professional cryptographers.</p>
+                <p>For educational purposes only.</p>
             </div>
         </div>
         
@@ -244,98 +223,40 @@
     </div>
 
     <script>
-        // Core QARC Cipher Implementation
         class QARCipher {
-            constructor(key, rounds = 5, blockSize = 128, mode = 'qarc') {
-                this.key = this.keyStretch(key);
+            constructor(key, rounds = 5, blockSize = 128) {
                 this.rounds = rounds;
                 this.blockSize = blockSize;
-                this.mode = mode;
                 this.salt = this.generateSalt();
-                this.log = [];
+                this.keyPromise = this.keyStretch(key);
             }
             
-            keyStretch(key) {
-                // PBKDF2-like key stretching
+            async keyStretch(key) {
                 const encoder = new TextEncoder();
                 let stretchedKey = encoder.encode(key);
                 
                 for (let i = 0; i < 1000; i++) {
-                    const hash = this.sha256(stretchedKey);
-                    stretchedKey = new Uint8Array([...stretchedKey, ...hash]);
+                    const hash = await crypto.subtle.digest('SHA-256', stretchedKey);
+                    const hashArray = new Uint8Array(hash);
+                    stretchedKey = new Uint8Array([...stretchedKey, ...hashArray]);
                 }
                 
-                return stretchedKey.slice(0, 64); // Return 64-byte key
+                return stretchedKey.slice(0, 64);
             }
             
             generateSalt() {
-                // Generate 16-byte salt from current time and random values
                 const salt = new Uint8Array(16);
-                const now = Date.now();
-                
-                for (let i = 0; i < 8; i++) {
-                    salt[i] = (now >> (i * 8)) & 0xFF;
-                    salt[i + 8] = Math.floor(Math.random() * 256);
-                }
-                
+                crypto.getRandomValues(salt);
                 return salt;
             }
             
-            sha256(buffer) {
-                // Simple SHA-256 polyfill (in production use Web Crypto API)
-                const encoder = new TextEncoder();
-                const data = typeof buffer === 'string' ? encoder.encode(buffer) : buffer;
-                
-                return crypto.subtle.digest('SHA-256', data).then(hash => {
-                    return new Uint8Array(hash);
-                });
-            }
-            
-            async quantumGate(state, control, target) {
-                // Implement a quantum-inspired gate operation
-                const controlBits = this.extractBits(control, 4);
-                const targetBits = this.extractBits(target, 4);
-                
-                // Apply nonlinear transformation
-                let result = new Uint8Array(state.length);
-                for (let i = 0; i < state.length; i++) {
-                    // XOR with rotated control bits
-                    const rotated = (controlBits[i % 4] << 3) | (controlBits[i % 4] >> 1);
-                    result[i] = state[i] ^ rotated;
-                    
-                    // Conditional NOT based on target bits
-                    if ((targetBits[i % 4] & 0x01) === 1) {
-                        result[i] = ~result[i] & 0xFF;
-                    }
-                }
-                
-                return result;
-            }
-            
-            extractBits(value, count) {
-                // Extract specific bits from each byte
-                const bits = new Uint8Array(count);
-                for (let i = 0; i < count; i++) {
-                    bits[i] = (value[i % value.length] >> (i % 8)) & 0x01;
-                }
-                return bits;
-            }
-            
-            async processBlock(block, encrypt = true) {
-                // Core cipher processing
+            async processBlock(block, key, encrypt = true) {
                 let state = new Uint8Array(block);
-                const roundKeys = this.generateRoundKeys();
+                const roundKeys = this.generateRoundKeys(key);
                 
                 for (let round = 0; round < this.rounds; round++) {
                     const rKey = roundKeys[encrypt ? round : this.rounds - 1 - round];
-                    
-                    // Substitution
                     state = await this.substitute(state, rKey);
-                    
-                    // Quantum gate operation
-                    state = await this.quantumGate(state, rKey, this.key);
-                    
-                    // Permutation
                     state = this.permute(state);
                 }
                 
@@ -343,17 +264,14 @@
             }
             
             substitute(state, roundKey) {
-                // Key-dependent substitution
                 const result = new Uint8Array(state.length);
                 for (let i = 0; i < state.length; i++) {
-                    const keyByte = roundKey[i % roundKey.length];
-                    result[i] = (state[i] + keyByte + i) % 256;
+                    result[i] = (state[i] + roundKey[i % roundKey.length] + i) % 256;
                 }
-                return Promise.resolve(result);
+                return result;
             }
             
             permute(state) {
-                // Bitwise permutation
                 const result = new Uint8Array(state.length);
                 for (let i = 0; i < state.length; i++) {
                     const j = (i * 13 + 7) % state.length;
@@ -362,13 +280,12 @@
                 return result;
             }
             
-            generateRoundKeys() {
-                // Derive round keys from master key
+            generateRoundKeys(key) {
                 const roundKeys = [];
                 for (let i = 0; i < this.rounds; i++) {
                     const roundKey = new Uint8Array(16);
                     for (let j = 0; j < 16; j++) {
-                        roundKey[j] = this.key[(i * 16 + j) % this.key.length] ^ (i * 0x11 + j * 0x5A);
+                        roundKey[j] = key[(i * 16 + j) % key.length] ^ (i * 0x11 + j * 0x5A);
                     }
                     roundKeys.push(roundKey);
                 }
@@ -376,57 +293,45 @@
             }
             
             async encrypt(plaintext) {
-                try {
-                    const encoder = new TextEncoder();
-                    const data = encoder.encode(plaintext);
-                    const blockSize = this.blockSize / 8;
-                    const paddedData = this.padData(data, blockSize);
-                    
-                    let ciphertext = new Uint8Array(paddedData.length + this.salt.length);
-                    ciphertext.set(this.salt, 0);
-                    
-                    // Process each block
-                    for (let i = 0; i < paddedData.length; i += blockSize) {
-                        const block = paddedData.slice(i, i + blockSize);
-                        const encryptedBlock = await this.processBlock(block, true);
-                        ciphertext.set(encryptedBlock, this.salt.length + i);
-                    }
-                    
-                    return this.uint8ToHex(ciphertext);
-                } catch (error) {
-                    console.error("Encryption error:", error);
-                    throw error;
+                const key = await this.keyPromise;
+                const encoder = new TextEncoder();
+                const data = encoder.encode(plaintext);
+                const blockSize = this.blockSize / 8;
+                const paddedData = this.padData(data, blockSize);
+                
+                let ciphertext = new Uint8Array(paddedData.length + this.salt.length);
+                ciphertext.set(this.salt, 0);
+                
+                for (let i = 0; i < paddedData.length; i += blockSize) {
+                    const block = paddedData.slice(i, i + blockSize);
+                    const encryptedBlock = await this.processBlock(block, key, true);
+                    ciphertext.set(encryptedBlock, this.salt.length + i);
                 }
+                
+                return this.uint8ToHex(ciphertext);
             }
             
             async decrypt(ciphertextHex) {
-                try {
-                    const ciphertext = this.hexToUint8(ciphertextHex);
-                    this.salt = ciphertext.slice(0, 16);
-                    const data = ciphertext.slice(16);
-                    const blockSize = this.blockSize / 8;
-                    
-                    let plaintext = new Uint8Array(data.length);
-                    
-                    // Process each block
-                    for (let i = 0; i < data.length; i += blockSize) {
-                        const block = data.slice(i, i + blockSize);
-                        const decryptedBlock = await this.processBlock(block, false);
-                        plaintext.set(decryptedBlock, i);
-                    }
-                    
-                    // Remove padding
-                    plaintext = this.unpadData(plaintext);
-                    const decoder = new TextDecoder();
-                    return decoder.decode(plaintext);
-                } catch (error) {
-                    console.error("Decryption error:", error);
-                    throw error;
+                const key = await this.keyPromise;
+                const ciphertext = this.hexToUint8(ciphertextHex);
+                this.salt = ciphertext.slice(0, 16);
+                const data = ciphertext.slice(16);
+                const blockSize = this.blockSize / 8;
+                
+                let plaintext = new Uint8Array(data.length);
+                
+                for (let i = 0; i < data.length; i += blockSize) {
+                    const block = data.slice(i, i + blockSize);
+                    const decryptedBlock = await this.processBlock(block, key, false);
+                    plaintext.set(decryptedBlock, i);
                 }
+                
+                plaintext = this.unpadData(plaintext);
+                const decoder = new TextDecoder();
+                return decoder.decode(plaintext);
             }
             
             padData(data, blockSize) {
-                // PKCS#7 padding
                 const padLength = blockSize - (data.length % blockSize);
                 const padded = new Uint8Array(data.length + padLength);
                 padded.set(data);
@@ -437,11 +342,7 @@
             }
             
             unpadData(data) {
-                // Remove PKCS#7 padding
                 const padLength = data[data.length - 1];
-                if (padLength > data.length) {
-                    throw new Error("Invalid padding");
-                }
                 return data.slice(0, data.length - padLength);
             }
             
@@ -458,16 +359,10 @@
             }
         }
 
-        // UI Management
-        let currentCipher = null;
-        
+        // UI Functions
         function switchTab(tabName) {
-            document.querySelectorAll('.tab').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            document.querySelectorAll('[id$="-tab"]').forEach(tab => {
-                tab.classList.add('hidden');
-            });
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('[id$="-tab"]').forEach(tab => tab.classList.add('hidden'));
             
             document.querySelector(`.tab:nth-child(${tabName === 'encrypt' ? 1 : tabName === 'settings' ? 2 : 3})`).classList.add('active');
             document.getElementById(`${tabName}-tab`).classList.remove('hidden');
@@ -492,9 +387,8 @@
             
             const rounds = parseInt(document.getElementById('rounds').value);
             const blockSize = parseInt(document.getElementById('blockSize').value);
-            const mode = document.getElementById('mode').value;
             
-            return new QARCipher(key, rounds, blockSize, mode);
+            return new QARCipher(key, rounds, blockSize);
         }
         
         async function encrypt() {
@@ -508,16 +402,13 @@
                     return;
                 }
                 
+                document.getElementById('outputText').value = "Encrypting...";
                 const encrypted = await cipher.encrypt(input);
+                
                 document.getElementById('outputText').value = encrypted;
                 document.getElementById('operationDetails').textContent = 
-                    `Encryption successful!\n\n` +
-                    `Cipher: QARC-${cipher.blockSize}-${cipher.rounds}\n` +
-                    `Key hash: ${await cipher.sha256(cipher.key).then(h => cipher.uint8ToHex(h.slice(0, 8)))}\n` +
-                    `Output size: ${encrypted.length / 2} bytes`;
-                
-                showStatus('Text encrypted successfully!');
-                currentCipher = cipher;
+                    `Encrypted successfully!\nKey hash: ${await cipher.keyPromise.then(k => cipher.uint8ToHex(k.slice(0, 8))}...`;
+                showStatus('Encryption successful!');
             } catch (error) {
                 showStatus('Encryption failed: ' + error.message, true);
                 console.error(error);
@@ -535,28 +426,26 @@
                     return;
                 }
                 
-                if (!/^[0-9a-fA-F]+$/.test(input)) {
+                if (!/^[0-9a-f]+$/i.test(input)) {
                     showStatus('Ciphertext must be in hexadecimal format', true);
                     return;
                 }
                 
+                document.getElementById('outputText').value = "Decrypting...";
                 const decrypted = await cipher.decrypt(input);
+                
                 document.getElementById('outputText').value = decrypted;
                 document.getElementById('operationDetails').textContent = 
-                    `Decryption successful!\n\n` +
-                    `Recovered ${decrypted.length} characters\n` +
-                    `First 16 bytes: ${decrypted.substring(0, 16)}...`;
-                
-                showStatus('Text decrypted successfully!');
-                currentCipher = cipher;
+                    `Decrypted successfully!\nRecovered ${decrypted.length} characters`;
+                showStatus('Decryption successful!');
             } catch (error) {
-                showStatus('Decryption failed. Check your key and input.', true);
+                showStatus('Decryption failed. Check your key and input format.', true);
                 console.error(error);
             }
         }
         
         function saveSettings() {
-            showStatus('Settings saved successfully');
+            showStatus('Settings saved');
             switchTab('encrypt');
         }
         
