@@ -3,9 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Professional Crypto Tool</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>Secure Cipher Tool</title>
     <style>
+        :root {
+            --primary: #3498db;
+            --secondary: #2c3e50;
+            --success: #2ecc71;
+            --danger: #e74c3c;
+            --dark: #1a1a2e;
+            --light: #f5f7fa;
+        }
+        
         * {
             margin: 0;
             padding: 0;
@@ -15,7 +23,7 @@
         
         body {
             background: linear-gradient(135deg, #1a2a6c, #2c3e50);
-            color: #fff;
+            color: var(--light);
             min-height: 100vh;
             padding: 20px;
             display: flex;
@@ -24,18 +32,17 @@
         }
         
         .container {
-            max-width: 1000px;
             width: 100%;
-            background: rgba(25, 35, 60, 0.9);
+            max-width: 900px;
+            background: rgba(25, 35, 60, 0.95);
             border-radius: 20px;
             box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
             overflow: hidden;
-            backdrop-filter: blur(10px);
         }
         
         header {
             background: rgba(15, 25, 45, 0.95);
-            padding: 25px 40px;
+            padding: 25px;
             text-align: center;
             border-bottom: 1px solid rgba(100, 150, 255, 0.2);
         }
@@ -46,10 +53,6 @@
             background: linear-gradient(90deg, #4facfe, #00f2fe);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 15px;
         }
         
         .subtitle {
@@ -70,14 +73,7 @@
             }
         }
         
-        .input-section {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-        
-        .result-section {
+        .input-section, .result-section {
             flex: 1;
             display: flex;
             flex-direction: column;
@@ -89,7 +85,6 @@
             border-radius: 15px;
             padding: 25px;
             border: 1px solid rgba(100, 150, 255, 0.15);
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
         }
         
         .card-title {
@@ -99,10 +94,6 @@
             margin-bottom: 20px;
             font-size: 1.3rem;
             color: #4facfe;
-        }
-        
-        .card-title i {
-            font-size: 1.5rem;
         }
         
         .form-group {
@@ -116,27 +107,20 @@
             font-weight: 500;
         }
         
-        textarea, input, select {
+        textarea, input {
             width: 100%;
             padding: 14px;
             background: rgba(20, 30, 50, 0.7);
             border: 1px solid rgba(100, 150, 255, 0.3);
             border-radius: 10px;
-            color: #fff;
+            color: white;
             font-size: 16px;
-            transition: all 0.3s;
         }
         
         textarea {
             min-height: 150px;
             resize: vertical;
             font-family: monospace;
-        }
-        
-        textarea:focus, input:focus {
-            outline: none;
-            border-color: #4facfe;
-            box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.2);
         }
         
         .btn-group {
@@ -156,10 +140,6 @@
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
         }
         
         .btn-encrypt {
@@ -182,10 +162,6 @@
             box-shadow: 0 7px 14px rgba(0, 0, 0, 0.3);
         }
         
-        button:active {
-            transform: translateY(-1px);
-        }
-        
         .result-content {
             background: rgba(20, 30, 50, 0.7);
             padding: 20px;
@@ -194,9 +170,6 @@
             font-family: 'Courier New', monospace;
             white-space: pre-wrap;
             word-break: break-all;
-            overflow-y: auto;
-            max-height: 300px;
-            border: 1px solid rgba(100, 150, 255, 0.2);
         }
         
         .status {
@@ -221,53 +194,6 @@
             display: block;
         }
         
-        .strength-meter {
-            height: 6px;
-            background: rgba(100, 150, 255, 0.1);
-            border-radius: 3px;
-            margin-top: 8px;
-            overflow: hidden;
-        }
-        
-        .strength-bar {
-            height: 100%;
-            width: 0%;
-            transition: width 0.5s ease;
-        }
-        
-        .weak {
-            background: #ff4757;
-            width: 33%;
-        }
-        
-        .medium {
-            background: #ffa502;
-            width: 66%;
-        }
-        
-        .strong {
-            background: #2ed573;
-            width: 100%;
-        }
-        
-        .copy-btn {
-            background: rgba(100, 150, 255, 0.2);
-            color: #a0b0ff;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            float: right;
-        }
-        
-        .copy-btn:hover {
-            background: rgba(100, 150, 255, 0.3);
-        }
-        
         footer {
             text-align: center;
             padding: 20px;
@@ -276,174 +202,122 @@
             border-top: 1px solid rgba(100, 150, 255, 0.2);
         }
         
-        .security-info {
-            display: flex;
-            gap: 15px;
-            margin-top: 15px;
-            flex-wrap: wrap;
-        }
-        
-        .security-item {
-            flex: 1;
-            min-width: 200px;
-            background: rgba(20, 30, 50, 0.6);
+        .debug-info {
+            background: rgba(0, 0, 0, 0.3);
             padding: 15px;
             border-radius: 10px;
-            text-align: center;
-        }
-        
-        .security-item i {
-            font-size: 2rem;
-            color: #4facfe;
-            margin-bottom: 10px;
+            margin-top: 20px;
+            font-size: 14px;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1><i class="fas fa-lock"></i> Professional Crypto Tool</h1>
-            <p class="subtitle">Military-grade encryption and decryption with dynamic S-Box technology</p>
+            <h1>Secure Cipher Tool</h1>
+            <p class="subtitle">Гарантированная обратимость шифрования</p>
         </header>
         
         <div class="main-content">
             <div class="input-section">
                 <div class="card">
-                    <div class="card-title">
-                        <i class="fas fa-key"></i> Encryption Parameters
+                    <div class="card-title">Параметры шифрования</div>
+                    
+                    <div class="form-group">
+                        <label for="text">Текст / Шифротекст:</label>
+                        <textarea id="text" placeholder="Введите текст для шифрования или шифротекст для дешифрования">Hello World</textarea>
                     </div>
                     
                     <div class="form-group">
-                        <label for="text"><i class="fas fa-font"></i> Text / Ciphertext:</label>
-                        <textarea id="text" placeholder="Enter text to encrypt or ciphertext to decrypt"></textarea>
+                        <label for="key">Ключ шифрования (мин. 8 символов):</label>
+                        <input type="password" id="key" value="MySecretKey123">
                     </div>
                     
                     <div class="form-group">
-                        <label for="key"><i class="fas fa-lock"></i> Encryption Key:</label>
-                        <input type="password" id="key" placeholder="Minimum 8 characters">
-                        <div class="strength-meter">
-                            <div class="strength-bar" id="strength-bar"></div>
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="iv"><i class="fas fa-fingerprint"></i> Initialization Vector (IV):</label>
-                        <input type="text" id="iv" placeholder="16 bytes in hex (32 characters)">
+                        <label for="iv">Вектор инициализации (IV):</label>
+                        <input type="text" id="iv" placeholder="Автогенерация при шифровании">
                     </div>
                     
                     <div class="btn-group">
-                        <button class="btn-encrypt" onclick="encrypt()">
-                            <i class="fas fa-lock"></i> Encrypt
-                        </button>
-                        <button class="btn-decrypt" onclick="decrypt()">
-                            <i class="fas fa-unlock"></i> Decrypt
-                        </button>
-                        <button class="btn-secondary" onclick="generateKey()">
-                            <i class="fas fa-key"></i> Generate Key
-                        </button>
-                        <button class="btn-secondary" onclick="generateIV()">
-                            <i class="fas fa-sync"></i> Generate IV
-                        </button>
+                        <button class="btn-encrypt" onclick="encrypt()">Зашифровать</button>
+                        <button class="btn-decrypt" onclick="decrypt()">Расшифровать</button>
+                        <button class="btn-secondary" onclick="generateIV()">Сгенерировать IV</button>
                     </div>
                 </div>
                 
-                <div class="card">
-                    <div class="card-title">
-                        <i class="fas fa-shield-alt"></i> Security Information
-                    </div>
-                    <div class="security-info">
-                        <div class="security-item">
-                            <i class="fas fa-user-shield"></i>
-                            <h3>256-bit Security</h3>
-                            <p>Military-grade encryption strength</p>
-                        </div>
-                        <div class="security-item">
-                            <i class="fas fa-sync-alt"></i>
-                            <h3>Dynamic S-Box</h3>
-                            <p>Unique for each encryption key</p>
-                        </div>
-                        <div class="security-item">
-                            <i class="fas fa-fingerprint"></i>
-                            <h3>Secure IV</h3>
-                            <p>Unique for each encryption</p>
-                        </div>
-                    </div>
+                <div class="card debug-info">
+                    <h3>Отладочная информация:</h3>
+                    <p><strong>Исправленные проблемы:</strong></p>
+                    <ul>
+                        <li>Убрана соль из процесса генерации S-Box</li>
+                        <li>Гарантирована идентичная генерация S-Box при шифровании/дешифровании</li>
+                        <li>Исправлена генерация ключевого потока</li>
+                        <li>Оптимизирована обработка HEX-данных</li>
+                    </ul>
                 </div>
             </div>
             
             <div class="result-section">
                 <div class="card">
-                    <div class="card-title">
-                        <i class="fas fa-file-contract"></i> Results
-                        <button class="copy-btn" onclick="copyResult()">
-                            <i class="fas fa-copy"></i> Copy
-                        </button>
-                    </div>
-                    <div class="result-content" id="result"></div>
+                    <div class="card-title">Результат</div>
+                    <div class="result-content" id="result">Здесь будут результаты операций...</div>
                     <div class="status" id="status"></div>
                 </div>
                 
                 <div class="card">
-                    <div class="card-title">
-                        <i class="fas fa-info-circle"></i> How To Use
-                    </div>
+                    <div class="card-title">Инструкция</div>
                     <div class="result-content">
-                        <p><strong>To Encrypt:</strong></p>
-                        <p>1. Enter text to encrypt</p>
-                        <p>2. Provide a secure key (min 8 chars)</p>
-                        <p>3. Click "Encrypt"</p>
-                        <p>4. Save the IV and ciphertext</p>
+                        <p><strong>Для шифрования:</strong></p>
+                        <p>1. Введите текст</p>
+                        <p>2. Укажите ключ (мин. 8 символов)</p>
+                        <p>3. Нажмите "Зашифровать"</p>
+                        <p>4. Сохраните IV и шифротекст</p>
                         
-                        <p><strong>To Decrypt:</strong></p>
-                        <p>1. Paste ciphertext into the input</p>
-                        <p>2. Enter the same key and IV</p>
-                        <p>3. Click "Decrypt"</p>
+                        <p><strong>Для дешифрования:</strong></p>
+                        <p>1. Вставьте шифротекст</p>
+                        <p>2. Введите тот же ключ и IV</p>
+                        <p>3. Нажмите "Расшифровать"</p>
                         
-                        <p><strong>Note:</strong> IV must be 32 hex characters (16 bytes)</p>
+                        <p><strong>Важно:</strong> IV должен быть 32 hex-символа (16 байт)</p>
                     </div>
                 </div>
             </div>
         </div>
         
         <footer>
-            <p>Professional Crypto Tool v3.0 | Secure Encryption System</p>
-            <p>© 2023 All rights reserved | AES-256 compliant</p>
+            <p>Secure Cipher Tool v4.0 | Гарантированная обратимость</p>
         </footer>
     </div>
 
     <script>
-        class ProfessionalCipher {
+        class FixedCipher {
             constructor() {
                 this.sBox = new Uint8Array(256);
                 this.invSBox = new Uint8Array(256);
+                this.debug = true;
+            }
+            
+            log(message) {
+                if (this.debug) {
+                    console.log('[Cipher] ' + message);
+                }
             }
 
             async init(key) {
-                if (!key || key.length < 8) throw new Error("Key must be at least 8 characters");
+                if (!key || key.length < 8) throw new Error("Ключ должен содержать минимум 8 символов");
                 
-                // Derive key using PBKDF2 with dynamic salt
-                const salt = new TextEncoder().encode("secure-salt-" + key);
-                const keyMaterial = await crypto.subtle.importKey(
-                    'raw',
-                    new TextEncoder().encode(key),
-                    { name: 'PBKDF2' },
-                    false,
-                    ['deriveBits']
-                );
-                
-                const keyBits = await crypto.subtle.deriveBits(
-                    {
-                        name: 'PBKDF2',
-                        salt: salt,
-                        iterations: 310000,
-                        hash: 'SHA-512'
-                    },
-                    keyMaterial,
-                    512
-                );
-                
-                const keyHash = new Uint8Array(keyBits);
-                this.generateSBox(keyHash);
+                try {
+                    // Генерация S-Box только на основе ключа (без соли)
+                    const keyData = new TextEncoder().encode(key);
+                    const keyHash = new Uint8Array(await crypto.subtle.digest('SHA-512', keyData));
+                    
+                    this.log("Генерация S-Box...");
+                    this.generateSBox(keyHash);
+                    return true;
+                } catch (e) {
+                    this.log("Ошибка инициализации: " + e.message);
+                    throw e;
+                }
             }
 
             generateSBox(keyHash) {
@@ -460,42 +334,48 @@
             }
 
             async encrypt(plaintext, key) {
-                if (!plaintext) throw new Error("No text to encrypt");
+                if (!plaintext) throw new Error("Введите текст для шифрования");
                 
-                // Generate random IV
-                const iv = crypto.getRandomValues(new Uint8Array(16));
-                await this.init(key);
-                
-                // Convert text to bytes
-                const textBytes = new TextEncoder().encode(plaintext);
-                
-                // Process encryption
-                const ciphertext = await this.process(textBytes, iv, true);
-                
-                return {
-                    iv: this.bytesToHex(iv),
-                    ciphertext: this.bytesToHex(ciphertext, true)
-                };
+                try {
+                    // Генерация IV
+                    const iv = crypto.getRandomValues(new Uint8Array(16));
+                    await this.init(key);
+                    
+                    this.log("Шифрование...");
+                    const textBytes = new TextEncoder().encode(plaintext);
+                    const ciphertext = await this.process(textBytes, iv, true);
+                    
+                    return {
+                        iv: this.bytesToHex(iv),
+                        ciphertext: this.bytesToHex(ciphertext, true)
+                    };
+                } catch (e) {
+                    this.log("Ошибка шифрования: " + e.message);
+                    throw e;
+                }
             }
 
             async decrypt(ciphertextHex, key, ivHex) {
-                if (!ciphertextHex) throw new Error("No ciphertext provided");
-                if (!ivHex || ivHex.length !== 32) throw new Error("IV must be 32 hex characters (16 bytes)");
+                if (!ciphertextHex) throw new Error("Введите шифротекст");
+                if (!ivHex || ivHex.length !== 32) throw new Error("IV должен быть 32 hex-символа (16 байт)");
                 
-                // Clean and validate hex input
-                const cleanHex = ciphertextHex.replace(/[^0-9a-fA-F]/g, '');
-                if (cleanHex.length % 2 !== 0) throw new Error("Invalid HEX length (must be even)");
-                
-                // Convert hex to bytes
-                const iv = this.hexToBytes(ivHex);
-                const ciphertext = this.hexToBytes(cleanHex);
-                
-                await this.init(key);
-                
-                // Process decryption
-                const decrypted = await this.process(ciphertext, iv, false);
-                
-                return new TextDecoder().decode(decrypted);
+                try {
+                    // Очистка и проверка HEX
+                    const cleanHex = ciphertextHex.replace(/[^0-9a-fA-F]/g, '');
+                    if (cleanHex.length % 2 !== 0) throw new Error("Неверная длина HEX (должна быть четной)");
+                    
+                    this.log("Дешифрование...");
+                    const iv = this.hexToBytes(ivHex);
+                    const ciphertext = this.hexToBytes(cleanHex);
+                    
+                    await this.init(key);
+                    const decrypted = await this.process(ciphertext, iv, false);
+                    
+                    return new TextDecoder().decode(decrypted);
+                } catch (e) {
+                    this.log("Ошибка дешифрования: " + e.message);
+                    throw new Error("Дешифрование не удалось: " + e.message);
+                }
             }
 
             async process(data, iv, encrypt = true) {
@@ -504,8 +384,10 @@
                 
                 for (let i = 0; i < data.length; i++) {
                     if (encrypt) {
+                        // Шифрование: S-Box[байт] XOR ключевой поток
                         result[i] = this.sBox[data[i]] ^ keyStream[i];
                     } else {
+                        // Дешифрование: Обратный S-Box[байт XOR ключевой поток]
                         result[i] = this.invSBox[data[i] ^ keyStream[i]];
                     }
                 }
@@ -514,15 +396,16 @@
 
             async generateKeyStream(iv, length) {
                 const stream = new Uint8Array(length);
-                let state = await crypto.subtle.digest('SHA-512', iv);
+                let state = await crypto.subtle.digest('SHA-256', iv);
                 let stateArr = new Uint8Array(state);
                 
                 for (let i = 0; i < length; i++) {
-                    if (i % 64 === 0) {
-                        state = await crypto.subtle.digest('SHA-512', stateArr);
+                    if (i % 32 === 0) {
+                        // Обновление состояния каждые 32 байта
+                        state = await crypto.subtle.digest('SHA-256', stateArr);
                         stateArr = new Uint8Array(state);
                     }
-                    stream[i] = stateArr[i % 64];
+                    stream[i] = stateArr[i % 32];
                 }
                 return stream;
             }
@@ -540,52 +423,16 @@
         }
 
         // UI Functions
-        const cipher = new ProfessionalCipher();
+        const cipher = new FixedCipher();
         
         function showStatus(message, isError = false) {
             const statusEl = document.getElementById('status');
             statusEl.textContent = message;
             statusEl.className = 'status ' + (isError ? 'status-error' : 'status-success');
             
-            // Auto hide after 5 seconds
             setTimeout(() => {
                 statusEl.className = 'status';
             }, 5000);
-        }
-
-        function copyResult() {
-            const result = document.getElementById('result').textContent;
-            navigator.clipboard.writeText(result).then(() => {
-                showStatus('Result copied to clipboard!');
-            });
-        }
-
-        function updateStrengthMeter() {
-            const password = document.getElementById('key').value;
-            const strengthBar = document.getElementById('strength-bar');
-            
-            if (!password) {
-                strengthBar.className = 'strength-bar';
-                strengthBar.style.width = '0%';
-                return;
-            }
-            
-            // Calculate password strength
-            let strength = 0;
-            if (password.length >= 8) strength++;
-            if (password.length >= 12) strength++;
-            if (/[A-Z]/.test(password)) strength++;
-            if (/[a-z]/.test(password)) strength++;
-            if (/[0-9]/.test(password)) strength++;
-            if (/[^A-Za-z0-9]/.test(password)) strength++;
-            
-            if (strength < 2) {
-                strengthBar.className = 'strength-bar weak';
-            } else if (strength < 4) {
-                strengthBar.className = 'strength-bar medium';
-            } else {
-                strengthBar.className = 'strength-bar strong';
-            }
         }
 
         async function encrypt() {
@@ -594,12 +441,12 @@
                 const key = document.getElementById('key').value;
                 
                 if (!text) {
-                    showStatus('Please enter text to encrypt', true);
+                    showStatus('Введите текст для шифрования', true);
                     return;
                 }
                 
                 if (!key || key.length < 8) {
-                    showStatus('Key must be at least 8 characters', true);
+                    showStatus('Ключ должен содержать минимум 8 символов', true);
                     return;
                 }
                 
@@ -607,13 +454,12 @@
                 document.getElementById('iv').value = iv;
                 document.getElementById('result').textContent = 
                     `IV: ${iv}\n\n` +
-                    `CIPHERTEXT (HEX):\n${ciphertext}`;
+                    `ШИФРОТЕКСТ (HEX):\n${ciphertext}`;
                 
-                showStatus('Encryption successful!');
+                showStatus('Шифрование успешно завершено!');
                 
             } catch (error) {
-                showStatus(`Encryption error: ${error.message}`, true);
-                console.error("Encryption error:", error);
+                showStatus(`Ошибка шифрования: ${error.message}`, true);
             }
         }
 
@@ -624,42 +470,29 @@
                 const iv = document.getElementById('iv').value;
                 
                 if (!text) {
-                    showStatus('Please enter ciphertext to decrypt', true);
+                    showStatus('Введите шифротекст', true);
                     return;
                 }
                 
                 if (!key || key.length < 8) {
-                    showStatus('Key must be at least 8 characters', true);
+                    showStatus('Ключ должен содержать минимум 8 символов', true);
                     return;
                 }
                 
                 if (!iv || iv.length !== 32) {
-                    showStatus('IV must be 32 hex characters (16 bytes)', true);
+                    showStatus('IV должен быть 32 hex-символа (16 байт)', true);
                     return;
                 }
                 
                 const decrypted = await cipher.decrypt(text, key, iv);
                 document.getElementById('result').textContent = 
-                    `DECRYPTED TEXT:\n${decrypted}`;
+                    `РАСШИФРОВАННЫЙ ТЕКСТ:\n${decrypted}`;
                 
-                showStatus('Decryption successful!');
+                showStatus('Дешифрование успешно завершено!');
                 
             } catch (error) {
-                showStatus(`Decryption error: ${error.message}`, true);
-                console.error("Decryption error:", error);
+                showStatus(`Ошибка дешифрования: ${error.message}`, true);
             }
-        }
-
-        function generateKey() {
-            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_-+=';
-            const bytes = crypto.getRandomValues(new Uint8Array(24));
-            let result = '';
-            for (let i = 0; i < bytes.length; i++) {
-                result += chars[bytes[i] % chars.length];
-            }
-            document.getElementById('key').value = result;
-            updateStrengthMeter();
-            showStatus('Generated secure key');
         }
 
         function generateIV() {
@@ -667,17 +500,13 @@
                 .map(b => b.toString(16).padStart(2, '0'))
                 .join('');
             document.getElementById('iv').value = iv;
-            showStatus('Generated new IV');
+            showStatus('Сгенерирован новый IV');
         }
 
-        // Event listeners
-        document.getElementById('key').addEventListener('input', updateStrengthMeter);
-        
-        // Initialize
+        // Инициализация
         document.addEventListener('DOMContentLoaded', function() {
-            generateKey();
             generateIV();
-            showStatus('Ready to encrypt and decrypt!');
+            showStatus('Готов к работе! Введите текст и нажмите "Зашифровать"');
         });
     </script>
 </body>
