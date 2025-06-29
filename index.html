@@ -515,7 +515,7 @@
         </div>
         
         <footer>
-            <p>CryptoVault Pro v5.0 | Профессиональное решение для шифрования | © 2023 Все права защищены</p>
+            <p>CryptoVault Pro v6.0 | Исправленная дешифровка | © 2023 Все права защищены</p>
         </footer>
     </div>
 
@@ -793,34 +793,43 @@
                 // Обновляем индикаторы раундов
                 this.updateRoundIndicators(0);
                 
-                for (let round = 0; round < this.rounds; round++) {
-                    // Генерация ключевого потока для этого раунда
-                    const keyStream = await this.generateKeyStream(iv, currentData.length, round);
-                    const result = new Uint8Array(currentData.length);
-                    
-                    // Получаем S-Box для текущего раунда
-                    const sBox = this.sBoxes[round];
-                    const invSBox = this.invSBoxes[round];
-                    
-                    // Применяем преобразование
-                    for (let i = 0; i < currentData.length; i++) {
-                        if (encrypt) {
-                            // Шифрование: S-Box[байт] XOR ключевой поток
+                if (encrypt) {
+                    // Шифрование: прямой порядок раундов (0 -> ROUNDS-1)
+                    for (let round = 0; round < this.rounds; round++) {
+                        const keyStream = await this.generateKeyStream(iv, currentData.length, round);
+                        const result = new Uint8Array(currentData.length);
+                        const sBox = this.sBoxes[round];
+                        
+                        for (let i = 0; i < currentData.length; i++) {
                             result[i] = sBox[currentData[i]] ^ keyStream[i];
-                        } else {
-                            // Дешифрование: Обратный S-Box[байт XOR ключевой поток]
-                            result[i] = invSBox[currentData[i] ^ keyStream[i]];
+                        }
+                        
+                        currentData = result;
+                        this.updateRoundIndicators(round + 1);
+                        
+                        // Задержка для анимации
+                        if (round < this.rounds - 1) {
+                            await new Promise(resolve => setTimeout(resolve, 30));
                         }
                     }
-                    
-                    currentData = result;
-                    
-                    // Обновляем индикатор раунда
-                    this.updateRoundIndicators(round + 1);
-                    
-                    // Искусственная задержка для визуализации (только для UI)
-                    if (encrypt && round < this.rounds - 1) {
-                        await new Promise(resolve => setTimeout(resolve, 30));
+                } else {
+                    // Дешифрование: обратный порядок раундов (ROUNDS-1 -> 0)
+                    for (let round = this.rounds - 1; round >= 0; round--) {
+                        const keyStream = await this.generateKeyStream(iv, currentData.length, round);
+                        const result = new Uint8Array(currentData.length);
+                        const invSBox = this.invSBoxes[round];
+                        
+                        for (let i = 0; i < currentData.length; i++) {
+                            result[i] = invSBox[currentData[i] ^ keyStream[i]];
+                        }
+                        
+                        currentData = result;
+                        this.updateRoundIndicators(this.rounds - round);
+                        
+                        // Задержка для анимации
+                        if (round > 0) {
+                            await new Promise(resolve => setTimeout(resolve, 30));
+                        }
                     }
                 }
                 
