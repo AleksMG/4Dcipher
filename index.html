@@ -3,368 +3,105 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CryptoVault Pro</title>
+    <title>Secure Cipher Tool</title>
     <style>
-        :root {
-            --bg-primary: #f5f5f7;
-            --bg-secondary: #ffffff;
-            --bg-tertiary: #e8e8ed;
-            --accent-color: #0071e3;
-            --accent-hover: #0062c3;
-            --text-primary: #1d1d1f;
-            --text-secondary: #86868b;
-            --border-radius: 12px;
-            --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-            --error-color: #ff3b30;
-            --success-color: #34c759;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
-        }
-
         body {
-            background-color: var(--bg-primary);
-            color: var(--text-primary);
-            line-height: 1.5;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            min-height: 100vh;
-        }
-
-        .container {
-            width: 100%;
+            font-family: Arial, sans-serif;
             max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
         }
-
-        .card {
-            background-color: var(--bg-secondary);
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-            padding: 28px;
-            margin-bottom: 20px;
-        }
-
-        h1 {
-            font-size: 24px;
-            font-weight: 600;
-            margin-bottom: 8px;
-        }
-
-        .subtitle {
-            color: var(--text-secondary);
-            font-size: 14px;
-            margin-bottom: 24px;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        label {
-            display: block;
-            font-size: 13px;
-            font-weight: 500;
-            margin-bottom: 6px;
-            color: var(--text-secondary);
-        }
-
-        textarea, input, select {
+        textarea, input, button {
             width: 100%;
-            padding: 12px 16px;
-            border: 1px solid var(--bg-tertiary);
-            border-radius: var(--border-radius);
-            background-color: var(--bg-secondary);
-            font-size: 14px;
-            transition: all 0.2s;
+            padding: 8px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
         }
-
-        textarea {
-            min-height: 120px;
-            resize: vertical;
-        }
-
-        textarea:focus, input:focus, select:focus {
-            outline: none;
-            border-color: var(--accent-color);
-            box-shadow: 0 0 0 3px rgba(0, 125, 250, 0.1);
-        }
-
-        .btn-group {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-
         button {
-            background-color: var(--accent-color);
+            background-color: #4CAF50;
             color: white;
             border: none;
-            border-radius: var(--border-radius);
-            padding: 10px 20px;
-            font-size: 14px;
-            font-weight: 500;
             cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 6px;
+            padding: 10px;
         }
-
         button:hover {
-            background-color: var(--accent-hover);
+            background-color: #45a049;
         }
-
-        button.secondary {
-            background-color: var(--bg-tertiary);
-            color: var(--text-primary);
-        }
-
-        button.secondary:hover {
-            background-color: #d8d8dc;
-        }
-
-        .result-container {
-            margin-top: 24px;
-        }
-
-        .result-label {
-            font-size: 13px;
-            font-weight: 500;
-            margin-bottom: 8px;
-            color: var(--text-secondary);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .result-content {
-            background-color: var(--bg-tertiary);
-            border-radius: var(--border-radius);
-            padding: 16px;
-            font-family: 'SF Mono', monospace;
-            font-size: 13px;
+        .result {
+            background-color: #f4f4f4;
+            padding: 15px;
+            margin-top: 20px;
             white-space: pre-wrap;
             word-break: break-all;
-            max-height: 300px;
-            overflow-y: auto;
         }
-
-        .copy-btn {
-            background: none;
-            border: none;
-            color: var(--accent-color);
-            font-size: 12px;
-            padding: 0;
-            cursor: pointer;
-        }
-
-        .status-message {
-            padding: 12px;
-            border-radius: var(--border-radius);
-            margin-top: 16px;
-            font-size: 13px;
-            display: none;
-        }
-
         .error {
-            background-color: rgba(255, 59, 48, 0.1);
-            color: var(--error-color);
-            display: block;
-        }
-
-        .success {
-            background-color: rgba(52, 199, 89, 0.1);
-            color: var(--success-color);
-            display: block;
-        }
-
-        .strength-meter {
-            height: 4px;
-            background-color: var(--bg-tertiary);
-            border-radius: 2px;
-            margin-top: 8px;
-            overflow: hidden;
-        }
-
-        .strength-bar {
-            height: 100%;
-            width: 0%;
-            transition: width 0.3s, background-color 0.3s;
-        }
-
-        .weak {
-            background-color: var(--error-color);
-            width: 33%;
-        }
-
-        .medium {
-            background-color: #ff9500;
-            width: 66%;
-        }
-
-        .strong {
-            background-color: var(--success-color);
-            width: 100%;
-        }
-
-        @media (max-width: 600px) {
-            .btn-group {
-                flex-direction: column;
-            }
-            
-            button {
-                width: 100%;
-            }
+            color: red;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="card">
-            <h1>CryptoVault Pro</h1>
-            <p class="subtitle">Military-grade encryption for your sensitive data</p>
-
-            <div class="form-group">
-                <label for="text">Text</label>
-                <textarea id="text" placeholder="Enter text to encrypt or paste ciphertext to decrypt"></textarea>
-            </div>
-
-            <div class="form-group">
-                <label for="key">Encryption Key</label>
-                <input type="password" id="key" placeholder="Enter your secret key (min 8 characters)">
-                <div class="strength-meter">
-                    <div class="strength-bar" id="strength-bar"></div>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label for="key-confirm">Confirm Key</label>
-                <input type="password" id="key-confirm" placeholder="Re-enter your secret key">
-            </div>
-
-            <div class="form-group">
-                <label for="iv">Initialization Vector (IV)</label>
-                <input type="text" id="iv" placeholder="Auto-generated if empty">
-            </div>
-
-            <div class="btn-group">
-                <button onclick="encrypt()">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M12 15l-5-5h10l-5 5z"/>
-                    </svg>
-                    Encrypt
-                </button>
-                <button onclick="decrypt()" class="secondary">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M12 9l5 5H7l5-5z"/>
-                    </svg>
-                    Decrypt
-                </button>
-                <button onclick="generateKey()" class="secondary">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M12 2v4m0 12v4M5 12H1m22 0h-4m1-7l-3 3m-12-3l3 3m-3 7l3-3m12 3l-3-3"/>
-                    </svg>
-                    Generate Key
-                </button>
-                <button onclick="generateIV()" class="secondary">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M12 2v4m0 12v4M5 12H1m22 0h-4m1-7l-3 3m-12-3l3 3m-3 7l3-3m12 3l-3-3"/>
-                    </svg>
-                    Generate IV
-                </button>
-            </div>
-
-            <div class="result-container">
-                <div class="result-label">
-                    Result
-                    <button class="copy-btn" onclick="copyResult()">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <rect x="8" y="8" width="12" height="12" rx="2"/>
-                            <path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/>
-                        </svg>
-                        Copy
-                    </button>
-                </div>
-                <div class="result-content" id="result"></div>
-            </div>
-
-            <div class="status-message" id="status-message"></div>
-        </div>
+    <h1>Secure Cipher Tool</h1>
+    
+    <div>
+        <label for="text">Text:</label>
+        <textarea id="text" rows="6"></textarea>
     </div>
+    
+    <div>
+        <label for="key">Key (min 8 chars):</label>
+        <input type="password" id="key">
+    </div>
+    
+    <div>
+        <label for="iv">IV (16 bytes in hex):</label>
+        <input type="text" id="iv" placeholder="Will be generated if empty">
+    </div>
+    
+    <div>
+        <button onclick="encrypt()">Encrypt</button>
+        <button onclick="decrypt()">Decrypt</button>
+        <button onclick="generateIV()">Generate IV</button>
+    </div>
+    
+    <div class="result" id="result"></div>
+    <div id="error" class="error"></div>
 
     <script>
-        // Enhanced cryptographic operations
-        const cryptoUtils = {
-            async pbkdf2(password, salt, iterations = 310000) {
-                const keyMaterial = await crypto.subtle.importKey(
-                    'raw',
-                    new TextEncoder().encode(password),
-                    {name: 'PBKDF2'},
-                    false,
-                    ['deriveBits']
-                );
-                return new Uint8Array(await crypto.subtle.deriveBits(
-                    {
-                        name: 'PBKDF2',
-                        salt: new TextEncoder().encode(salt),
-                        iterations,
-                        hash: 'SHA-512'
-                    },
-                    keyMaterial,
-                    512
-                ));
-            },
-
-            async hmacSha512(key, data) {
-                const cryptoKey = await crypto.subtle.importKey(
-                    'raw',
-                    key,
-                    {name: 'HMAC', hash: 'SHA-512'},
-                    false,
-                    ['sign']
-                );
-                return new Uint8Array(await crypto.subtle.sign(
-                    'HMAC',
-                    cryptoKey,
-                    new TextEncoder().encode(data)
-                ));
-            },
-
-            generateRandomBytes(length) {
-                return crypto.getRandomValues(new Uint8Array(length));
-            },
-
-            async generateKey(length = 32) {
-                const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=';
-                const bytes = crypto.getRandomValues(new Uint8Array(length));
-                let result = '';
-                for (let i = 0; i < bytes.length; i++) {
-                    result += chars[bytes[i] % chars.length];
-                }
-                return result;
-            }
-        };
-
-        // Enhanced cipher implementation
-        class DynamicCipher {
+        class SecureCipher {
             constructor() {
                 this.sBox = new Uint8Array(256);
                 this.invSBox = new Uint8Array(256);
             }
 
             async init(key) {
-                // Generate S-Box based on key
-                const keyHash = await cryptoUtils.hmacSha512(
-                    await cryptoUtils.pbkdf2(key, 'dynamic-salt-' + key),
-                    key
+                if (!key || key.length < 8) throw new Error("Key must be at least 8 characters");
+                
+                const salt = crypto.getRandomValues(new Uint8Array(16));
+                const keyMaterial = await crypto.subtle.importKey(
+                    'raw',
+                    new TextEncoder().encode(key),
+                    { name: 'PBKDF2' },
+                    false,
+                    ['deriveBits']
                 );
                 
+                const keyBits = await crypto.subtle.deriveBits(
+                    {
+                        name: 'PBKDF2',
+                        salt,
+                        iterations: 310000,
+                        hash: 'SHA-512'
+                    },
+                    keyMaterial,
+                    512
+                );
+                
+                const keyHash = new Uint8Array(keyBits);
+                this.generateSBox(keyHash);
+            }
+
+            generateSBox(keyHash) {
                 let p = 1, q = 1;
                 do {
                     p = (p ^ (p << 1) ^ (p >> 7) * 0x1B) & 0xFF;
@@ -376,209 +113,128 @@
                 this.invSBox[this.sBox[0]] = 0;
             }
 
-            async processData(data, key, iv, encrypt = true) {
+            async encrypt(plaintext, key) {
+                if (!plaintext) throw new Error("No text to encrypt");
+                
+                const iv = crypto.getRandomValues(new Uint8Array(16));
+                await this.init(key);
+                
+                const textBytes = new TextEncoder().encode(plaintext);
+                const ciphertext = await this.process(textBytes, key, iv, true);
+                
+                return {
+                    iv: Array.from(iv).map(b => b.toString(16).padStart(2, '0')).join(''),
+                    ciphertext: Array.from(ciphertext).map(b => b.toString(16).padStart(2, '0')).join(' ')
+                };
+            }
+
+            async decrypt(ciphertextHex, key, ivHex) {
+                if (!ciphertextHex || !ivHex) throw new Error("Need ciphertext and IV");
+                
+                // Clean HEX input
+                const cleanHex = ciphertextHex.replace(/[^0-9a-fA-F]/g, '');
+                if (cleanHex.length % 2 !== 0) throw new Error("Invalid HEX length (must be even)");
+                
+                try {
+                    const iv = new Uint8Array(ivHex.match(/../g).map(h => parseInt(h, 16)));
+                    const ciphertext = new Uint8Array(cleanHex.match(/../g).map(h => parseInt(h, 16)));
+                    
+                    await this.init(key);
+                    const decrypted = await this.process(ciphertext, key, iv, false);
+                    
+                    return new TextDecoder().decode(decrypted);
+                } catch (e) {
+                    throw new Error(`Decryption failed: ${e.message}`);
+                }
+            }
+
+            async process(data, key, iv, encrypt) {
                 const result = new Uint8Array(data.length);
                 const keyStream = await this.generateKeyStream(key, iv, data.length);
                 
                 for (let i = 0; i < data.length; i++) {
-                    if (encrypt) {
-                        result[i] = this.sBox[data[i]] ^ keyStream[i];
-                    } else {
-                        result[i] = this.invSBox[data[i] ^ keyStream[i]];
-                    }
+                    result[i] = encrypt 
+                        ? this.sBox[data[i]] ^ keyStream[i] 
+                        : this.invSBox[data[i] ^ keyStream[i]];
                 }
-                
                 return result;
             }
 
             async generateKeyStream(key, iv, length) {
                 const stream = new Uint8Array(length);
-                const state = await cryptoUtils.pbkdf2(key, iv);
+                const state = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(key + iv));
+                const stateArr = new Uint8Array(state);
                 
                 for (let i = 0; i < length; i++) {
+                    stream[i] = stateArr[i % stateArr.length];
                     if (i % 64 === 0) {
-                        // Update state every 64 bytes
-                        const newState = await cryptoUtils.hmacSha512(state, `${i}`);
-                        state.set(newState.subarray(0, 64));
+                        const newState = await crypto.subtle.digest('SHA-256', stream.slice(0, 64));
+                        stateArr.set(new Uint8Array(newState).subarray(0, 64));
                     }
-                    stream[i] = state[i % 64];
                 }
-                
                 return stream;
             }
         }
 
-        const cipher = new DynamicCipher();
+        const cipher = new SecureCipher();
 
-        // UI Functions
-        function showStatus(message, isError = false) {
-            const statusEl = document.getElementById('status-message');
-            statusEl.textContent = message;
-            statusEl.className = 'status-message ' + (isError ? 'error' : 'success');
-            setTimeout(() => {
-                statusEl.className = 'status-message';
-            }, 5000);
-        }
-
-        function copyResult() {
-            const result = document.getElementById('result').textContent;
-            navigator.clipboard.writeText(result).then(() => {
-                showStatus('Copied to clipboard!');
-            });
-        }
-
-        function updateStrengthMeter() {
-            const password = document.getElementById('key').value;
-            const strengthBar = document.getElementById('strength-bar');
-            
-            if (password.length === 0) {
-                strengthBar.className = 'strength-bar';
-                strengthBar.style.width = '0%';
-                return;
-            }
-            
-            // Simple strength calculation
-            let strength = 0;
-            if (password.length >= 8) strength++;
-            if (password.length >= 12) strength++;
-            if (/[A-Z]/.test(password)) strength++;
-            if (/[0-9]/.test(password)) strength++;
-            if (/[^A-Za-z0-9]/.test(password)) strength++;
-            
-            if (strength < 2) {
-                strengthBar.className = 'strength-bar weak';
-            } else if (strength < 4) {
-                strengthBar.className = 'strength-bar medium';
-            } else {
-                strengthBar.className = 'strength-bar strong';
-            }
-        }
-
-        // Core Functions
         async function encrypt() {
             try {
+                clearError();
                 const text = document.getElementById('text').value;
                 const key = document.getElementById('key').value;
-                const keyConfirm = document.getElementById('key-confirm').value;
                 let iv = document.getElementById('iv').value;
                 
-                // Validation
-                if (!text) {
-                    showStatus('Please enter text to encrypt', true);
-                    return;
-                }
+                if (!text) throw new Error("Enter text to encrypt");
+                if (!key || key.length < 8) throw new Error("Key must be at least 8 characters");
                 
-                if (!key || key.length < 8) {
-                    showStatus('Key must be at least 8 characters', true);
-                    return;
-                }
+                const { iv: newIv, ciphertext } = await cipher.encrypt(text, key);
                 
-                if (key !== keyConfirm) {
-                    showStatus('Keys do not match', true);
-                    return;
-                }
-                
-                // Generate IV if empty
-                if (!iv) {
-                    iv = Array.from(cryptoUtils.generateRandomBytes(16))
-                        .map(b => b.toString(16).padStart(2, '0'))
-                        .join('');
-                    document.getElementById('iv').value = iv;
-                } else if (iv.length !== 32) {
-                    showStatus('IV must be 32 hex characters (16 bytes)', true);
-                    return;
-                }
-                
-                await cipher.init(key);
-                const textBytes = new TextEncoder().encode(text);
-                const encrypted = await cipher.processData(textBytes, key, iv, true);
-                
-                // Format output
-                const hexResult = Array.from(encrypted)
-                    .map(b => b.toString(16).padStart(2, '0'))
-                    .join(' ');
-                
+                document.getElementById('iv').value = newIv;
                 document.getElementById('result').textContent = 
-                    `IV: ${iv}\n` +
-                    `Ciphertext (HEX):\n${hexResult}`;
-                
-                showStatus('Encryption successful!');
+                    `IV: ${newIv}\n` +
+                    `Ciphertext (HEX): ${ciphertext}`;
                 
             } catch (error) {
-                showStatus(`Encryption error: ${error.message}`, true);
-                console.error(error);
+                showError(error.message);
             }
         }
 
         async function decrypt() {
             try {
-                let hex = document.getElementById('text').value;
+                clearError();
+                const text = document.getElementById('text').value;
                 const key = document.getElementById('key').value;
-                const keyConfirm = document.getElementById('key-confirm').value;
                 const iv = document.getElementById('iv').value;
                 
-                // Clean hex input
-                hex = hex.replace(/[^0-9a-fA-F]/g, '');
+                if (!text) throw new Error("Enter ciphertext to decrypt");
+                if (!key || key.length < 8) throw new Error("Key must be at least 8 characters");
+                if (!iv) throw new Error("IV is required for decryption");
                 
-                // Validation
-                if (!hex) {
-                    showStatus('Please enter ciphertext to decrypt', true);
-                    return;
-                }
-                
-                if (!key || key.length < 8) {
-                    showStatus('Key must be at least 8 characters', true);
-                    return;
-                }
-                
-                if (key !== keyConfirm) {
-                    showStatus('Keys do not match', true);
-                    return;
-                }
-                
-                if (!iv || iv.length !== 32) {
-                    showStatus('IV must be 32 hex characters (16 bytes)', true);
-                    return;
-                }
-                
-                // Pad odd-length hex
-                if (hex.length % 2 !== 0) {
-                    hex = '0' + hex;
-                }
-                
-                await cipher.init(key);
-                const encrypted = new Uint8Array(hex.match(/../g).map(h => parseInt(h, 16)));
-                const decrypted = await cipher.processData(encrypted, key, iv, false);
+                const decrypted = await cipher.decrypt(text, key, iv);
                 
                 document.getElementById('result').textContent = 
-                    `Decrypted text:\n${new TextDecoder().decode(decrypted)}`;
-                
-                showStatus('Decryption successful!');
+                    `Decrypted text: ${decrypted}`;
                 
             } catch (error) {
-                showStatus(`Decryption error: ${error.message}`, true);
-                console.error(error);
+                showError(error.message);
             }
         }
 
-        async function generateKey() {
-            const key = await cryptoUtils.generateKey(16); // 16 characters by default
-            document.getElementById('key').value = key;
-            document.getElementById('key-confirm').value = key;
-            updateStrengthMeter();
-            showStatus('Generated secure key');
-        }
-
         function generateIV() {
-            const iv = Array.from(cryptoUtils.generateRandomBytes(16))
+            const iv = Array.from(crypto.getRandomValues(new Uint8Array(16)))
                 .map(b => b.toString(16).padStart(2, '0'))
                 .join('');
             document.getElementById('iv').value = iv;
-            showStatus('Generated new IV');
         }
 
-        // Event listeners
-        document.getElementById('key').addEventListener('input', updateStrengthMeter);
+        function showError(message) {
+            document.getElementById('error').textContent = message;
+        }
+
+        function clearError() {
+            document.getElementById('error').textContent = '';
+        }
     </script>
 </body>
 </html>
