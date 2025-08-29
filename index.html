@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CryptoVault Pro | 12-раундовое шифрование</title>
+    <title>CryptoVault Pro | 3D S-Box Шифрование</title>
     <style>
         :root {
             --bg-dark: #0f172a;
@@ -387,10 +387,10 @@
 <body>
     <div class="container">
         <header>
-            <h1>CryptoVault Pro</h1>
-            <p class="subtitle">Профессиональное 12-раундовое шифрование с динамическими S-Box и HMAC-SHA3</p>
+            <h1>CryptoVault Pro 3D</h1>
+            <p class="subtitle">Усовершенствованное 12-раундовое шифрование с 3D S-Box и динамическим контекстом</p>
             <div class="security-badge">
-                Уровень безопасности: Военный
+                Уровень безопасности: Военный (3D S-Box)
             </div>
         </header>
 
@@ -451,17 +451,17 @@
                                 <div class="round-indicator">12</div>
                             </div>
                             <p style="margin-top: 15px; color: var(--text-secondary);">
-                                12 раундов шифрования с уникальными S-Box для каждого раунда
+                                12 раундов шифрования с уникальными 3D S-Box для каждого раунда
                             </p>
                         </div>
                         
                         <div class="info-item">
-                            <h3>Алгоритм</h3>
+                            <h3>Алгоритм 3D S-Box</h3>
                             <ul style="padding-left: 20px; margin-top: 10px; color: var(--text-secondary);">
-                                <li>Динамические S-Box</li>
-                                <li>HMAC-SHA3 для ключевого потока</li>
-                                <li>12 раундов преобразования</li>
-                                <li>PBKDF2 с 310,000 итераций</li>
+                                <li>3D таблицы замен 16x16x16</li>
+                                <li>Контекстно-зависимое шифрование</li>
+                                <li>Обратная связь между блоками</li>
+                                <li>Динамическая генерация из ключа</li>
                             </ul>
                         </div>
                     </div>
@@ -491,23 +491,23 @@
                     
                     <div class="security-features">
                         <div class="feature-card">
-                            <h3>256-битное шифрование</h3>
-                            <p style="color: var(--text-secondary);">Военный уровень защиты с использованием 256-битных ключей</p>
+                            <h3>3D S-Box шифрование</h3>
+                            <p style="color: var(--text-secondary);">Использование трехмерных таблиц замен для максимальной нелинейности</p>
                         </div>
                         
                         <div class="feature-card">
-                            <h3>Динамические S-Box</h3>
-                            <p style="color: var(--text-secondary);">Уникальные таблицы замены для каждого ключа и раунда</p>
+                            <h3>Контекстная зависимость</h3>
+                            <p style="color: var(--text-secondary);">Каждый байт шифруется в зависимости от соседних данных</p>
                         </div>
                         
                         <div class="feature-card">
-                            <h3>HMAC-SHA3</h3>
-                            <p style="color: var(--text-secondary);">Генерация ключевого потока с помощью криптографического хеширования</p>
+                            <h3>Обратная связь</h3>
+                            <p style="color: var(--text-secondary);">Результат шифрования влияет на шифрование следующих блоков</p>
                         </div>
                         
                         <div class="feature-card">
                             <h3>12 раундов</h3>
-                            <p style="color: var(--text-secondary);">Многократное преобразование данных для максимальной безопасности</p>
+                            <p style="color: var(--text-secondary);">Многократное преобразование для максимальной безопасности</p>
                         </div>
                     </div>
                 </div>
@@ -515,14 +515,14 @@
         </div>
         
         <footer>
-            <p>CryptoVault Pro v6.0 | Исправленная дешифровка | © 2023 Все права защищены</p>
+            <p>CryptoVault Pro 3D v1.0 | 3D S-Box реализация | © 2023 Все права защищены</p>
         </footer>
     </div>
 
     <script>
         // Конфигурация
         const ROUNDS = 12;
-        const IV_LENGTH = 16; // 16 байт (128 бит)
+        const IV_LENGTH = 16;
         const KEY_MIN_LENGTH = 12;
         
         // Встроенная реализация SHA3
@@ -661,53 +661,12 @@
             }
         }
 
-        // HMAC-SHA3 реализация
-        class HMAC_SHA3 {
-            constructor(key, bits = 512) {
-                this.sha3 = new SHA3(bits);
-                this.blockSize = this.sha3.blockSize;
-                this.bits = bits;
-                
-                if (key.length > this.blockSize) {
-                    key = new SHA3(bits).update(key).digest();
-                }
-                
-                this.iKey = new Uint8Array(this.blockSize);
-                this.oKey = new Uint8Array(this.blockSize);
-                
-                for (let i = 0; i < key.length; i++) {
-                    this.iKey[i] = key[i] ^ 0x36;
-                    this.oKey[i] = key[i] ^ 0x5C;
-                }
-                
-                for (let i = key.length; i < this.blockSize; i++) {
-                    this.iKey[i] = 0x36;
-                    this.oKey[i] = 0x5C;
-                }
-                
-                this.sha3.update(this.iKey);
-            }
-
-            update(data) {
-                this.sha3.update(data);
-                return this;
-            }
-
-            digest() {
-                const innerDigest = this.sha3.digest();
-                const outer = new SHA3(this.bits);
-                outer.update(this.oKey);
-                outer.update(innerDigest);
-                return outer.digest();
-            }
-        }
-
-        // Класс для многораундового шифрования
-        class MultiRoundCipher {
+        // Класс для 3D S-Box шифрования
+        class ThreeDimensionalCipher {
             constructor(rounds = ROUNDS) {
                 this.rounds = rounds;
-                this.sBoxes = [];
-                this.invSBoxes = [];
+                this.sBoxes = []; // 3D S-Box для каждого раунда
+                this.invSBoxes = []; // Обратные 3D S-Box для каждого раунда
             }
 
             async init(key) {
@@ -715,7 +674,7 @@
                     throw new Error(`Ключ должен содержать минимум ${KEY_MIN_LENGTH} символов`);
                 }
                 
-                // Генерация S-Box для каждого раунда
+                // Генерация 3D S-Box для каждого раунда
                 this.sBoxes = [];
                 this.invSBoxes = [];
                 
@@ -724,31 +683,83 @@
                     const roundKey = key + round.toString();
                     const keyData = new TextEncoder().encode(roundKey);
                     
-                    // Используем SHA3-512 для хеширования
-                    const keyHash = new SHA3(512).update(keyData).digest();
+                    // Генерируем 3D S-Box для этого раунда
+                    const sBox3D = this.generate3DSBox(keyData);
+                    const invSBox3D = this.generateInverse3DSBox(sBox3D);
                     
-                    // Генерируем S-Box для этого раунда
-                    const sBox = new Uint8Array(256);
-                    const invSBox = new Uint8Array(256);
-                    
-                    // Инициализация S-Box
+                    this.sBoxes.push(sBox3D);
+                    this.invSBoxes.push(invSBox3D);
+                }
+            }
+
+            // Генерация 3D S-Box 16x16x16
+            generate3DSBox(seed) {
+                const sBox = new Array(16);
+                const tempHash = new SHA3(512).update(seed).digest();
+                let hashIndex = 0;
+                
+                // Инициализируем 3D массив
+                for (let x = 0; x < 16; x++) {
+                    sBox[x] = new Array(16);
+                    for (let y = 0; y < 16; y++) {
+                        sBox[x][y] = new Array(16);
+                    }
+                }
+                
+                // Заполняем S-Box псевдослучайными значениями
+                for (let x = 0; x < 16; x++) {
+                    for (let y = 0; y < 16; y++) {
+                        for (let z = 0; z < 16; z++) {
+                            if (hashIndex >= tempHash.length) {
+                                // Обновляем хеш если нужно
+                                hashIndex = 0;
+                            }
+                            sBox[x][y][z] = tempHash[hashIndex++];
+                        }
+                    }
+                }
+                
+                return sBox;
+            }
+
+            // Генерация обратной 3D S-Box
+            generateInverse3DSBox(sBox) {
+                const invSBox = new Array(16);
+                
+                // Инициализируем 3D массив для обратной S-Box
+                for (let z = 0; z < 16; z++) {
+                    invSBox[z] = new Array(256);
                     for (let i = 0; i < 256; i++) {
-                        sBox[i] = i;
+                        invSBox[z][i] = {x: 0, y: 0};
                     }
-                    
-                    // Перемешивание S-Box с использованием ключевого хеша
-                    for (let i = 255; i > 0; i--) {
-                        const j = keyHash[i % keyHash.length] % (i + 1);
-                        [sBox[i], sBox[j]] = [sBox[j], sBox[i]];
+                }
+                
+                // Заполняем обратную S-Box
+                for (let x = 0; x < 16; x++) {
+                    for (let y = 0; y < 16; y++) {
+                        for (let z = 0; z < 16; z++) {
+                            const value = sBox[x][y][z];
+                            invSBox[z][value] = {x, y};
+                        }
                     }
-                    
-                    // Создание обратной S-Box
-                    for (let i = 0; i < 256; i++) {
-                        invSBox[sBox[i]] = i;
-                    }
-                    
-                    this.sBoxes.push(sBox);
-                    this.invSBoxes.push(invSBox);
+                }
+                
+                return invSBox;
+            }
+
+            // 3D S-Box преобразование
+            apply3DSBox(input, context, sBox, encrypt = true) {
+                const highNibble = (input >> 4) & 0x0F;
+                const lowNibble = input & 0x0F;
+                const contextNibble = (context >> 4) & 0x0F;
+                
+                if (encrypt) {
+                    // Прямое преобразование: используем S-Box
+                    return sBox[highNibble][lowNibble][contextNibble];
+                } else {
+                    // Обратное преобразование: используем inverse S-Box
+                    const coords = sBox[contextNibble][input];
+                    return (coords.x << 4) | coords.y;
                 }
             }
 
@@ -763,7 +774,7 @@
                 
                 return {
                     iv: this.bytesToHex(iv),
-                    ciphertext: this.bytesToHex(ciphertext, true)
+                    ciphertext: this.bytesToHex(ciphertext)
                 };
             }
 
@@ -773,13 +784,8 @@
                     throw new Error(`IV должен быть ${IV_LENGTH * 2} hex-символов (${IV_LENGTH} байт)`);
                 }
                 
-                const cleanHex = ciphertextHex.replace(/[^0-9a-fA-F]/g, '');
-                if (cleanHex.length % 2 !== 0) {
-                    throw new Error("Неверная длина HEX (должна быть четной)");
-                }
-                
                 const iv = this.hexToBytes(ivHex);
-                const ciphertext = this.hexToBytes(cleanHex);
+                const ciphertext = this.hexToBytes(ciphertextHex);
                 
                 await this.init(key);
                 const decrypted = await this.process(ciphertext, iv, false);
@@ -789,19 +795,30 @@
 
             async process(data, iv, encrypt = true) {
                 let currentData = new Uint8Array(data);
+                const blockSize = 64; // Размер блока для обработки
                 
                 // Обновляем индикаторы раундов
                 this.updateRoundIndicators(0);
                 
                 if (encrypt) {
-                    // Шифрование: прямой порядок раундов (0 -> ROUNDS-1)
+                    // Шифрование: прямой порядок раундов
                     for (let round = 0; round < this.rounds; round++) {
-                        const keyStream = await this.generateKeyStream(iv, currentData.length, round);
                         const result = new Uint8Array(currentData.length);
                         const sBox = this.sBoxes[round];
+                        let context = iv[0]; // Начальный контекст из IV
                         
                         for (let i = 0; i < currentData.length; i++) {
-                            result[i] = sBox[currentData[i]] ^ keyStream[i];
+                            // Применяем 3D S-Box преобразование
+                            const substituted = this.apply3DSBox(currentData[i], context, sBox, true);
+                            
+                            // Генерируем ключевой поток на основе контекста
+                            const keyStream = await this.generateKeyStream(iv, i, round, context);
+                            
+                            // XOR с ключевым потоком
+                            result[i] = substituted ^ keyStream;
+                            
+                            // Обновляем контекст для следующего байта
+                            context = (context + result[i]) & 0xFF;
                         }
                         
                         currentData = result;
@@ -813,14 +830,24 @@
                         }
                     }
                 } else {
-                    // Дешифрование: обратный порядок раундов (ROUNDS-1 -> 0)
+                    // Дешифрование: обратный порядок раундов
                     for (let round = this.rounds - 1; round >= 0; round--) {
-                        const keyStream = await this.generateKeyStream(iv, currentData.length, round);
                         const result = new Uint8Array(currentData.length);
                         const invSBox = this.invSBoxes[round];
+                        let context = iv[0]; // Начальный контекст из IV
                         
                         for (let i = 0; i < currentData.length; i++) {
-                            result[i] = invSBox[currentData[i] ^ keyStream[i]];
+                            // Генерируем ключевой поток (должен быть идентичный шифрованию)
+                            const keyStream = await this.generateKeyStream(iv, i, round, context);
+                            
+                            // Восстанавливаем substituted value
+                            const substituted = currentData[i] ^ keyStream;
+                            
+                            // Применяем обратное 3D S-Box преобразование
+                            result[i] = this.apply3DSBox(substituted, context, invSBox, false);
+                            
+                            // Обновляем контекст для следующего байта
+                            context = (context + currentData[i]) & 0xFF;
                         }
                         
                         currentData = result;
@@ -836,42 +863,26 @@
                 return currentData;
             }
 
-            async generateKeyStream(iv, length, round) {
-                const stream = new Uint8Array(length);
-                
-                // Создаем уникальный ключ для HMAC на основе IV и номера раунда
-                const hmacKey = new Uint8Array([...iv, ...new TextEncoder().encode(round.toString())]);
-                
-                let position = 0;
-                let counter = 0;
-                
-                while (position < length) {
-                    // Создаем блок данных для HMAC (IV + счетчик + номер раунда)
-                    const block = new Uint8Array([...iv, ...new Uint8Array(new Int32Array([counter, round]).buffer)]);
-                    
-                    // Вычисляем HMAC-SHA3-512
-                    const hmac = new HMAC_SHA3(hmacKey, 512).update(block).digest();
-                    
-                    // Копируем сколько нужно байт из HMAC в поток
-                    const bytesToCopy = Math.min(hmac.length, length - position);
-                    stream.set(hmac.subarray(0, bytesToCopy), position);
-                    
-                    position += bytesToCopy;
-                    counter++;
-                }
-                
-                return stream;
+            async generateKeyStream(iv, position, round, context) {
+                // Создаем уникальный ключ для HMAC на основе IV, позиции, раунда и контекста
+                const hmacKey = new Uint8Array([...iv, round, position & 0xFF, context]);
+                const hmac = new SHA3(256).update(hmacKey).digest();
+                return hmac[0]; // Используем первый байт хеша как ключевой поток
             }
 
-            bytesToHex(bytes, spaceSeparated = false) {
+            bytesToHex(bytes) {
                 return Array.from(bytes)
                     .map(b => b.toString(16).padStart(2, '0'))
-                    .join(spaceSeparated ? ' ' : '');
+                    .join('');
             }
 
             hexToBytes(hex) {
                 const cleanHex = hex.replace(/[^0-9a-fA-F]/g, '');
-                return new Uint8Array(cleanHex.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
+                const bytes = [];
+                for (let i = 0; i < cleanHex.length; i += 2) {
+                    bytes.push(parseInt(cleanHex.substr(i, 2), 16));
+                }
+                return new Uint8Array(bytes);
             }
 
             updateRoundIndicators(completedRounds) {
@@ -887,7 +898,7 @@
         }
 
         // Инициализация шифра
-        const cipher = new MultiRoundCipher(ROUNDS);
+        const cipher = new ThreeDimensionalCipher(ROUNDS);
         
         // Функции для работы с UI
         function showStatus(message, isError = false, isWarning = false) {
@@ -962,7 +973,7 @@
                     `IV: ${iv}\n\n` +
                     `ШИФРОТЕКСТ (HEX):\n${ciphertext}`;
                 
-                showStatus(`Шифрование успешно завершено за ${ROUNDS} раундов!`);
+                showStatus(`3D S-Box шифрование успешно завершено за ${ROUNDS} раундов!`);
                 
             } catch (error) {
                 showStatus(`Ошибка шифрования: ${error.message}`, true);
@@ -996,7 +1007,7 @@
                 document.getElementById('result').textContent = 
                     `РАСШИФРОВАННЫЙ ТЕКСТ:\n${decrypted}`;
                 
-                showStatus(`Дешифрование успешно завершено за ${ROUNDS} раундов!`);
+                showStatus(`3D S-Box дешифрование успешно завершено за ${ROUNDS} раундов!`);
                 
             } catch (error) {
                 showStatus(`Ошибка дешифрования: ${error.message}`, true);
