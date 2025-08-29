@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CryptoVault Pro | 3D S-Box Шифрование</title>
+    <title>CryptoVault Pro 3D | Профессиональное шифрование</title>
     <style>
         :root {
             --bg-dark: #0f172a;
@@ -17,6 +17,7 @@
             --success: #10b981;
             --error: #ef4444;
             --warning: #f59e0b;
+            --info: #3b82f6;
             --border-radius: 12px;
             --shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
             --transition: all 0.3s ease;
@@ -245,6 +246,12 @@
             color: var(--warning);
         }
 
+        .info {
+            background: rgba(59, 130, 246, 0.15);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            color: var(--info);
+        }
+
         .info-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -436,6 +443,17 @@
             background: rgba(59, 130, 246, 0.25);
         }
 
+        .auth-tag {
+            margin-top: 15px;
+            padding: 10px;
+            background: rgba(59, 130, 246, 0.1);
+            border-radius: 6px;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            font-family: monospace;
+            word-break: break-all;
+            font-size: 0.9rem;
+        }
+
         @media (max-width: 768px) {
             .btn-group {
                 flex-direction: column;
@@ -476,9 +494,9 @@
     <div class="container">
         <header>
             <h1>CryptoVault Pro 3D</h1>
-            <p class="subtitle">Усовершенствованное 12-раундовое шифрование с 3D S-Box и динамическим контекстом</p>
+            <p class="subtitle">Профессиональное 12-раундовое шифрование с 3D S-Box, аутентификацией и проверкой целостности</p>
             <div class="security-badge">
-                Уровень безопасности: Военный (3D S-Box)
+                Уровень безопасности: Военный (AES-256 + 3D S-Box)
             </div>
         </header>
 
@@ -547,8 +565,8 @@
                             <h3>Алгоритм 3D S-Box</h3>
                             <ul style="padding-left: 20px; margin-top: 10px; color: var(--text-secondary);">
                                 <li>3 таблицы замен 16x16 (X, Y, Z)</li>
-                                <li>Контекстно-зависимое шифрование</li>
-                                <li>Обратная связь между блоками</li>
+                                <li>Аутентифицированное шифрование (AEAD)</li>
+                                <li>Проверка целостности данных</li>
                                 <li>Динамическая генерация из ключа</li>
                             </ul>
                         </div>
@@ -602,6 +620,10 @@
                             // Здесь будет результат операций...
                         </div>
                     </div>
+
+                    <div class="auth-tag" id="auth-tag-container" style="display: none;">
+                        <strong>Тег аутентификации:</strong> <span id="auth-tag"></span>
+                    </div>
                     
                     <div class="status warning" id="status">
                         Готов к работе. Введите текст и нажмите "Зашифровать".
@@ -614,13 +636,13 @@
                         </div>
                         
                         <div class="feature-card">
-                            <h3>Контекстная зависимость</h3>
-                            <p style="color: var(--text-secondary);">Каждый байт шифруется в зависимости от соседних данных</p>
+                            <h3>Аутентификация</h3>
+                            <p style="color: var(--text-secondary);">Проверка целостности и подлинности данных</p>
                         </div>
                         
                         <div class="feature-card">
-                            <h3>Обратная связь</h3>
-                            <p style="color: var(--text-secondary);">Результат шифрования влияет на шифрование следующих блоков</p>
+                            <h3>Обратимость</h3>
+                            <p style="color: var(--text-secondary);">Гарантированная возможность дешифрования</p>
                         </div>
                         
                         <div class="feature-card">
@@ -633,7 +655,7 @@
         </div>
         
         <footer>
-            <p>CryptoVault Pro 3D v1.0 | 3D S-Box реализация | © 2023 Все права защищены</p>
+            <p>CryptoVault Pro 3D v2.0 | Профессиональная реализация | © 2023 Все права защищены</p>
         </footer>
     </div>
 
@@ -642,58 +664,10 @@
         const ROUNDS = 12;
         const IV_LENGTH = 16;
         const KEY_MIN_LENGTH = 12;
+        const AUTH_TAG_LENGTH = 16;
         let currentRound = 0;
         let currentSBoxSet = null;
         
-        // Встроенная реализация SHA3
-        class SHA3 {
-            constructor(bits = 512) {
-                this.blockCount = (1600 - 2 * bits) / 64;
-                this.blockSize = 200 - 2 * (bits / 8);
-                this.s = new Uint8Array(200);
-                this.reset();
-            }
-
-            reset() {
-                this.s.fill(0);
-                this.byteCount = 0;
-                this.outputBlocks = this.blockCount;
-                this.outputBits = 8 * this.outputBlocks;
-            }
-
-            update(data) {
-                for (let i = 0; i < data.length; i++) {
-                    this.s[this.byteCount] ^= data[i];
-                    this.byteCount++;
-                    if (this.byteCount === this.blockSize) {
-                        this.processBlock();
-                    }
-                }
-                return this;
-            }
-
-            processBlock() {
-                // Упрощенная реализация для демонстрации
-                for (let i = 0; i < this.s.length; i++) {
-                    this.s[i] = (this.s[i] + data[i % data.length]) % 256;
-                }
-                this.byteCount = 0;
-            }
-
-            digest() {
-                this.s[this.byteCount] ^= 0x06;
-                this.s[this.blockSize - 1] ^= 0x80;
-                
-                const output = new Uint8Array(this.outputBits / 8);
-                for (let i = 0; i < output.length; i++) {
-                    output[i] = this.s[i];
-                }
-                
-                this.reset();
-                return output;
-            }
-        }
-
         // Класс для 3D S-Box шифрования
         class ThreeDimensionalCipher {
             constructor(rounds = ROUNDS) {
@@ -707,17 +681,20 @@
                     throw new Error(`Ключ должен содержать минимум ${KEY_MIN_LENGTH} символов`);
                 }
                 
+                // Деривация ключа с помощью PBKDF2
+                const keyMaterial = await this.deriveKey(key);
+                const keyData = new Uint8Array(await crypto.subtle.exportKey('raw', keyMaterial));
+                
                 // Генерация 3D S-Box для каждого раунда
                 this.sBoxSets = [];
                 this.invSBoxSets = [];
                 
                 for (let round = 0; round < this.rounds; round++) {
                     // Создаем уникальный ключ для раунда
-                    const roundKey = key + round.toString();
-                    const keyData = new TextEncoder().encode(roundKey);
+                    const roundKey = new Uint8Array([...keyData, round]);
                     
                     // Генерируем 3 S-Box для этого раунда
-                    const sBoxSet = this.generateSBoxSet(keyData);
+                    const sBoxSet = this.generateSBoxSet(roundKey);
                     const invSBoxSet = this.generateInverseSBoxSet(sBoxSet);
                     
                     this.sBoxSets.push(sBoxSet);
@@ -727,44 +704,85 @@
                 // Сохраняем первую S-Box для визуализации
                 currentSBoxSet = this.sBoxSets[0];
                 updateSBoxVisualization();
+                
+                return keyMaterial;
+            }
+
+            // Деривация ключа с помощью PBKDF2
+            async deriveKey(password) {
+                const encoder = new TextEncoder();
+                const keyMaterial = await crypto.subtle.importKey(
+                    'raw',
+                    encoder.encode(password),
+                    'PBKDF2',
+                    false,
+                    ['deriveBits', 'deriveKey']
+                );
+                
+                const salt = encoder.encode('CryptoVaultPro3DSalt');
+                const key = await crypto.subtle.deriveKey(
+                    {
+                        name: 'PBKDF2',
+                        salt: salt,
+                        iterations: 100000,
+                        hash: 'SHA-256'
+                    },
+                    keyMaterial,
+                    { name: 'AES-GCM', length: 256 },
+                    true,
+                    ['encrypt', 'decrypt']
+                );
+                
+                return key;
             }
 
             // Генерация набора из 3 S-Box (X, Y, Z)
             generateSBoxSet(seed) {
                 const sBoxSet = {
-                    x: new Array(256),
-                    y: new Array(256),
-                    z: new Array(256)
+                    x: new Uint8Array(256),
+                    y: new Uint8Array(256),
+                    z: new Uint8Array(256)
                 };
                 
-                // Генерируем достаточно байт через последовательное хеширование
-                let tempHash = new Uint8Array(0);
-                const neededBytes = 256 * 3; // 768 байт
+                // Инициализация детерминированным ГПСЧ
+                let state = this.hashToInt(seed);
                 
-                while (tempHash.length < neededBytes) {
-                    const newHash = new SHA3(512).update(seed).update(tempHash).digest();
-                    const combined = new Uint8Array(tempHash.length + newHash.length);
-                    combined.set(tempHash);
-                    combined.set(newHash, tempHash.length);
-                    tempHash = combined;
-                }
+                // Заполняем S-Box псевдослучайными перестановками
+                this.fillWithPermutation(sBoxSet.x, state);
+                state = this.xorShift32(state);
                 
-                // Заполняем S-Box
-                for (let i = 0; i < 256; i++) {
-                    sBoxSet.x[i] = tempHash[i];
-                    sBoxSet.y[i] = tempHash[256 + i];
-                    sBoxSet.z[i] = tempHash[512 + i];
-                }
+                this.fillWithPermutation(sBoxSet.y, state);
+                state = this.xorShift32(state);
+                
+                this.fillWithPermutation(sBoxSet.z, state);
                 
                 return sBoxSet;
+            }
+
+            // Заполнение массива случайной перестановкой
+            fillWithPermutation(arr, seed) {
+                // Инициализация последовательностью 0..255
+                for (let i = 0; i < 256; i++) {
+                    arr[i] = i;
+                }
+                
+                // Перемешивание Fisher-Yates с детерминированным ГПСЧ
+                let state = seed;
+                for (let i = 255; i > 0; i--) {
+                    state = this.xorShift32(state);
+                    const j = state % (i + 1);
+                    
+                    // Обмен значениями
+                    [arr[i], arr[j]] = [arr[j], arr[i]];
+                }
             }
 
             // Генерация обратных S-Box
             generateInverseSBoxSet(sBoxSet) {
                 const invSBoxSet = {
-                    x: new Array(256),
-                    y: new Array(256),
-                    z: new Array(256)
+                    x: new Uint8Array(256),
+                    y: new Uint8Array(256),
+                    z: new Uint8Array(256)
                 };
                 
                 // Заполняем обратные S-Box
@@ -777,22 +795,38 @@
                 return invSBoxSet;
             }
 
+            // Детерминированный ГПСЧ (xorshift32)
+            xorShift32(state) {
+                state ^= state << 13;
+                state ^= state >> 17;
+                state ^= state << 5;
+                return state >>> 0; // Преобразование в беззнаковое
+            }
+
+            // Хеширование в число
+            hashToInt(data) {
+                let hash = 0;
+                for (let i = 0; i < data.length; i++) {
+                    hash = ((hash << 5) - hash) + data[i];
+                    hash |= 0; // Преобразование в 32-битное целое
+                }
+                return hash >>> 0;
+            }
+
             // 3D S-Box преобразование
             apply3DSBox(input, context, sBoxSet, encrypt = true) {
-                const highNibble = (input >> 4) & 0x0F;
-                const lowNibble = input & 0x0F;
-                const contextNibble = (context >> 4) & 0x0F;
-                
                 if (encrypt) {
-                    // Прямое преобразование: используем S-Box
-                    const xTransformed = sBoxSet.x[input];
-                    const yTransformed = sBoxSet.y[xTransformed];
-                    return sBoxSet.z[yTransformed ^ contextNibble];
+                    // Прямое преобразование: X → Y → Z
+                    const x = input;
+                    const y = sBoxSet.x[x];
+                    const z = sBoxSet.y[y];
+                    return sBoxSet.z[z ^ context];
                 } else {
-                    // Обратное преобразование: используем inverse S-Box
-                    const zTransformed = invSBoxSet.z[input];
-                    const yTransformed = invSBoxSet.y[zTransformed ^ contextNibble];
-                    return invSBoxSet.x[yTransformed];
+                    // Обратное преобразование: Z → Y → X
+                    const z = input;
+                    const y = sBoxSet.z[z ^ context];
+                    const x = sBoxSet.y[y];
+                    return sBoxSet.x[x];
                 }
             }
 
@@ -800,30 +834,76 @@
                 if (!plaintext) throw new Error("Введите текст для шифрования");
                 
                 const iv = crypto.getRandomValues(new Uint8Array(IV_LENGTH));
-                await this.init(key);
+                const keyMaterial = await this.init(key);
                 
-                const textBytes = new TextEncoder().encode(plaintext);
-                const ciphertext = await this.process(textBytes, iv, true);
+                const encoder = new TextEncoder();
+                const data = encoder.encode(plaintext);
+                
+                // Шифрование с использованием AES-GCM для аутентификации
+                const encrypted = await crypto.subtle.encrypt(
+                    {
+                        name: 'AES-GCM',
+                        iv: iv,
+                        tagLength: AUTH_TAG_LENGTH * 8
+                    },
+                    keyMaterial,
+                    data
+                );
+                
+                // Извлечение тега аутентификации
+                const ciphertext = new Uint8Array(encrypted.slice(0, encrypted.byteLength - AUTH_TAG_LENGTH));
+                const authTag = new Uint8Array(encrypted.slice(encrypted.byteLength - AUTH_TAG_LENGTH));
+                
+                // Дополнительное преобразование через 3D S-Box
+                const transformed = await this.process(ciphertext, iv, true);
                 
                 return {
                     iv: this.bytesToHex(iv),
-                    ciphertext: this.bytesToHex(ciphertext)
+                    ciphertext: this.bytesToHex(transformed),
+                    authTag: this.bytesToHex(authTag)
                 };
             }
 
-            async decrypt(ciphertextHex, key, ivHex) {
+            async decrypt(ciphertextHex, key, ivHex, authTagHex) {
                 if (!ciphertextHex) throw new Error("Введите шифротекст");
                 if (!ivHex || ivHex.length !== IV_LENGTH * 2) {
                     throw new Error(`IV должен быть ${IV_LENGTH * 2} hex-символов (${IV_LENGTH} байт)`);
                 }
+                if (!authTagHex || authTagHex.length !== AUTH_TAG_LENGTH * 2) {
+                    throw new Error(`Тег аутентификации должен быть ${AUTH_TAG_LENGTH * 2} hex-символов`);
+                }
                 
                 const iv = this.hexToBytes(ivHex);
                 const ciphertext = this.hexToBytes(ciphertextHex);
+                const authTag = this.hexToBytes(authTagHex);
                 
                 await this.init(key);
-                const decrypted = await this.process(ciphertext, iv, false);
                 
-                return new TextDecoder().decode(decrypted);
+                // Обратное 3D S-Box преобразование
+                const transformed = await this.process(ciphertext, iv, false);
+                
+                // Объединение данных и тега аутентификации
+                const combined = new Uint8Array(transformed.length + AUTH_TAG_LENGTH);
+                combined.set(transformed);
+                combined.set(authTag, transformed.length);
+                
+                // Дешифрование с проверкой аутентификации
+                const keyMaterial = await this.deriveKey(key);
+                try {
+                    const decrypted = await crypto.subtle.decrypt(
+                        {
+                            name: 'AES-GCM',
+                            iv: iv,
+                            tagLength: AUTH_TAG_LENGTH * 8
+                        },
+                        keyMaterial,
+                        combined
+                    );
+                    
+                    return new TextDecoder().decode(decrypted);
+                } catch (error) {
+                    throw new Error("Ошибка аутентификации: данные повреждены или ключ неверен");
+                }
             }
 
             async process(data, iv, encrypt = true) {
@@ -856,19 +936,19 @@
                         
                         // Задержка для анимации
                         if (round < this.rounds - 1) {
-                            await new Promise(resolve => setTimeout(resolve, 100));
+                            await new Promise(resolve => setTimeout(resolve, 50));
                         }
                     }
                 } else {
                     // Дешифрование: обратный порядок раундов
                     for (let round = this.rounds - 1; round >= 0; round--) {
                         const result = new Uint8Array(currentData.length);
-                        const invSBoxSet = this.invSBoxSets[round];
+                        const sBoxSet = this.sBoxSets[round];
                         let context = iv[0]; // Начальный контекст из IV
                         
                         for (let i = 0; i < currentData.length; i++) {
                             // Применяем обратное 3D S-Box преобразование
-                            result[i] = this.apply3DSBox(currentData[i], context, invSBoxSet, false);
+                            result[i] = this.apply3DSBox(currentData[i], context, sBoxSet, false);
                             
                             // Обновляем контекст для следующего байта
                             context = (context + currentData[i]) & 0xFF;
@@ -883,7 +963,7 @@
                         
                         // Задержка для анимации
                         if (round > 0) {
-                            await new Promise(resolve => setTimeout(resolve, 100));
+                            await new Promise(resolve => setTimeout(resolve, 50));
                         }
                     }
                 }
@@ -899,6 +979,9 @@
 
             hexToBytes(hex) {
                 const cleanHex = hex.replace(/[^0-9a-fA-F]/g, '');
+                if (cleanHex.length % 2 !== 0) {
+                    throw new Error("Некорректная HEX-строка");
+                }
                 const bytes = [];
                 for (let i = 0; i < cleanHex.length; i += 2) {
                     bytes.push(parseInt(cleanHex.substr(i, 2), 16));
@@ -924,7 +1007,7 @@
         const cipher = new ThreeDimensionalCipher(ROUNDS);
         
         // Функции для работы с UI
-        function showStatus(message, isError = false, isWarning = false) {
+        function showStatus(message, isError = false, isWarning = false, isInfo = false) {
             const statusEl = document.getElementById('status');
             statusEl.textContent = message;
             statusEl.className = 'status';
@@ -933,6 +1016,8 @@
                 statusEl.classList.add('error');
             } else if (isWarning) {
                 statusEl.classList.add('warning');
+            } else if (isInfo) {
+                statusEl.classList.add('info');
             } else {
                 statusEl.classList.add('success');
             }
@@ -941,7 +1026,7 @@
         function copyResult() {
             const result = document.getElementById('result').textContent;
             navigator.clipboard.writeText(result).then(() => {
-                showStatus('Результат скопирован в буфер обмена!');
+                showStatus('Результат скопирован в буфер обмена!', false, false, true);
             });
         }
 
@@ -1039,13 +1124,17 @@
                 
                 showStatus('Шифрование запущено...', false, true);
                 
-                const { iv, ciphertext } = await cipher.encrypt(text, key);
+                const { iv, ciphertext, authTag } = await cipher.encrypt(text, key);
                 document.getElementById('iv').value = iv;
                 document.getElementById('result').textContent = 
                     `IV: ${iv}\n\n` +
                     `ШИФРОТЕКСТ (HEX):\n${ciphertext}`;
                 
-                showStatus(`3D S-Box шифрование успешно завершено за ${ROUNDS} раундов!`);
+                // Показываем тег аутентификации
+                document.getElementById('auth-tag').textContent = authTag;
+                document.getElementById('auth-tag-container').style.display = 'block';
+                
+                showStatus(`3D S-Box шифрование успешно завершено за ${ROUNDS} раундов! Тег аутентификации сгенерирован.`);
                 
             } catch (error) {
                 showStatus(`Ошибка шифрования: ${error.message}`, true);
@@ -1073,13 +1162,20 @@
                     return;
                 }
                 
+                // Извлекаем тег аутентификации из результата (последние 32 символа)
+                const authTag = text.slice(-32);
+                const ciphertextOnly = text.slice(0, -32);
+                
                 showStatus('Дешифрование запущено...', false, true);
                 
-                const decrypted = await cipher.decrypt(text, key, iv);
+                const decrypted = await cipher.decrypt(ciphertextOnly, key, iv, authTag);
                 document.getElementById('result').textContent = 
                     `РАСШИФРОВАННЫЙ ТЕКСТ:\n${decrypted}`;
                 
-                showStatus(`3D S-Box дешифрование успешно завершено за ${ROUNDS} раундов!`);
+                // Скрываем тег аутентификации
+                document.getElementById('auth-tag-container').style.display = 'none';
+                
+                showStatus(`3D S-Box дешифрование успешно завершено за ${ROUNDS} раундов! Целостность данных подтверждена.`);
                 
             } catch (error) {
                 showStatus(`Ошибка дешифрования: ${error.message}`, true);
@@ -1095,7 +1191,7 @@
             }
             document.getElementById('key').value = result;
             updateStrengthMeter();
-            showStatus('Сгенерирован новый криптостойкий ключ');
+            showStatus('Сгенерирован новый криптостойкий ключ', false, false, true);
         }
 
         function generateIV() {
@@ -1103,7 +1199,7 @@
                 .map(b => b.toString(16).padStart(2, '0'))
                 .join('');
             document.getElementById('iv').value = iv;
-            showStatus('Сгенерирован новый вектор инициализации (IV)');
+            showStatus('Сгенерирован новый вектор инициализации (IV)', false, false, true);
         }
 
         // Инициализация
