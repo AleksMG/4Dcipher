@@ -3,259 +3,595 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Недетерминированный S-Box 16×16</title>
+    <title>CryptoBox • Недетерминированный S-Box 16×16</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --primary: #2c3e50;
-            --secondary: #3498db;
-            --accent: #e74c3c;
-            --light: #ecf0f1;
-            --dark: #34495e;
-            --success: #2ecc71;
+            --primary: #0A84FF;
+            --primary-dark: #0066CC;
+            --secondary: #FF375F;
+            --success: #30D158;
+            --warning: #FF9F0A;
+            --background: #F5F5F7;
+            --card-bg: #FFFFFF;
+            --text-primary: #1D1D1F;
+            --text-secondary: #86868B;
+            --border: #E5E5E7;
+            --navbar-height: 60px;
+            --card-radius: 16px;
+            --element-radius: 12px;
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            --accent-gradient: linear-gradient(135deg, #0A84FF 0%, #5E5CE6 100%);
         }
-        
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --background: #000000;
+                --card-bg: #1C1C1E;
+                --text-primary: #FFFFFF;
+                --text-secondary: #8E8E93;
+                --border: #38383A;
+                --shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            }
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
+            background-color: var(--background);
+            color: var(--text-primary);
             line-height: 1.6;
-            color: #333;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f5f7fa;
+            padding-bottom: 40px;
+            transition: background-color 0.3s ease;
         }
-        
-        header {
-            background: var(--primary);
+
+        .navbar {
+            position: sticky;
+            top: 0;
+            height: var(--navbar-height);
+            background-color: var(--card-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            border-bottom: 1px solid var(--border);
+            z-index: 100;
+        }
+
+        .navbar-title {
+            font-weight: 600;
+            font-size: 18px;
+        }
+
+        .navbar-actions {
+            display: flex;
+            gap: 16px;
+        }
+
+        .navbar-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--accent-gradient);
             color: white;
-            padding: 1rem;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            text-align: center;
         }
-        
-        h1, h2, h3 {
-            color: var(--primary);
-        }
-        
+
         .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 20px;
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
         }
-        
+
         @media (max-width: 900px) {
             .container {
                 grid-template-columns: 1fr;
             }
         }
-        
+
         .card {
-            background: white;
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            background-color: var(--card-bg);
+            border-radius: var(--card-radius);
+            padding: 24px;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
             margin-bottom: 20px;
         }
-        
-        .input-group {
-            margin-bottom: 15px;
-        }
-        
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-            color: var(--dark);
-        }
-        
-        input, textarea, select, button {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 16px;
-            margin-bottom: 10px;
-        }
-        
-        button {
-            background: var(--secondary);
+
+        .card-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: var(--accent-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
             color: white;
+        }
+
+        .card-title {
+            font-weight: 600;
+            font-size: 20px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 16px;
+            background-color: var(--background);
+            border: 1px solid var(--border);
+            border-radius: var(--element-radius);
+            font-size: 16px;
+            color: var(--text-primary);
+            transition: var(--transition);
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(10, 132, 255, 0.2);
+        }
+
+        .btn {
+            padding: 16px 24px;
+            border-radius: var(--element-radius);
             border: none;
+            font-weight: 600;
+            font-size: 16px;
             cursor: pointer;
-            font-weight: bold;
-            transition: background 0.3s;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
-        
-        button:hover {
-            background: var(--primary);
+
+        .btn-primary {
+            background: var(--accent-gradient);
+            color: white;
         }
-        
+
+        .btn-primary:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            color: var(--primary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background-color: rgba(10, 132, 255, 0.1);
+        }
+
         .btn-danger {
-            background: var(--accent);
+            background-color: var(--secondary);
+            color: white;
         }
-        
-        .btn-success {
-            background: var(--success);
+
+        .btn-danger:hover {
+            opacity: 0.9;
         }
-        
+
         .result {
-            background: var(--light);
-            padding: 15px;
-            border-radius: 4px;
-            margin-top: 10px;
+            background-color: var(--background);
+            padding: 16px;
+            border-radius: var(--element-radius);
+            margin-top: 16px;
             min-height: 100px;
             overflow-wrap: break-word;
+            border: 1px solid var(--border);
+            font-family: 'SF Mono', Monaco, monospace;
+            font-size: 14px;
         }
-        
+
+        .sbox-container {
+            overflow-x: auto;
+            margin-top: 16px;
+        }
+
         .sbox-grid {
             display: grid;
-            grid-template-columns: repeat(17, 1fr);
+            grid-template-columns: repeat(17, 60px);
             gap: 2px;
-            margin-top: 20px;
-            max-height: 600px;
-            overflow-y: auto;
         }
-        
+
         .sbox-header {
-            background: var(--primary);
+            background-color: var(--primary);
             color: white;
             text-align: center;
-            padding: 5px;
-            font-weight: bold;
-        }
-        
-        .sbox-cell {
-            background: var(--light);
-            padding: 5px;
-            text-align: center;
+            padding: 8px 4px;
+            font-weight: 600;
             font-size: 12px;
-            border: 1px solid #ddd;
-            overflow: hidden;
+            border-radius: 4px;
         }
-        
+
+        .sbox-cell {
+            background-color: var(--background);
+            padding: 8px 4px;
+            text-align: center;
+            font-size: 10px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+            font-family: 'SF Mono', Monaco, monospace;
+        }
+
         .stats {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 10px;
+            gap: 12px;
             margin-top: 20px;
         }
-        
+
         .stat-card {
-            background: white;
-            padding: 10px;
-            border-radius: 4px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            background-color: var(--background);
+            padding: 16px;
+            border-radius: var(--element-radius);
+            text-align: center;
+            border: 1px solid var(--border);
         }
-        
-        .highlight {
-            background-color: #fff8e1;
-            border-left: 4px solid #ffc107;
-            padding: 10px;
-            margin: 10px 0;
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 4px;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
-        
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
         .log-output {
             height: 200px;
             overflow-y: auto;
-            background: #2c3e50;
+            background-color: var(--background);
+            color: var(--text-primary);
+            padding: 16px;
+            border-radius: var(--element-radius);
+            font-family: 'SF Mono', Monaco, monospace;
+            font-size: 12px;
+            border: 1px solid var(--border);
+            margin-top: 16px;
+        }
+
+        .log-entry {
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .log-time {
+            color: var(--text-secondary);
+            font-size: 10px;
+            margin-right: 8px;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-on {
+            background-color: var(--success);
+        }
+
+        .status-off {
+            background-color: var(--text-secondary);
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .tab {
+            padding: 12px 16px;
+            cursor: pointer;
+            font-weight: 500;
+            color: var(--text-secondary);
+            border-bottom: 2px solid transparent;
+            transition: var(--transition);
+        }
+
+        .tab.active {
+            color: var(--primary);
+            border-bottom: 2px solid var(--primary);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+
+        .badge-primary {
+            background: var(--accent-gradient);
             color: white;
-            padding: 10px;
-            border-radius: 4px;
-            font-family: monospace;
+        }
+
+        .badge-secondary {
+            background-color: var(--background);
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+        }
+
+        .animation-pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--card-bg);
+            color: var(--text-primary);
+            padding: 16px 24px;
+            border-radius: var(--element-radius);
+            box-shadow: var(--shadow);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: var(--transition);
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .toast.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .toast-success {
+            border-left: 4px solid var(--success);
+        }
+
+        .toast-error {
+            border-left: 4px solid var(--secondary);
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            color: var(--text-secondary);
             font-size: 14px;
         }
     </style>
 </head>
 <body>
-    <header>
-        <h1>Недетерминированный S-Box 16×16</h1>
-        <p>Демонстрация криптосистемы с омофонным шифрованием</p>
-    </header>
+    <nav class="navbar">
+        <div class="navbar-title">CryptoBox</div>
+        <div class="navbar-actions">
+            <div class="navbar-icon">
+                <i class="fas fa-key"></i>
+            </div>
+        </div>
+    </nav>
 
     <div class="container">
         <div class="column">
             <div class="card">
-                <h2>Управление ключом</h2>
-                <div class="input-group">
-                    <label for="keyInput">Ключ:</label>
-                    <input type="text" id="keyInput" placeholder="Введите ключ любой длины" value="МойСекретныйКлюч">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <i class="fas fa-key"></i>
+                    </div>
+                    <h2 class="card-title">Управление ключом</h2>
                 </div>
-                <div class="input-group">
-                    <label for="nonceInput">Nonce (одноразовый номер):</label>
-                    <input type="text" id="nonceInput" placeholder="Введите nonce" value="12345">
-                </div>
-                <button id="initBtn" class="btn-success">Инициализировать S-Box</button>
-                <button id="resetBtn" class="btn-danger">Сбросить S-Box</button>
                 
-                <div class="highlight">
-                    <p><strong>Улучшения:</strong></p>
-                    <ul>
-                        <li>Динамический S-Box, зависящий от ключа и nonce</li>
-                        <li>Добавление раундовой функции с диффузией</li>
-                        <li>Визуализация S-Box и статистики</li>
-                    </ul>
+                <div class="input-group">
+                    <label class="input-label">Ключ шифрования</label>
+                    <input type="text" class="input-field" id="keyInput" placeholder="Введите секретный ключ" value="МойСекретныйКлюч">
+                </div>
+                
+                <div class="input-group">
+                    <label class="input-label">Одноразовый номер (Nonce)</label>
+                    <input type="text" class="input-field" id="nonceInput" placeholder="Введите nonce" value="12345">
+                </div>
+                
+                <div class="input-group">
+                    <button id="initBtn" class="btn btn-primary">
+                        <i class="fas fa-play"></i> Инициализировать S-Box
+                    </button>
+                </div>
+                
+                <div class="input-group">
+                    <button id="resetBtn" class="btn btn-secondary">
+                        <i class="fas fa-redo"></i> Сбросить S-Box
+                    </button>
+                </div>
+                
+                <div class="stats">
+                    <div class="stat-card">
+                        <div class="stat-value" id="entropyValue">-</div>
+                        <div class="stat-label">Энтропия S-Box</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="keySize">-</div>
+                        <div class="stat-label">Длина ключа</div>
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <div class="stat-card">
+                        <span class="status-indicator" id="statusIndicator"></span>
+                        <span id="statusText">S-Box не инициализирован</span>
+                    </div>
                 </div>
             </div>
 
             <div class="card">
-                <h2>Шифрование</h2>
+                <div class="card-header">
+                    <div class="card-icon">
+                        <i class="fas fa-lock"></i>
+                    </div>
+                    <h2 class="card-title">Шифрование</h2>
+                </div>
+                
                 <div class="input-group">
-                    <label for="rounds">Количество раундов:</label>
-                    <select id="rounds">
+                    <label class="input-label">Количество раундов</label>
+                    <select class="input-field" id="rounds">
                         <option value="1">1 раунд</option>
                         <option value="2">2 раунда</option>
                         <option value="3" selected>3 раунда</option>
                         <option value="4">4 раунда</option>
+                        <option value="5">5 раундов</option>
                     </select>
                 </div>
+                
                 <div class="input-group">
-                    <label for="plainText">Исходный текст:</label>
-                    <textarea id="plainText" rows="4" placeholder="Введите текст для шифрования">Привет, мир! Это демонстрация недетерминированного S-Box.</textarea>
+                    <label class="input-label">Исходный текст</label>
+                    <textarea class="input-field" id="plainText" rows="4" placeholder="Введите текст для шифрования">Привет, мир! Это демонстрация недетерминированного S-Box.</textarea>
                 </div>
-                <button id="encryptBtn">Зашифровать</button>
-                <div class="result" id="encryptedResult">
-                    <p>Результат шифрования появится здесь...</p>
+                
+                <div class="input-group">
+                    <button id="encryptBtn" class="btn btn-primary">
+                        <i class="fas fa-shield-alt"></i> Зашифровать
+                    </button>
+                </div>
+                
+                <div class="input-group">
+                    <label class="input-label">Результат шифрования (HEX)</label>
+                    <div class="result" id="encryptedResult">
+                        <p>Результат появится здесь после шифрования...</p>
+                    </div>
                 </div>
             </div>
         </div>
 
         <div class="column">
             <div class="card">
-                <h2>Дешифрование</h2>
-                <div class="input-group">
-                    <label for="cipherText">Шифртекст (в hex):</label>
-                    <textarea id="cipherText" rows="4" placeholder="Шифртекст в hex формате"></textarea>
-                </div>
-                <button id="decryptBtn">Дешифровать</button>
-                <div class="result" id="decryptedResult">
-                    <p>Результат дешифрования появится здесь...</p>
-                </div>
-            </div>
-
-            <div class="card">
-                <h2>Визуализация S-Box</h2>
-                <div class="sbox-grid" id="sboxGrid">
-                    <!-- S-Box будет отрисован здесь -->
-                </div>
-            </div>
-
-            <div class="card">
-                <h2>Статистика и мониторинг</h2>
-                <div class="stats">
-                    <div class="stat-card">
-                        <h3>Энтропия S-Box</h3>
-                        <p id="entropyValue">-</p>
+                <div class="card-header">
+                    <div class="card-icon">
+                        <i class="fas fa-lock-open"></i>
                     </div>
-                    <div class="stat-card">
-                        <h3>Размер ключа</h3>
-                        <p id="keySize">-</p>
+                    <h2 class="card-title">Дешифрование</h2>
+                </div>
+                
+                <div class="input-group">
+                    <label class="input-label">Шифртекст (HEX формат)</label>
+                    <textarea class="input-field" id="cipherText" rows="4" placeholder="Введите hex-данные для дешифрования"></textarea>
+                </div>
+                
+                <div class="input-group">
+                    <button id="decryptBtn" class="btn btn-primary">
+                        <i class="fas fa-unlock"></i> Дешифровать
+                    </button>
+                </div>
+                
+                <div class="input-group">
+                    <label class="input-label">Результат дешифрования</label>
+                    <div class="result" id="decryptedResult">
+                        <p>Результат появится здесь после дешифрования...</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <i class="fas fa-table"></i>
+                    </div>
+                    <h2 class="card-title">Визуализация S-Box</h2>
+                </div>
+                
+                <div class="tabs">
+                    <div class="tab active" data-tab="sbox-view">S-Box</div>
+                    <div class="tab" data-tab="stats-view">Статистика</div>
+                </div>
+                
+                <div class="tab-content active" id="sbox-view">
+                    <div class="sbox-container">
+                        <div class="sbox-grid" id="sboxGrid">
+                            <!-- S-Box будет отрисован здесь -->
+                        </div>
                     </div>
                 </div>
                 
-                <h3>Журнал операций:</h3>
-                <div class="log-output" id="logOutput"></div>
+                <div class="tab-content" id="stats-view">
+                    <div class="log-output" id="logOutput">
+                        <div class="log-entry">
+                            <span class="log-time">12:45:10</span>
+                            <span>Система инициализирована. Готов к работе.</span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
+    </div>
+
+    <div class="footer">
+        <p>CryptoBox • Недетерминированный S-Box 16×16 • 2025</p>
+    </div>
+
+    <div class="toast" id="toast">
+        <i class="fas fa-check-circle"></i>
+        <span id="toast-message">Операция выполнена успешно</span>
     </div>
 
     <script>
@@ -264,25 +600,63 @@
         let invSBox = null;
         let prng = null;
         const logOutput = document.getElementById('logOutput');
+        let isInitialized = false;
 
         // Логирование
         function log(message) {
             const timestamp = new Date().toLocaleTimeString();
-            logOutput.innerHTML += `[${timestamp}] ${message}\n`;
+            const logEntry = document.createElement('div');
+            logEntry.className = 'log-entry';
+            logEntry.innerHTML = `<span class="log-time">${timestamp}</span> <span>${message}</span>`;
+            logOutput.appendChild(logEntry);
             logOutput.scrollTop = logOutput.scrollHeight;
         }
 
-        // Хеш-функция (упрощенная для демонстрации)
+        // Показать уведомление
+        function showToast(message, isSuccess = true) {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toast-message');
+            const toastIcon = toast.querySelector('i');
+            
+            toastMessage.textContent = message;
+            toast.className = isSuccess ? 'toast toast-success' : 'toast toast-error';
+            toastIcon.className = isSuccess ? 'fas fa-check-circle' : 'fas fa-exclamation-circle';
+            
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // Обновление статуса
+        function updateStatus(isActive) {
+            const statusIndicator = document.getElementById('statusIndicator');
+            const statusText = document.getElementById('statusText');
+            
+            if (isActive) {
+                statusIndicator.className = 'status-indicator status-on';
+                statusText.textContent = 'S-Box инициализирован';
+                showToast('S-Box успешно инициализирован');
+            } else {
+                statusIndicator.className = 'status-indicator status-off';
+                statusText.textContent = 'S-Box не инициализирован';
+            }
+            
+            isInitialized = isActive;
+        }
+
+        // Хеш-функция
         function simpleHash(str) {
             let hash = 0;
             for (let i = 0; i < str.length; i++) {
                 hash = ((hash << 5) - hash) + str.charCodeAt(i);
-                hash |= 0; // Преобразование в 32-битное целое
+                hash |= 0;
             }
             return hash;
         }
 
-        // Криптографически стойкий ГПСЧ (упрощенный для демонстрации)
+        // ГПСЧ
         function createPRNG(seed) {
             let state = simpleHash(seed.toString());
             return {
@@ -290,16 +664,15 @@
                     state ^= state << 13;
                     state ^= state >> 17;
                     state ^= state << 5;
-                    return state & 0xFF; // Возвращает младшие 8 бит
+                    return state & 0xFF;
                 }
             };
         }
 
-        // Функция диффузии (улучшение)
+        // Функция диффузии
         function diffusionMix(data, round) {
             const result = new Uint8Array(data.length);
             for (let i = 0; i < data.length; i++) {
-                // Простая операция диффузии с использованием соседних байтов
                 const prev = i > 0 ? data[i - 1] : round;
                 const next = i < data.length - 1 ? data[i + 1] : round;
                 result[i] = (data[i] ^ prev ^ next ^ round) & 0xFF;
@@ -317,18 +690,12 @@
                 Array.from({length: 16}, () => [])
             );
             
-            const usedValues = new Set();
-            
-            // Заполняем S-Box уникальными значениями
+            // Заполняем S-Box значениями
             for (let i = 0; i < 16; i++) {
                 for (let j = 0; j < 16; j++) {
                     const values = [];
-                    while (values.length < 16) {
-                        const candidate = prng.nextByte();
-                        if (!usedValues.has(candidate)) {
-                            values.push(candidate);
-                            usedValues.add(candidate);
-                        }
+                    for (let k = 0; k < 16; k++) {
+                        values.push(prng.nextByte());
                     }
                     sbox[i][j] = values;
                 }
@@ -400,7 +767,7 @@
             
             // Размер ключа
             const key = document.getElementById('keyInput').value;
-            document.getElementById('keySize').textContent = `${key.length} символов (${new Blob([key]).size} байт)`;
+            document.getElementById('keySize').textContent = `${key.length} симв.`;
         }
 
         // Шифрование с несколькими раундами
@@ -478,49 +845,83 @@
         function initApp() {
             log('Приложение инициализировано');
             
-            // Обработчики событий
+            // Обработчики событий для табов
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                    
+                    tab.classList.add('active');
+                    document.getElementById(tab.dataset.tab).classList.add('active');
+                });
+            });
+            
+            // Инициализация S-Box
             document.getElementById('initBtn').addEventListener('click', () => {
                 const key = document.getElementById('keyInput').value;
                 const nonce = document.getElementById('nonceInput').value;
                 
                 if (!key) {
-                    alert('Пожалуйста, введите ключ');
+                    showToast('Пожалуйста, введите ключ', false);
                     return;
                 }
                 
-                sBox = generateSBox(key, nonce);
-                invSBox = buildInverseMapping(sBox);
-                renderSBox();
+                try {
+                    sBox = generateSBox(key, nonce);
+                    invSBox = buildInverseMapping(sBox);
+                    renderSBox();
+                    updateStatus(true);
+                } catch (e) {
+                    console.error(e);
+                    showToast('Ошибка при генерации S-Box', false);
+                }
             });
             
+            // Сброс S-Box
             document.getElementById('resetBtn').addEventListener('click', () => {
                 sBox = null;
                 invSBox = null;
                 document.getElementById('sboxGrid').innerHTML = '';
                 document.getElementById('entropyValue').textContent = '-';
+                document.getElementById('keySize').textContent = '-';
+                updateStatus(false);
                 log('S-Box сброшен');
+                showToast('S-Box сброшен');
             });
             
+            // Шифрование
             document.getElementById('encryptBtn').addEventListener('click', () => {
                 if (!sBox) {
-                    alert('Сначала инициализируйте S-Box');
+                    showToast('Сначала инициализируйте S-Box', false);
                     return;
                 }
                 
                 const text = document.getElementById('plainText').value;
                 const rounds = parseInt(document.getElementById('rounds').value);
                 
-                const encrypted = encrypt(text, rounds);
-                document.getElementById('encryptedResult').innerHTML = 
-                    `<p><strong>Шифртекст (hex):</strong></p><p>${encrypted}</p>`;
+                if (!text) {
+                    showToast('Введите текст для шифрования', false);
+                    return;
+                }
                 
-                // Автоматически заполняем поле для дешифрования
-                document.getElementById('cipherText').value = encrypted;
+                try {
+                    const encrypted = encrypt(text, rounds);
+                    document.getElementById('encryptedResult').innerHTML = 
+                        `<p>${encrypted}</p>`;
+                    
+                    // Автоматически заполняем поле для дешифрования
+                    document.getElementById('cipherText').value = encrypted;
+                    showToast('Текст успешно зашифрован');
+                } catch (e) {
+                    console.error(e);
+                    showToast('Ошибка при шифровании', false);
+                }
             });
             
+            // Дешифрование
             document.getElementById('decryptBtn').addEventListener('click', () => {
                 if (!sBox) {
-                    alert('Сначала инициализируйте S-Box');
+                    showToast('Сначала инициализируйте S-Box', false);
                     return;
                 }
                 
@@ -528,17 +929,18 @@
                 const rounds = parseInt(document.getElementById('rounds').value);
                 
                 if (!cipherText) {
-                    alert('Введите шифртекст для дешифрования');
+                    showToast('Введите шифртекст для дешифрования', false);
                     return;
                 }
                 
                 try {
                     const decrypted = decrypt(cipherText, rounds);
                     document.getElementById('decryptedResult').innerHTML = 
-                        `<p><strong>Результат дешифрования:</strong></p><p>${decrypted}</p>`;
+                        `<p>${decrypted}</p>`;
+                    showToast('Текст успешно дешифрован');
                 } catch (e) {
-                    alert('Ошибка дешифрования: неверный формат шифртекста');
                     console.error(e);
+                    showToast('Ошибка дешифрования: неверный формат шифртекста', false);
                 }
             });
         }
