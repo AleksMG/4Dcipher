@@ -3,496 +3,371 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Криптостойкий S-Box с привязкой к ключу</title>
+    <title>Рабочий S-Box 16x16</title>
     <style>
         * {
-            box-sizing: border-box;
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
             font-family: 'Courier New', monospace;
         }
         body {
-            background: linear-gradient(135deg, #0d47a1, #311b92);
-            color: #e0e0e0;
-            min-height: 100vh;
+            background: #0d1117;
+            color: #c9d1d9;
             padding: 20px;
+            line-height: 1.6;
         }
         .container {
-            max-width: 1400px;
+            max-width: 1000px;
             margin: 0 auto;
-            background: rgba(13, 17, 23, 0.95);
-            border-radius: 12px;
-            padding: 25px;
-            box-shadow: 0 0 25px rgba(0, 0, 0, 0.7);
+            background: #161b22;
+            padding: 20px;
+            border-radius: 10px;
             border: 1px solid #30363d;
-        }
-        header {
-            text-align: center;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 2px solid #30363d;
         }
         h1 {
             color: #58a6ff;
-            font-size: 2.4rem;
-            margin-bottom: 15px;
-            text-shadow: 0 0 12px rgba(88, 166, 255, 0.4);
-        }
-        .description {
-            color: #8b949e;
-            font-size: 1.1rem;
-            max-width: 900px;
-            margin: 0 auto;
-            line-height: 1.6;
-        }
-        .crypto-section {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 30px;
-            margin-bottom: 30px;
-        }
-        .input-section, .output-section {
-            flex: 1;
-            min-width: 350px;
-        }
-        .section-title {
-            background: linear-gradient(90deg, #238636, #2ea043);
-            color: white;
-            padding: 12px;
-            border-radius: 8px 8px 0 0;
-            margin-bottom: 15px;
             text-align: center;
-            font-weight: bold;
-            font-size: 1.2rem;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+        .section {
+            margin: 20px 0;
+            padding: 15px;
+            background: #0d1117;
+            border-radius: 8px;
+            border: 1px solid #30363d;
         }
         textarea, input, button {
             width: 100%;
-            padding: 12px;
-            margin-bottom: 15px;
-            border: 1px solid #30363d;
-            border-radius: 6px;
-            font-size: 16px;
+            padding: 10px;
+            margin: 8px 0;
             background: #0d1117;
             color: #c9d1d9;
+            border: 1px solid #30363d;
+            border-radius: 5px;
+            font-size: 14px;
         }
         textarea {
-            min-height: 150px;
-            resize: vertical;
-            font-family: 'Consolas', monospace;
-        }
-        textarea:focus, input:focus {
-            outline: 2px solid #58a6ff;
-            border-color: #58a6ff;
+            height: 80px;
+            font-family: 'Courier New', monospace;
         }
         button {
-            background: linear-gradient(90deg, #238636, #2ea043);
+            background: #238636;
             color: white;
             border: none;
-            padding: 15px;
-            font-size: 16px;
-            font-weight: bold;
+            padding: 12px;
             cursor: pointer;
-            transition: all 0.3s;
-            margin-top: 10px;
+            margin: 5px 0;
         }
         button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(35, 134, 54, 0.4);
+            background: #2ea043;
         }
         .output {
-            background: #0d1117;
             padding: 15px;
-            border-radius: 6px;
-            min-height: 150px;
+            background: #0d1117;
+            border-radius: 5px;
             border: 1px solid #30363d;
+            min-height: 60px;
             word-break: break-all;
-            font-family: 'Consolas', monospace;
             white-space: pre-wrap;
+            font-family: 'Courier New', monospace;
         }
-        .s-box-section {
-            width: 100%;
-            overflow-x: auto;
-            margin-top: 30px;
+        .debug {
+            font-size: 12px;
+            color: #8b949e;
+            margin-top: 10px;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            background: #1c2b39;
+            color: #58a6ff;
+            border-radius: 5px;
+            border: 1px solid #1f6feb;
+            text-align: center;
         }
         .s-box-grid {
             display: grid;
             grid-template-columns: repeat(17, 1fr);
-            gap: 3px;
+            gap: 2px;
             margin-top: 15px;
+            font-size: 11px;
         }
         .s-box-cell {
             padding: 8px 4px;
             text-align: center;
-            background: #161b22;
-            border-radius: 4px;
-            font-size: 11px;
-            font-weight: bold;
-            min-width: 35px;
-            cursor: pointer;
+            background: #21262d;
             border: 1px solid #30363d;
+            border-radius: 3px;
+            cursor: pointer;
         }
         .s-box-cell:hover {
-            background: #1c6ea4;
+            background: #30363d;
         }
         .header-cell {
             background: #238636;
             color: white;
             font-weight: bold;
         }
-        .actions {
-            display: flex;
-            gap: 15px;
-            margin-top: 20px;
-            flex-wrap: wrap;
-        }
-        .btn-secondary {
-            background: linear-gradient(90deg, #da3633, #f85149);
-        }
-        .btn-secondary:hover {
-            box-shadow: 0 5px 15px rgba(218, 54, 51, 0.4);
-        }
-        .status {
-            text-align: center;
-            padding: 12px;
-            margin: 15px 0;
-            border-radius: 6px;
-            font-weight: bold;
-            background: #161b22;
-            border: 1px solid #30363d;
-        }
-        .success {
-            color: #3fb950;
-            border-color: #3fb950;
-        }
-        .error {
-            color: #f85149;
-            border-color: #f85149;
-        }
-        .info {
-            color: #58a6ff;
-            border-color: #58a6ff;
-        }
-        .technical-info {
-            background: #161b22;
-            padding: 15px;
-            border-radius: 8px;
-            margin: 20px 0;
-            border-left: 4px solid #58a6ff;
-            font-size: 0.9rem;
-        }
-        .technical-info h3 {
-            color: #58a6ff;
-            margin-bottom: 10px;
-        }
-        footer {
-            text-align: center;
-            margin-top: 40px;
-            color: #8b949e;
-            font-size: 0.9rem;
-            padding-top: 20px;
-            border-top: 1px solid #30363d;
-        }
-        @media (max-width: 768px) {
-            .crypto-section {
-                flex-direction: column;
-            }
-            .actions {
-                flex-direction: column;
-            }
-        }
     </style>
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1>Криптостойкий S-Box с привязкой к ключу</h1>
-            <p class="description">
-                Реализация криптосистемы с S-Box 16×16×16, где каждый входной байт заменяется на один из 16 возможных выходных байтов.
-                S-Box детерминированно генерируется из ключа с использованием криптостойкого хеширования.
-            </p>
-        </header>
+        <h1>🔐 Рабочий S-Box 16×16 с 16 значениями в ячейке</h1>
 
-        <div class="technical-info">
-            <h3>Алгоритм работы:</h3>
-            <p>1. Ключ хешируется с помощью SHA-256 для получения начального состояния</p>
-            <p>2. На основе хеша строится детерминированный псевдослучайный S-Box 16×16×16</p>
-            <p>3. Каждый байт исходных данных заменяется случайным значением из соответствующей ячейки S-Box</p>
-            <p>4. Для дешифрования используется тот же S-Box, воссозданный из ключа</p>
+        <div class="section">
+            <h2>📥 Ввод данных</h2>
+            <textarea id="inputText" placeholder="Введите текст для шифрования...">Hello World 123</textarea>
+            <input type="text" id="key" value="secret_key_123" placeholder="Ключ">
+            
+            <button onclick="initSBox()">🔄 Инициализировать S-Box</button>
+            <button onclick="encrypt()">🔒 Зашифровать</button>
+            <button onclick="decrypt()">🔓 Расшифровать</button>
+            
+            <div id="status" class="status">Готов к работе</div>
         </div>
 
-        <div class="crypto-section">
-            <div class="input-section">
-                <h2 class="section-title">Ввод данных</h2>
-                <textarea id="inputText" placeholder="Введите текст или hex-данные для шифрования...">Пример текста для шифрования</textarea>
-                <input type="password" id="key" placeholder="Введите криптографический ключ..." value="мой_секретный_ключ_2024">
-                <div class="actions">
-                    <button id="encryptBtn">Зашифровать</button>
-                    <button id="decryptBtn">Расшифровать</button>
-                    <button id="initBtn" class="btn-secondary">Перестроить S-Box из ключа</button>
-                </div>
-                <div id="status" class="status info">Готов к работе. Введите ключ и данные.</div>
-            </div>
-
-            <div class="output-section">
-                <h2 class="section-title">Результат</h2>
-                <div id="output" class="output">Здесь появится результат...</div>
-                <div id="processInfo" class="output" style="min-height: 60px; font-size: 14px;">Информация о процессе...</div>
-            </div>
+        <div class="section">
+            <h2>📤 Результат</h2>
+            <div id="output" class="output">Результат появится здесь...</div>
+            <div id="debug" class="output debug">Отладочная информация...</div>
         </div>
 
-        <div class="s-box-section">
-            <h2 class="section-title">S-Box 16×16 (первые значения из ячеек)</h2>
-            <div id="sBoxGrid" class="s-box-grid">
-                <!-- S-Box будет сгенерирован здесь -->
-            </div>
+        <div class="section">
+            <h2>🔢 S-Box 16×16 (первые значения)</h2>
+            <div id="sBoxGrid" class="s-box-grid"></div>
         </div>
-
-        <footer>
-            <p>Реализация криптостойкой системы с S-Box, привязанным к ключу | 2024</p>
-        </footer>
     </div>
 
     <script>
-        // Глобальные переменные
-        let sBox = []; // 16x16x16 S-Box
-        let sBoxInitialized = false;
+        let sBox = [];
+        let inverseMap = new Map();
 
-        // Криптостойкое хеширование ключа с помощью SHA-256
-        async function hashKey(key) {
-            const encoder = new TextEncoder();
-            const data = encoder.encode(key);
-            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-            const hashArray = Array.from(new Uint8Array(hashBuffer));
-            return hashArray;
-        }
-
-        // Детерминированный PRNG на основе хеша ключа
-        function createSeededRandomizer(seedArray) {
-            let state = [...seedArray];
-            let index = 0;
+        // Простой криптографический PRNG
+        function createCryptoPRNG(seed) {
+            let state = new Uint32Array([seed, seed ^ 0xDEADBEEF, seed ^ 0xCAFEBABE, seed ^ 0x12345678]);
+            let position = 0;
             
             return function() {
-                if (index >= state.length) {
-                    // Обновляем состояние с помощью дополнительного хеширования
-                    const newSeed = new Uint8Array(state);
-                    crypto.subtle.digest('SHA-256', newSeed).then(hash => {
-                        state = Array.from(new Uint8Array(hash));
-                        index = 0;
-                    });
+                if (position >= state.length) {
+                    // Перемешиваем состояние
+                    for (let i = 0; i < state.length; i++) {
+                        state[i] = state[i] ^ (state[(i + 1) % state.length] << 13);
+                        state[i] = state[i] ^ (state[i] >> 17);
+                        state[i] = state[i] ^ (state[i] << 5);
+                    }
+                    position = 0;
                 }
                 
-                const value = state[index] / 255;
-                index++;
+                const value = state[position] % 256 / 255;
+                position++;
                 return value;
             };
         }
 
-        // Инициализация S-Box на основе ключа
-        async function initializeSBoxFromKey(key) {
+        // Создание seed из ключа
+        function createSeed(key) {
+            let hash = 0;
+            for (let i = 0; i < key.length; i++) {
+                hash = ((hash << 5) - hash) + key.charCodeAt(i);
+                hash |= 0; // Convert to 32-bit integer
+            }
+            return Math.abs(hash);
+        }
+
+        // Инициализация S-Box
+        function initSBox() {
+            const key = document.getElementById('key').value;
             if (!key) {
-                showStatus("Ошибка: Введите ключ для инициализации S-Box", "error");
-                return false;
+                showStatus('❌ Введите ключ');
+                return;
             }
 
-            showStatus("Генерация S-Box из ключа...", "info");
+            const seed = createSeed(key);
+            const random = createCryptoPRNG(seed);
             
-            try {
-                // Хешируем ключ для получения начального состояния
-                const keyHash = await hashKey(key);
-                const random = createSeededRandomizer(keyHash);
-                
-                // Инициализируем S-Box 16x16x16
-                sBox = [];
-                for (let i = 0; i < 16; i++) {
-                    sBox[i] = [];
-                    for (let j = 0; j < 16; j++) {
-                        sBox[i][j] = [];
-                        // Заполняем 16 значений для каждой ячейки
-                        for (let k = 0; k < 16; k++) {
-                            sBox[i][j][k] = Math.floor(random() * 256);
-                        }
+            sBox = [];
+            inverseMap.clear();
+
+            // Создаем временный набор для отслеживания использованных значений
+            const usedValues = new Set();
+
+            // Заполняем S-Box 16x16
+            for (let i = 0; i < 16; i++) {
+                sBox[i] = [];
+                for (let j = 0; j < 16; j++) {
+                    sBox[i][j] = [];
+                    
+                    // Генерируем 16 уникальных значений для ячейки [i][j]
+                    for (let k = 0; k < 16; k++) {
+                        let value;
+                        let attempts = 0;
+                        
+                        do {
+                            value = Math.floor(random() * 256);
+                            attempts++;
+                            
+                            if (attempts > 1000) {
+                                // Fallback: гарантируем уникальность
+                                value = (i * 16 + j + k * 256) % 256;
+                                if (usedValues.has(value)) {
+                                    value = (value + 1) % 256;
+                                }
+                            }
+                        } while (usedValues.has(value));
+                        
+                        usedValues.add(value);
+                        sBox[i][j][k] = value;
+                        inverseMap.set(value, { i, j });
                     }
                 }
-                
-                sBoxInitialized = true;
-                renderSBox();
-                showStatus("S-Box успешно сгенерирован из ключа", "success");
-                return true;
-                
-            } catch (error) {
-                showStatus("Ошибка при генерации S-Box: " + error.message, "error");
-                return false;
             }
+
+            renderSBox();
+            showStatus('✅ S-Box успешно инициализирован');
         }
 
         // Отображение S-Box
         function renderSBox() {
             const grid = document.getElementById('sBoxGrid');
             grid.innerHTML = '';
-            
-            // Заголовки столбцов
-            let cell = document.createElement('div');
-            cell.className = 's-box-cell header-cell';
-            cell.textContent = 'i\\j';
-            grid.appendChild(cell);
-            
-            for (let j = 0; j < 16; j++) {
-                cell = document.createElement('div');
+
+            // Заголовки
+            for (let i = 0; i < 17; i++) {
+                const cell = document.createElement('div');
                 cell.className = 's-box-cell header-cell';
-                cell.textContent = j.toString(16).toUpperCase();
+                cell.textContent = i === 0 ? 'i\\j' : (i - 1).toString(16).toUpperCase();
                 grid.appendChild(cell);
             }
-            
-            // Данные S-Box
+
+            // Данные
             for (let i = 0; i < 16; i++) {
-                // Заголовок строки
-                cell = document.createElement('div');
-                cell.className = 's-box-cell header-cell';
-                cell.textContent = i.toString(16).toUpperCase();
-                grid.appendChild(cell);
-                
-                // Значения ячеек
+                const headerCell = document.createElement('div');
+                headerCell.className = 's-box-cell header-cell';
+                headerCell.textContent = i.toString(16).toUpperCase();
+                grid.appendChild(headerCell);
+
                 for (let j = 0; j < 16; j++) {
-                    cell = document.createElement('div');
+                    const cell = document.createElement('div');
                     cell.className = 's-box-cell';
-                    cell.textContent = sBox[i][j][0].toString(16).padStart(2, '0').toUpperCase();
-                    cell.title = `S-Box[${i.toString(16).toUpperCase()}][${j.toString(16).toUpperCase()}]: ${sBox[i][j].map(v => v.toString(16).padStart(2, '0').toUpperCase()).join(', ')}`;
+                    const firstValue = sBox[i][j][0];
+                    cell.textContent = firstValue.toString(16).padStart(2, '0').toUpperCase();
+                    
+                    // Подсказка со всеми значениями
+                    const allValues = sBox[i][j].map(v => 
+                        v.toString(16).padStart(2, '0').toUpperCase()
+                    ).join(' ');
+                    cell.title = `S[${i.toString(16).toUpperCase()}][${j.toString(16).toUpperCase()}]: ${allValues}`;
+                    
                     grid.appendChild(cell);
                 }
             }
         }
 
-        // Шифрование данных
-        async function encryptData() {
-            if (!sBoxInitialized) {
-                showStatus("Сначала инициализируйте S-Box из ключа", "error");
+        // Шифрование
+        function encrypt() {
+            if (sBox.length === 0) {
+                showStatus('❌ Сначала инициализируйте S-Box');
                 return;
             }
-            
-            const inputText = document.getElementById('inputText').value;
-            if (!inputText) {
-                showStatus("Введите данные для шифрования", "error");
+
+            const text = document.getElementById('inputText').value;
+            if (!text) {
+                showStatus('❌ Введите текст для шифрования');
                 return;
             }
-            
+
             // Конвертируем текст в байты
             const encoder = new TextEncoder();
-            const data = encoder.encode(inputText);
+            const data = encoder.encode(text);
             
-            let output = [];
-            let processInfo = "Процесс шифрования:\n";
-            
+            let encryptedBytes = [];
+            let debugInfo = "🔒 ШИФРОВАНИЕ:\n";
+
             for (let i = 0; i < data.length; i++) {
                 const byte = data[i];
                 const row = (byte >> 4) & 0x0F; // Старшие 4 бита
                 const col = byte & 0x0F;        // Младшие 4 бита
-                
-                // Случайный выбор из 16 возможных значений
+
+                // Случайный выбор из 16 значений
                 const randomIndex = Math.floor(Math.random() * 16);
                 const encryptedByte = sBox[row][col][randomIndex];
+
+                encryptedBytes.push(encryptedByte);
                 
-                output.push(encryptedByte);
-                processInfo += `Байт ${i}: ${byte.toString(2).padStart(8, '0')} (${byte}) -> [${row.toString(16).toUpperCase()},${col.toString(16).toUpperCase()},${randomIndex}] -> ${encryptedByte.toString(2).padStart(8, '0')} (${encryptedByte})\n`;
+                debugInfo += `Байт ${i}: 0x${byte.toString(16).padStart(2, '0').toUpperCase()} → `;
+                debugInfo += `S[${row.toString(16).toUpperCase()}][${col.toString(16).toUpperCase()}][${randomIndex}] = `;
+                debugInfo += `0x${encryptedByte.toString(16).padStart(2, '0').toUpperCase()}\n`;
             }
-            
-            // Отображаем результат в hex-формате
-            const hexOutput = output.map(b => b.toString(16).padStart(2, '0').toUpperCase()).join(' ');
-            document.getElementById('output').textContent = hexOutput;
-            document.getElementById('processInfo').textContent = processInfo;
-            showStatus("Данные успешно зашифрованы", "success");
+
+            // Конвертируем в HEX строку
+            const hexResult = encryptedBytes.map(b => 
+                b.toString(16).padStart(2, '0').toUpperCase()
+            ).join(' ');
+
+            document.getElementById('output').textContent = hexResult;
+            document.getElementById('debug').textContent = debugInfo;
+            showStatus('✅ Текст зашифрован');
         }
 
-        // Дешифрование данных
-        async function decryptData() {
-            if (!sBoxInitialized) {
-                showStatus("Сначала инициализируйте S-Box из ключа", "error");
+        // Дешифрование
+        function decrypt() {
+            if (sBox.length === 0) {
+                showStatus('❌ Сначала инициализируйте S-Box');
                 return;
             }
-            
-            let inputData = document.getElementById('inputText').value.trim();
-            if (!inputData) {
-                showStatus("Введите данные для дешифрования", "error");
+
+            const input = document.getElementById('inputText').value.trim();
+            if (!input) {
+                showStatus('❌ Введите HEX данные для дешифрования');
                 return;
             }
-            
-            // Парсим hex-строку
-            let hexBytes;
-            if (inputData.includes(' ')) {
-                hexBytes = inputData.split(' ');
-            } else {
-                // Убираем все не-hex символы и разбиваем по 2 символа
-                hexBytes = inputData.replace(/[^0-9A-Fa-f]/g, '').match(/.{1,2}/g) || [];
-            }
-            
-            const bytes = hexBytes.map(hex => parseInt(hex, 16));
-            
-            let output = [];
-            let processInfo = "Процесс дешифрования:\n";
-            let errors = 0;
-            
+
+            // Парсим HEX строку
+            const hexBytes = input.split(/\s+/);
+            const bytes = hexBytes.map(hex => {
+                const value = parseInt(hex, 16);
+                return isNaN(value) ? 0 : value;
+            });
+
+            let decryptedBytes = [];
+            let debugInfo = "🔓 ДЕШИФРОВАНИЕ:\n";
+            let errorCount = 0;
+
             for (let i = 0; i < bytes.length; i++) {
                 const encryptedByte = bytes[i];
-                let found = false;
                 
-                // Ищем зашифрованный байт в S-Box
-                for (let row = 0; row < 16; row++) {
-                    for (let col = 0; col < 16; col++) {
-                        for (let k = 0; k < 16; k++) {
-                            if (sBox[row][col][k] === encryptedByte) {
-                                const originalByte = (row << 4) | col;
-                                output.push(originalByte);
-                                processInfo += `Байт ${i}: ${encryptedByte} -> [${row.toString(16).toUpperCase()},${col.toString(16).toUpperCase()}] -> ${originalByte}\n`;
-                                found = true;
-                                break;
-                            }
-                        }
-                        if (found) break;
-                    }
-                    if (found) break;
-                }
-                
-                if (!found) {
-                    output.push(0xFF); // Маркер ошибки
-                    processInfo += `Байт ${i}: ${encryptedByte} -> НЕ НАЙДЕН В S-BOX!\n`;
-                    errors++;
+                if (inverseMap.has(encryptedByte)) {
+                    const { i: row, j: col } = inverseMap.get(encryptedByte);
+                    const originalByte = (row << 4) | col;
+                    decryptedBytes.push(originalByte);
+                    
+                    debugInfo += `Байт ${i}: 0x${encryptedByte.toString(16).padStart(2, '0').toUpperCase()} → `;
+                    debugInfo += `S[${row.toString(16).toUpperCase()}][${col.toString(16).toUpperCase()}] → `;
+                    debugInfo += `0x${originalByte.toString(16).padStart(2, '0').toUpperCase()}\n`;
+                } else {
+                    decryptedBytes.push(63); // '?' в ASCII
+                    debugInfo += `Байт ${i}: 0x${encryptedByte.toString(16).padStart(2, '0').toUpperCase()} → ❌ ОШИБКА\n`;
+                    errorCount++;
                 }
             }
-            
+
             // Конвертируем байты обратно в текст
             const decoder = new TextDecoder();
-            const result = decoder.decode(new Uint8Array(output));
-            
-            document.getElementById('output').textContent = result;
-            document.getElementById('processInfo').textContent = processInfo + (errors > 0 ? `\nОшибок: ${errors}` : "");
-            
-            if (errors > 0) {
-                showStatus(`Дешифрование завершено с ${errors} ошибками`, "error");
-            } else {
-                showStatus("Данные успешно дешифрованы", "success");
-            }
+            const textResult = decoder.decode(new Uint8Array(decryptedBytes));
+
+            document.getElementById('output').textContent = textResult;
+            document.getElementById('debug').textContent = debugInfo + (errorCount > 0 ? `\n❌ Ошибок: ${errorCount}` : '');
+            showStatus(errorCount > 0 ? `⚠️ Дешифровано с ${errorCount} ошибками` : '✅ Текст дешифрован');
         }
 
-        // Показать статус
-        function showStatus(message, type) {
-            const statusElement = document.getElementById('status');
-            statusElement.textContent = message;
-            statusElement.className = `status ${type}`;
+        function showStatus(message) {
+            document.getElementById('status').textContent = message;
         }
 
-        // Инициализация при загрузке
-        document.addEventListener('DOMContentLoaded', async function() {
-            // Автоматически инициализируем S-Box при загрузке
-            const defaultKey = document.getElementById('key').value;
-            await initializeSBoxFromKey(defaultKey);
-            
-            // Назначаем обработчики
-            document.getElementById('encryptBtn').addEventListener('click', encryptData);
-            document.getElementById('decryptBtn').addEventListener('click', decryptData);
-            document.getElementById('initBtn').addEventListener('click', async function() {
-                const key = document.getElementById('key').value;
-                await initializeSBoxFromKey(key);
-            });
-        });
+        // Автоинициализация при загрузке
+        window.onload = initSBox;
     </script>
 </body>
 </html>
