@@ -3,903 +3,935 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CryptoVault Pro 3D | Чистое 3D S-Box шифрование</title>
+    <title>3D S-Box Crypto System</title>
     <style>
         :root {
-            --bg-dark: #0f172a;
-            --card-dark: #1e293b;
-            --card-header: #334155;
-            --primary: #3b82f6;
-            --primary-hover: #2563eb;
-            --secondary: #6366f1;
-            --text: #e2e8f0;
-            --text-secondary: #94a3b8;
+            --primary: #2563eb;
+            --secondary: #1e40af;
+            --accent: #3b82f6;
+            --dark: #1e293b;
+            --light: #f8fafc;
             --success: #10b981;
             --error: #ef4444;
             --warning: #f59e0b;
-            --info: #3b82f6;
-            --border-radius: 12px;
-            --shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
-            --transition: all 0.3s ease;
         }
-
+        
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', 'SF Pro Display', -apple-system, sans-serif;
         }
-
+        
         body {
-            background: var(--bg-dark);
-            color: var(--text);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: var(--light);
             min-height: 100vh;
             padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            line-height: 1.6;
-            background-image: radial-gradient(circle at 10% 20%, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.9) 90%);
         }
-
+        
         .container {
-            width: 100%;
-            max-width: 1200px;
+            max-width: 1400px;
+            margin: 0 auto;
         }
-
+        
         header {
             text-align: center;
             margin-bottom: 30px;
             padding: 20px;
         }
-
+        
         h1 {
             font-size: 2.5rem;
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            background: linear-gradient(90deg, var(--accent), var(--primary));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             margin-bottom: 10px;
         }
-
-        .subtitle {
-            color: var(--text-secondary);
-            font-size: 1.1rem;
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
-        .security-badge {
-            display: inline-block;
-            background: rgba(16, 185, 129, 0.15);
-            color: var(--success);
-            padding: 6px 15px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            margin-top: 15px;
-            border: 1px solid rgba(16, 185, 129, 0.3);
-        }
-
-        .main-content {
+        
+        .main-grid {
             display: grid;
-            grid-template-columns: 1fr;
-            gap: 30px;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
         }
-
-        .card {
-            background: var(--card-dark);
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-            overflow: hidden;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+        
+        @media (max-width: 1200px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
         }
-
-        .card-header {
-            background: var(--card-header);
-            padding: 20px 30px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        
+        .panel {
+            background: rgba(30, 41, 59, 0.8);
+            border-radius: 15px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
         }
-
-        .card-title {
-            font-size: 1.5rem;
+        
+        .panel-header {
             display: flex;
             align-items: center;
             gap: 12px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--primary);
         }
-
-        .card-body {
-            padding: 30px;
+        
+        .panel-header h2 {
+            font-size: 1.5rem;
+            color: var(--accent);
         }
-
+        
         .form-group {
-            margin-bottom: 25px;
+            margin-bottom: 20px;
         }
-
+        
         label {
             display: block;
-            margin-bottom: 10px;
-            font-weight: 500;
-            color: var(--text-secondary);
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--accent);
         }
-
-        textarea, input, select {
+        
+        textarea, input {
             width: 100%;
-            padding: 14px 18px;
-            background: rgba(30, 41, 59, 0.7);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 12px 15px;
+            background: rgba(15, 23, 42, 0.6);
+            border: 2px solid rgba(59, 130, 246, 0.3);
             border-radius: 8px;
-            color: var(--text);
-            font-size: 1rem;
-            transition: var(--transition);
+            color: var(--light);
+            font-size: 16px;
+            transition: all 0.3s ease;
         }
-
-        textarea {
-            min-height: 150px;
-            resize: vertical;
-            font-family: 'Consolas', monospace;
-        }
-
+        
         textarea:focus, input:focus {
             outline: none;
-            border-color: var(--primary);
+            border-color: var(--accent);
             box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
         }
-
-        .btn-group {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            margin: 25px 0;
+        
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+            font-family: 'Courier New', monospace;
         }
-
+        
+        .btn-group {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin: 20px 0;
+        }
+        
         button {
-            flex: 1;
-            min-width: 160px;
-            padding: 14px 18px;
+            padding: 14px 20px;
             border: none;
             border-radius: 8px;
-            font-size: 1rem;
+            font-size: 16px;
             font-weight: 600;
             cursor: pointer;
-            transition: var(--transition);
+            transition: all 0.3s ease;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
+            gap: 8px;
         }
-
+        
         .btn-primary {
             background: linear-gradient(135deg, var(--primary), var(--secondary));
             color: white;
         }
-
+        
         .btn-primary:hover {
-            background: linear-gradient(135deg, var(--primary-hover), #4f46e5);
-            transform: translateY(-3px);
-            box-shadow: 0 7px 20px rgba(59, 130, 246, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(37, 99, 235, 0.4);
         }
-
+        
         .btn-secondary {
-            background: rgba(255, 255, 255, 0.08);
-            color: var(--text);
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--light);
         }
-
+        
         .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.15);
-            transform: translateY(-3px);
+            background: rgba(255, 255, 255, 0.2);
         }
-
-        .result-container {
-            margin-top: 10px;
-        }
-
-        .result-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-
-        .result-content {
-            background: rgba(30, 41, 59, 0.7);
-            border-radius: 8px;
+        
+        .result-area {
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 10px;
             padding: 20px;
-            font-family: 'Courier New', monospace;
-            white-space: pre-wrap;
-            word-break: break-all;
+            margin-top: 20px;
             min-height: 150px;
             max-height: 300px;
             overflow-y: auto;
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            word-break: break-all;
+            border: 2px solid rgba(59, 130, 246, 0.3);
         }
-
+        
         .status {
             padding: 15px;
             border-radius: 8px;
             margin-top: 20px;
             font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
-
-        .success {
+        
+        .status-success {
             background: rgba(16, 185, 129, 0.15);
             border: 1px solid rgba(16, 185, 129, 0.3);
             color: var(--success);
         }
-
-        .error {
+        
+        .status-error {
             background: rgba(239, 68, 68, 0.15);
             border: 1px solid rgba(239, 68, 68, 0.3);
             color: var(--error);
         }
-
-        .warning {
+        
+        .status-warning {
             background: rgba(245, 158, 11, 0.15);
             border: 1px solid rgba(245, 158, 11, 0.3);
             color: var(--warning);
         }
-
-        .info {
-            background: rgba(59, 130, 246, 0.15);
-            border: 1px solid rgba(59, 130, 246, 0.3);
-            color: var(--info);
+        
+        /* Визуализация */
+        .visualization {
+            margin-top: 30px;
         }
-
-        .info-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 20px;
-            margin-top: 25px;
-        }
-
-        .info-item {
-            background: rgba(30, 41, 59, 0.7);
-            border-radius: 8px;
-            padding: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-        }
-
-        .info-item h3 {
-            color: var(--primary);
-            margin-bottom: 15px;
-        }
-
-        .rounds-display {
+        
+        .rounds-container {
             display: flex;
-            gap: 8px;
-            margin-top: 20px;
+            gap: 10px;
+            margin-bottom: 20px;
             flex-wrap: wrap;
         }
-
-        .round-indicator {
-            width: 30px;
-            height: 30px;
+        
+        .round {
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
-            background: rgba(59, 130, 246, 0.2);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.8rem;
+            font-weight: bold;
+            background: rgba(59, 130, 246, 0.2);
+            border: 2px solid var(--accent);
+            transition: all 0.3s ease;
+        }
+        
+        .round.active {
+            background: var(--primary);
+            color: white;
+            transform: scale(1.1);
+        }
+        
+        .sbox-visualization {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .sbox-layer {
+            background: rgba(15, 23, 42, 0.8);
+            border-radius: 10px;
+            padding: 15px;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+        
+        .sbox-title {
+            text-align: center;
+            margin-bottom: 10px;
+            color: var(--accent);
+            font-weight: 600;
+        }
+        
+        .sbox-grid {
+            display: grid;
+            grid-template-columns: repeat(16, 1fr);
+            gap: 2px;
+        }
+        
+        .sbox-cell {
+            width: 20px;
+            height: 20px;
+            font-size: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(59, 130, 246, 0.1);
+            border-radius: 3px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .sbox-cell:hover {
+            background: rgba(59, 130, 246, 0.3);
+            transform: scale(1.3);
+        }
+        
+        .sbox-cell.active {
+            background: var(--primary);
+            color: white;
             font-weight: bold;
         }
-
-        .round-active {
+        
+        .bit-visualization {
+            margin-top: 25px;
+            padding: 15px;
+            background: rgba(15, 23, 42, 0.8);
+            border-radius: 10px;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+        
+        .bit-grid {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 5px;
+            margin-top: 10px;
+        }
+        
+        .bit {
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(59, 130, 246, 0.1);
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .bit.one {
             background: var(--primary);
             color: white;
         }
-
-        .copy-btn {
-            background: rgba(59, 130, 246, 0.15);
-            color: var(--primary);
-            border: none;
-            padding: 8px 15px;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: var(--transition);
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .copy-btn:hover {
-            background: rgba(59, 130, 246, 0.25);
-        }
-
-        .security-features {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
+        
+        .integrity-check {
             margin-top: 25px;
+            padding: 15px;
+            background: rgba(15, 23, 42, 0.8);
+            border-radius: 10px;
+            border: 1px solid rgba(59, 130, 246, 0.3);
         }
-
-        .feature-card {
-            background: rgba(30, 41, 59, 0.7);
-            border-radius: 8px;
-            padding: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
+        
+        .integrity-result {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
         }
-
-        .feature-card h3 {
-            margin-bottom: 10px;
-            color: var(--text);
+        
+        .integrity-valid {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--success);
         }
-
-        .strength-meter {
-            height: 6px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 3px;
-            margin-top: 8px;
+        
+        .integrity-invalid {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--error);
+        }
+        
+        .processing-animation {
+            margin-top: 20px;
+            height: 4px;
+            background: rgba(59, 130, 246, 0.2);
+            border-radius: 2px;
             overflow: hidden;
+            position: relative;
         }
-
-        .strength-bar {
+        
+        .processing-bar {
             height: 100%;
             width: 0%;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
             transition: width 0.5s ease;
         }
-
-        .weak {
-            background: var(--error);
-            width: 33%;
-        }
-
-        .medium {
-            background: var(--warning);
-            width: 66%;
-        }
-
-        .strong {
-            background: var(--success);
-            width: 100%;
-        }
-
-        footer {
-            text-align: center;
-            margin-top: 40px;
-            padding: 20px;
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        @media (max-width: 768px) {
-            .btn-group {
-                flex-direction: column;
-            }
-            
-            button {
-                width: 100%;
-            }
-            
-            .info-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            h1 {
-                font-size: 2rem;
-            }
+        
+        .hash-display {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(15, 23, 42, 0.8);
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            word-break: break-all;
+            border: 1px solid rgba(59, 130, 246, 0.3);
         }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>CryptoVault Pro 3D</h1>
-            <p class="subtitle">Чистое 12-раундовое шифрование на основе 3D S-Box</p>
-            <div class="security-badge">
-                Уровень безопасности: 3D S-Box (12 раундов)
-            </div>
+            <h1>3D S-Box Crypto System</h1>
+            <p>Профессиональная система шифрования с полной визуализацией процесса</p>
         </header>
 
-        <div class="main-content">
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">Параметры шифрования</h2>
+        <div class="main-grid">
+            <!-- Панель управления -->
+            <div class="panel">
+                <div class="panel-header">
+                    <h2>Управление шифрованием</h2>
                 </div>
-                <div class="card-body">
-                    <div class="form-group">
-                        <label>Текст / Шифротекст:</label>
-                        <textarea id="text" placeholder="Введите текст для шифрования или шифротекст для дешифрования"></textarea>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Ключ шифрования (мин. 12 символов):</label>
-                        <input type="password" id="key" placeholder="Ваш секретный ключ">
-                        <div class="strength-meter">
-                            <div class="strength-bar" id="strength-bar"></div>
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Вектор инициализации (IV):</label>
-                        <input type="text" id="iv" placeholder="16 байт в HEX (32 символа)">
-                    </div>
-                    
-                    <div class="btn-group">
-                        <button class="btn-primary" onclick="encrypt()">
-                            Зашифровать
-                        </button>
-                        <button class="btn-primary" onclick="decrypt()">
-                            Расшифровать
-                        </button>
-                        <button class="btn-secondary" onclick="generateKey()">
-                            Сгенерировать ключ
-                        </button>
-                        <button class="btn-secondary" onclick="generateIV()">
-                            Сгенерировать IV
-                        </button>
-                    </div>
-                    
-                    <div class="info-grid">
-                        <div class="info-item">
-                            <h3>Раунды шифрования</h3>
-                            <div class="rounds-display">
-                                <div class="round-indicator">1</div>
-                                <div class="round-indicator">2</div>
-                                <div class="round-indicator">3</div>
-                                <div class="round-indicator">4</div>
-                                <div class="round-indicator">5</div>
-                                <div class="round-indicator">6</div>
-                                <div class="round-indicator">7</div>
-                                <div class="round-indicator">8</div>
-                                <div class="round-indicator">9</div>
-                                <div class="round-indicator">10</div>
-                                <div class="round-indicator">11</div>
-                                <div class="round-indicator">12</div>
-                            </div>
-                            <p style="margin-top: 15px; color: var(--text-secondary);">
-                                12 раундов шифрования с уникальными 3D S-Box для каждого раунда
-                            </p>
-                        </div>
-                        
-                        <div class="info-item">
-                            <h3>Алгоритм 3D S-Box</h3>
-                            <ul style="padding-left: 20px; margin-top: 10px; color: var(--text-secondary);">
-                                <li>3 таблицы замен 16x16 (X, Y, Z)</li>
-                                <li>Динамическая генерация из ключа</li>
-                                <li>12 раундов преобразования</li>
-                                <li>Режим CBC для усиления безопасности</li>
-                            </ul>
-                        </div>
-                    </div>
+                
+                <div class="form-group">
+                    <label for="inputText">Исходный текст / Шифротекст:</label>
+                    <textarea id="inputText" placeholder="Введите текст для шифрования или HEX-шифротекст для дешифрования..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="encryptionKey">Ключ шифрования (мин. 12 символов):</label>
+                    <input type="password" id="encryptionKey" placeholder="Введите секретный ключ...">
+                </div>
+                
+                <div class="btn-group">
+                    <button class="btn-primary" onclick="startEncryption()">
+                        <span>🔒</span> Зашифровать
+                    </button>
+                    <button class="btn-primary" onclick="startDecryption()">
+                        <span>🔓</span> Расшифровать
+                    </button>
+                    <button class="btn-secondary" onclick="generateKey()">
+                        <span>🎲</span> Сгенерировать ключ
+                    </button>
+                    <button class="btn-secondary" onclick="clearAll()">
+                        <span>🧹</span> Очистить всё
+                    </button>
+                </div>
+                
+                <div class="result-area" id="resultArea">
+                    Результаты операций будут отображены здесь...
+                </div>
+                
+                <div class="status status-warning" id="statusMessage">
+                    <span>⚠️</span> Система готова к работе. Введите данные для начала.
+                </div>
+                
+                <div class="processing-animation">
+                    <div class="processing-bar" id="processingBar"></div>
                 </div>
             </div>
             
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">Результаты</h2>
+            <!-- Панель визуализации -->
+            <div class="panel">
+                <div class="panel-header">
+                    <h2>Визуализация процесса</h2>
                 </div>
-                <div class="card-body">
-                    <div class="result-container">
-                        <div class="result-header">
-                            <h3>Вывод данных:</h3>
-                            <button class="copy-btn" onclick="copyResult()">
-                                Копировать
-                            </button>
+                
+                <div class="visualization">
+                    <h3>Раунды шифрования</h3>
+                    <div class="rounds-container" id="roundsContainer">
+                        <!-- Раунды будут добавлены через JS -->
+                    </div>
+                    
+                    <h3>3D S-Box преобразование</h3>
+                    <div class="sbox-visualization">
+                        <div class="sbox-layer">
+                            <div class="sbox-title">S-Box X</div>
+                            <div class="sbox-grid" id="sboxX">
+                                <!-- Ячейки S-Box X -->
+                            </div>
                         </div>
-                        <div class="result-content" id="result">
-                            // Здесь будет результат операций...
+                        <div class="sbox-layer">
+                            <div class="sbox-title">S-Box Y</div>
+                            <div class="sbox-grid" id="sboxY">
+                                <!-- Ячейки S-Box Y -->
+                            </div>
+                        </div>
+                        <div class="sbox-layer">
+                            <div class="sbox-title">S-Box Z</div>
+                            <div class="sbox-grid" id="sboxZ">
+                                <!-- Ячейки S-Box Z -->
+                            </div>
                         </div>
                     </div>
                     
-                    <div class="status warning" id="status">
-                        Готов к работе. Введите текст и нажмите "Зашифровать".
+                    <div class="bit-visualization">
+                        <h3>Битовое представление</h3>
+                        <div class="bit-grid" id="bitGrid">
+                            <!-- Биты будут добавлены через JS -->
+                        </div>
                     </div>
                     
-                    <div class="security-features">
-                        <div class="feature-card">
-                            <h3>3D S-Box шифрование</h3>
-                            <p style="color: var(--text-secondary);">Использование трех таблиц замен для максимальной нелинейности</p>
+                    <div class="integrity-check">
+                        <h3>Проверка целостности</h3>
+                        <div class="integrity-result" id="integrityResult">
+                            <span>🔍</span> Проверка не проводилась
                         </div>
-                        
-                        <div class="feature-card">
-                            <h3>12 раундов</h3>
-                            <p style="color: var(--text-secondary);">Многократное преобразование для максимальной безопасности</p>
-                        </div>
-                        
-                        <div class="feature-card">
-                            <h3>Обратимость</h3>
-                            <p style="color: var(--text-secondary);">Гарантированная возможность дешифрования</p>
-                        </div>
+                    </div>
+                    
+                    <div class="hash-display" id="hashDisplay">
+                        Хеш: _________________________
                     </div>
                 </div>
             </div>
         </div>
-        
-        <footer>
-            <p>CryptoVault Pro 3D v2.1 | Чистая реализация 3D S-Box | © 2023 Все права защищены</p>
-        </footer>
     </div>
 
     <script>
-        // Конфигурация
-        const ROUNDS = 12;
-        const IV_LENGTH = 16;
-        const KEY_MIN_LENGTH = 12;
+        // Конфигурация системы
+        const CONFIG = {
+            ROUNDS: 12,
+            KEY_MIN_LENGTH: 12,
+            BLOCK_SIZE: 64,
+            ANIMATION_DELAY: 100
+        };
+        
+        // Глобальные переменные
         let currentRound = 0;
-
-        // Простая реализация хеш-функции для деривации ключа
-        function simpleHash(str) {
-            let hash = 0;
-            for (let i = 0; i < str.length; i++) {
-                const char = str.charCodeAt(i);
-                hash = ((hash << 5) - hash) + char;
-                hash = hash & hash; // Convert to 32-bit integer
+        let isProcessing = false;
+        let sBoxSets = [];
+        let integrityHash = '';
+        
+        // Инициализация визуализации
+        function initializeVisualization() {
+            // Создаем индикаторы раундов
+            const roundsContainer = document.getElementById('roundsContainer');
+            roundsContainer.innerHTML = '';
+            
+            for (let i = 1; i <= CONFIG.ROUNDS; i++) {
+                const round = document.createElement('div');
+                round.className = 'round';
+                round.textContent = i;
+                round.id = `round-${i}`;
+                roundsContainer.appendChild(round);
             }
-            return new Uint8Array(new Uint32Array([hash]).buffer);
+            
+            // Инициализируем S-Box визуализацию
+            initializeSBoxVisualization();
+            
+            // Инициализируем битовую визуализацию
+            initializeBitVisualization();
         }
-
-        // Генерация детерминированных S-Box на основе ключа
-        function generateSBox(seed, size = 256) {
-            const sbox = new Uint8Array(size);
+        
+        // Инициализация S-Box визуализации
+        function initializeSBoxVisualization() {
+            const sboxX = document.getElementById('sboxX');
+            const sboxY = document.getElementById('sboxY');
+            const sboxZ = document.getElementById('sboxZ');
             
-            // Initialize with sequential values
-            for (let i = 0; i < size; i++) {
-                sbox[i] = i;
+            sboxX.innerHTML = '';
+            sboxY.innerHTML = '';
+            sboxZ.innerHTML = '';
+            
+            for (let i = 0; i < 256; i++) {
+                const cellX = createSBoxCell(i);
+                const cellY = createSBoxCell(i);
+                const cellZ = createSBoxCell(i);
+                
+                sboxX.appendChild(cellX);
+                sboxY.appendChild(cellY);
+                sboxZ.appendChild(cellZ);
+            }
+        }
+        
+        // Создание ячейки S-Box
+        function createSBoxCell(value) {
+            const cell = document.createElement('div');
+            cell.className = 'sbox-cell';
+            cell.textContent = value.toString(16).padStart(2, '0').toUpperCase();
+            cell.title = `Значение: ${value}`;
+            return cell;
+        }
+        
+        // Инициализация битовой визуализации
+        function initializeBitVisualization() {
+            const bitGrid = document.getElementById('bitGrid');
+            bitGrid.innerHTML = '';
+            
+            for (let i = 7; i >= 0; i--) {
+                const bit = document.createElement('div');
+                bit.className = 'bit';
+                bit.textContent = '0';
+                bit.dataset.bit = i;
+                bitGrid.appendChild(bit);
+            }
+        }
+        
+        // Генерация S-Box на основе ключа
+        function generateSBoxes(key) {
+            sBoxSets = [];
+            
+            for (let round = 0; round < CONFIG.ROUNDS; round++) {
+                const roundKey = key + round.toString();
+                const seed = hashString(roundKey);
+                
+                const sBoxSet = {
+                    x: generateSBoxLayer(seed),
+                    y: generateSBoxLayer(seed + 1),
+                    z: generateSBoxLayer(seed + 2)
+                };
+                
+                sBoxSets.push(sBoxSet);
             }
             
-            // Shuffle using Fisher-Yates algorithm with seed
-            let state = seed[0];
-            for (let i = size - 1; i > 0; i--) {
-                // Simple PRNG using xorshift
-                state ^= state << 13;
-                state ^= state >> 17;
-                state ^= state << 5;
-                
-                const j = Math.abs(state) % (i + 1);
-                
-                // Swap values
+            return sBoxSets;
+        }
+        
+        // Генерация одного слоя S-Box
+        function generateSBoxLayer(seed) {
+            const sbox = new Array(256);
+            for (let i = 0; i < 256; i++) sbox[i] = i;
+            
+            // Детерминированное перемешивание на основе seed
+            let state = seed;
+            for (let i = 255; i > 0; i--) {
+                state = (state * 1664525 + 1013904223) % 4294967296;
+                const j = state % (i + 1);
                 [sbox[i], sbox[j]] = [sbox[j], sbox[i]];
             }
             
             return sbox;
         }
-
-        // Генерация обратных S-Box
-        function generateInverseSBox(sbox) {
-            const inverse = new Uint8Array(sbox.length);
-            for (let i = 0; i < sbox.length; i++) {
-                inverse[sbox[i]] = i;
-            }
-            return inverse;
-        }
-
-        // Класс для 3D S-Box шифрования
-        class ThreeDimensionalCipher {
-            constructor(rounds = ROUNDS) {
-                this.rounds = rounds;
-                this.sBoxSets = [];
-                this.invSBoxSets = [];
-            }
-
-            init(key) {
-                if (!key || key.length < KEY_MIN_LENGTH) {
-                    throw new Error(`Ключ должен содержать минимум ${KEY_MIN_LENGTH} символов`);
-                }
-                
-                // Генерация 3D S-Box для каждого раунда
-                this.sBoxSets = [];
-                this.invSBoxSets = [];
-                
-                for (let round = 0; round < this.rounds; round++) {
-                    // Создаем уникальный seed для каждого раунда
-                    const roundSeed = simpleHash(key + round.toString());
-                    
-                    // Генерируем 3 S-Box для этого раунда
-                    const sBoxSet = {
-                        x: generateSBox(roundSeed),
-                        y: generateSBox(new Uint8Array(roundSeed).reverse()),
-                        z: generateSBox(new Uint8Array([...roundSeed, round]))
-                    };
-                    
-                    const invSBoxSet = {
-                        x: generateInverseSBox(sBoxSet.x),
-                        y: generateInverseSBox(sBoxSet.y),
-                        z: generateInverseSBox(sBoxSet.z)
-                    };
-                    
-                    this.sBoxSets.push(sBoxSet);
-                    this.invSBoxSets.push(invSBoxSet);
-                }
-            }
-
-            // 3D S-Box преобразование
-            apply3DSBox(input, context, sBoxSet, encrypt = true) {
-                if (encrypt) {
-                    // Прямое преобразование: X → Y → Z
-                    const x = input;
-                    const y = sBoxSet.x[x];
-                    const z = sBoxSet.y[y];
-                    return sBoxSet.z[z ^ context];
-                } else {
-                    // Обратное преобразование: Z → Y → X
-                    const z = input;
-                    const y = sBoxSet.z[z ^ context];
-                    const x = sBoxSet.y[y];
-                    return sBoxSet.x[x];
-                }
-            }
-
-            encrypt(plaintext, key) {
-                if (!plaintext) throw new Error("Введите текст для шифрования");
-                
-                this.init(key);
-                
-                const iv = this.hexToBytes(document.getElementById('iv').value || this.generateRandomHex(IV_LENGTH * 2));
-                const textBytes = this.textToBytes(plaintext);
-                
-                // Режим CBC с 3D S-Box
-                let previousBlock = iv;
-                const ciphertext = [];
-                
-                for (let i = 0; i < textBytes.length; i++) {
-                    // XOR с предыдущим блоком (CBC mode)
-                    const block = textBytes[i] ^ previousBlock[i % IV_LENGTH];
-                    
-                    // Применяем все раунды 3D S-Box
-                    let result = block;
-                    for (let round = 0; round < this.rounds; round++) {
-                        const sBoxSet = this.sBoxSets[round];
-                        result = this.apply3DSBox(result, previousBlock[round % IV_LENGTH], sBoxSet, true);
-                    }
-                    
-                    ciphertext.push(result);
-                    previousBlock = this.updatePreviousBlock(previousBlock, result);
-                }
-                
-                return {
-                    iv: this.bytesToHex(iv),
-                    ciphertext: this.bytesToHex(new Uint8Array(ciphertext))
-                };
-            }
-
-            decrypt(ciphertextHex, key, ivHex) {
-                if (!ciphertextHex) throw new Error("Введите шифротекст");
-                if (!ivHex || ivHex.length !== IV_LENGTH * 2) {
-                    throw new Error(`IV должен быть ${IV_LENGTH * 2} hex-символов (${IV_LENGTH} байт)`);
-                }
-                
-                this.init(key);
-                
-                const iv = this.hexToBytes(ivHex);
-                const ciphertext = this.hexToBytes(ciphertextHex);
-                
-                // Режим CBC с обратным 3D S-Box
-                let previousBlock = iv;
-                const plaintext = [];
-                
-                for (let i = 0; i < ciphertext.length; i++) {
-                    // Применяем все раунды обратного 3D S-Box
-                    let result = ciphertext[i];
-                    for (let round = this.rounds - 1; round >= 0; round--) {
-                        const sBoxSet = this.invSBoxSets[round];
-                        result = this.apply3DSBox(result, previousBlock[round % IV_LENGTH], sBoxSet, false);
-                    }
-                    
-                    // XOR с предыдущим блоком (CBC mode)
-                    const block = result ^ previousBlock[i % IV_LENGTH];
-                    plaintext.push(block);
-                    
-                    previousBlock = this.updatePreviousBlock(previousBlock, ciphertext[i]);
-                }
-                
-                return this.bytesToText(new Uint8Array(plaintext));
-            }
-
-            updatePreviousBlock(previousBlock, newByte) {
-                // Сдвигаем блок и добавляем новый байт
-                const newBlock = new Uint8Array(previousBlock.length);
-                for (let i = 0; i < previousBlock.length - 1; i++) {
-                    newBlock[i] = previousBlock[i + 1];
-                }
-                newBlock[previousBlock.length - 1] = newByte;
-                return newBlock;
-            }
-
-            generateRandomHex(length) {
-                const bytes = new Uint8Array(length / 2);
-                for (let i = 0; i < bytes.length; i++) {
-                    bytes[i] = Math.floor(Math.random() * 256);
-                }
-                return this.bytesToHex(bytes);
-            }
-
-            textToBytes(text) {
-                const bytes = new Uint8Array(text.length);
-                for (let i = 0; i < text.length; i++) {
-                    bytes[i] = text.charCodeAt(i);
-                }
-                return bytes;
-            }
-
-            bytesToText(bytes) {
-                return Array.from(bytes).map(byte => String.fromCharCode(byte)).join('');
-            }
-
-            bytesToHex(bytes) {
-                return Array.from(bytes)
-                    .map(b => b.toString(16).padStart(2, '0'))
-                    .join('');
-            }
-
-            hexToBytes(hex) {
-                const bytes = [];
-                for (let i = 0; i < hex.length; i += 2) {
-                    bytes.push(parseInt(hex.substr(i, 2), 16));
-                }
-                return new Uint8Array(bytes);
-            }
-        }
-
-        // Инициализация шифра
-        const cipher = new ThreeDimensionalCipher(ROUNDS);
         
-        // Функции для работы с UI
-        function showStatus(message, isError = false, isWarning = false, isInfo = false) {
-            const statusEl = document.getElementById('status');
-            statusEl.textContent = message;
-            statusEl.className = 'status';
+        // Хеширование строки
+        function hashString(str) {
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                hash = ((hash << 5) - hash) + str.charCodeAt(i);
+                hash |= 0;
+            }
+            return Math.abs(hash);
+        }
+        
+        // Процесс шифрования
+        async function encryptData(text, key) {
+            if (isProcessing) return;
+            isProcessing = true;
             
-            if (isError) {
-                statusEl.classList.add('error');
-            } else if (isWarning) {
-                statusEl.classList.add('warning');
-            } else if (isInfo) {
-                statusEl.classList.add('info');
-            } else {
-                statusEl.classList.add('success');
+            try {
+                updateStatus('Начало шифрования...', 'warning');
+                updateProgress(0);
+                
+                // Генерируем S-Box
+                generateSBoxes(key);
+                updateProgress(10);
+                
+                // Преобразуем текст в байты
+                const textBytes = new TextEncoder().encode(text);
+                integrityHash = calculateHash(textBytes);
+                updateHashDisplay(integrityHash);
+                
+                updateStatus('Применение 3D S-Box преобразований...', 'warning');
+                
+                const resultBytes = new Uint8Array(textBytes.length);
+                
+                // Проходим по всем раундам
+                for (let round = 0; round < CONFIG.ROUNDS; round++) {
+                    currentRound = round + 1;
+                    updateRoundIndicator(currentRound);
+                    updateProgress(10 + (round * 70 / CONFIG.ROUNDS));
+                    
+                    // Визуализируем текущий S-Box
+                    visualizeSBoxes(round);
+                    
+                    // Обрабатываем каждый байт
+                    for (let i = 0; i < textBytes.length; i++) {
+                        let byte = textBytes[i];
+                        
+                        // Применяем S-Box преобразования
+                        byte = sBoxSets[round].x[byte];
+                        byte = sBoxSets[round].y[byte];
+                        byte = sBoxSets[round].z[byte];
+                        
+                        resultBytes[i] = byte;
+                        
+                        // Визуализируем биты
+                        if (i === 0) visualizeBits(byte);
+                        
+                        await delay(CONFIG.ANIMATION_DELAY / textBytes.length);
+                    }
+                    
+                    await delay(300);
+                }
+                
+                updateProgress(80);
+                updateStatus('Формирование результата...', 'warning');
+                
+                // Конвертируем в HEX
+                const hexResult = bytesToHex(resultBytes);
+                
+                updateProgress(100);
+                updateStatus('Шифрование успешно завершено!', 'success');
+                updateIntegrityCheck(true);
+                
+                return hexResult;
+                
+            } catch (error) {
+                updateStatus(`Ошибка шифрования: ${error.message}`, 'error');
+                return null;
+            } finally {
+                isProcessing = false;
             }
         }
-
-        function copyResult() {
-            const result = document.getElementById('result').textContent;
-            navigator.clipboard.writeText(result).then(() => {
-                showStatus('Результат скопирован в буфер обмена!', false, false, true);
-            });
-        }
-
-        function updateStrengthMeter() {
-            const password = document.getElementById('key').value;
-            const strengthBar = document.getElementById('strength-bar');
+        
+        // Процесс дешифрования
+        async function decryptData(hexData, key) {
+            if (isProcessing) return;
+            isProcessing = true;
             
-            if (!password) {
-                strengthBar.className = 'strength-bar';
-                strengthBar.style.width = '0%';
+            try {
+                updateStatus('Начало дешифрования...', 'warning');
+                updateProgress(0);
+                
+                // Генерируем S-Box
+                generateSBoxes(key);
+                updateProgress(10);
+                
+                // Конвертируем HEX в байты
+                const encryptedBytes = hexToBytes(hexData);
+                
+                updateStatus('Применение обратных 3D S-Box преобразований...', 'warning');
+                
+                const resultBytes = new Uint8Array(encryptedBytes.length);
+                
+                // Проходим по всем раундам в обратном порядке
+                for (let round = CONFIG.ROUNDS - 1; round >= 0; round--) {
+                    currentRound = CONFIG.ROUNDS - round;
+                    updateRoundIndicator(currentRound);
+                    updateProgress(10 + ((CONFIG.ROUNDS - round - 1) * 70 / CONFIG.ROUNDS));
+                    
+                    // Визуализируем текущий S-Box
+                    visualizeSBoxes(round);
+                    
+                    // Обрабатываем каждый байт
+                    for (let i = 0; i < encryptedBytes.length; i++) {
+                        let byte = encryptedBytes[i];
+                        
+                        // Применяем обратные S-Box преобразования
+                        byte = sBoxSets[round].z.indexOf(byte);
+                        byte = sBoxSets[round].y.indexOf(byte);
+                        byte = sBoxSets[round].x.indexOf(byte);
+                        
+                        resultBytes[i] = byte;
+                        
+                        // Визуализируем биты
+                        if (i === 0) visualizeBits(byte);
+                        
+                        await delay(CONFIG.ANIMATION_DELAY / encryptedBytes.length);
+                    }
+                    
+                    await delay(300);
+                }
+                
+                updateProgress(80);
+                updateStatus('Проверка целостности...', 'warning');
+                
+                // Проверяем целостность
+                const currentHash = calculateHash(resultBytes);
+                const integrityValid = currentHash === integrityHash;
+                
+                updateProgress(100);
+                
+                if (integrityValid) {
+                    updateStatus('Дешифрование успешно завершено!', 'success');
+                    updateIntegrityCheck(true);
+                    return new TextDecoder().decode(resultBytes);
+                } else {
+                    updateStatus('Ошибка целостности данных!', 'error');
+                    updateIntegrityCheck(false);
+                    return null;
+                }
+                
+            } catch (error) {
+                updateStatus(`Ошибка дешифрования: ${error.message}`, 'error');
+                return null;
+            } finally {
+                isProcessing = false;
+            }
+        }
+        
+        // Вспомогательные функции
+        function bytesToHex(bytes) {
+            return Array.from(bytes)
+                .map(b => b.toString(16).padStart(2, '0'))
+                .join('');
+        }
+        
+        function hexToBytes(hex) {
+            const bytes = [];
+            for (let i = 0; i < hex.length; i += 2) {
+                bytes.push(parseInt(hex.substr(i, 2), 16));
+            }
+            return new Uint8Array(bytes);
+        }
+        
+        function calculateHash(bytes) {
+            let hash = 0;
+            for (const byte of bytes) {
+                hash = ((hash << 5) - hash) + byte;
+                hash |= 0;
+            }
+            return hash.toString(16).padStart(8, '0');
+        }
+        
+        function delay(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+        
+        // Функции обновления UI
+        function updateStatus(message, type) {
+            const status = document.getElementById('statusMessage');
+            status.className = `status status-${type}`;
+            
+            let icon = '⚠️';
+            if (type === 'success') icon = '✅';
+            if (type === 'error') icon = '❌';
+            
+            status.innerHTML = `<span>${icon}</span> ${message}`;
+        }
+        
+        function updateProgress(percent) {
+            const bar = document.getElementById('processingBar');
+            bar.style.width = `${percent}%`;
+        }
+        
+        function updateRoundIndicator(round) {
+            // Сбрасываем все раунды
+            document.querySelectorAll('.round').forEach(r => {
+                r.classList.remove('active');
+            });
+            
+            // Активируем текущий раунд
+            const currentRoundElement = document.getElementById(`round-${round}`);
+            if (currentRoundElement) {
+                currentRoundElement.classList.add('active');
+            }
+        }
+        
+        function visualizeSBoxes(roundIndex) {
+            if (roundIndex >= sBoxSets.length) return;
+            
+            const sboxSet = sBoxSets[roundIndex];
+            
+            // Обновляем S-Box визуализацию
+            updateSBoxLayer('sboxX', sboxSet.x);
+            updateSBoxLayer('sboxY', sboxSet.y);
+            updateSBoxLayer('sboxZ', sboxSet.z);
+        }
+        
+        function updateSBoxLayer(layerId, sbox) {
+            const layer = document.getElementById(layerId);
+            const cells = layer.querySelectorAll('.sbox-cell');
+            
+            for (let i = 0; i < Math.min(sbox.length, cells.length); i++) {
+                cells[i].textContent = sbox[i].toString(16).padStart(2, '0').toUpperCase();
+                cells[i].title = `Индекс: ${i.toString(16).padStart(2, '0').toUpperCase()}\nЗначение: ${sbox[i].toString(16).padStart(2, '0').toUpperCase()}`;
+            }
+        }
+        
+        function visualizeBits(byte) {
+            const bits = document.querySelectorAll('.bit');
+            
+            for (let i = 0; i < 8; i++) {
+                const bitValue = (byte >> (7 - i)) & 1;
+                bits[i].textContent = bitValue;
+                bits[i].className = `bit ${bitValue ? 'one' : ''}`;
+            }
+        }
+        
+        function updateIntegrityCheck(isValid) {
+            const integrityResult = document.getElementById('integrityResult');
+            integrityResult.className = `integrity-result ${isValid ? 'integrity-valid' : 'integrity-invalid'}`;
+            
+            if (isValid) {
+                integrityResult.innerHTML = '<span>✅</span> Целостность данных подтверждена';
+            } else {
+                integrityResult.innerHTML = '<span>❌</span> Нарушение целостности данных!';
+            }
+        }
+        
+        function updateHashDisplay(hash) {
+            document.getElementById('hashDisplay').textContent = `Хеш: ${hash}`;
+        }
+        
+        function updateResult(content) {
+            document.getElementById('resultArea').textContent = content;
+        }
+        
+        // Обработчики действий
+        async function startEncryption() {
+            const text = document.getElementById('inputText').value;
+            const key = document.getElementById('encryptionKey').value;
+            
+            if (!text) {
+                updateStatus('Введите текст для шифрования', 'error');
                 return;
             }
             
-            // Расчет сложности пароля
-            let strength = 0;
-            if (password.length >= KEY_MIN_LENGTH) strength++;
-            if (password.length >= 16) strength++;
-            if (/[A-Z]/.test(password)) strength++;
-            if (/[a-z]/.test(password)) strength++;
-            if (/[0-9]/.test(password)) strength++;
-            if (/[^A-Za-z0-9]/.test(password)) strength++;
+            if (!key || key.length < CONFIG.KEY_MIN_LENGTH) {
+                updateStatus(`Ключ должен содержать минимум ${CONFIG.KEY_MIN_LENGTH} символов`, 'error');
+                return;
+            }
             
-            if (strength < 3) {
-                strengthBar.className = 'strength-bar weak';
-            } else if (strength < 5) {
-                strengthBar.className = 'strength-bar medium';
-            } else {
-                strengthBar.className = 'strength-bar strong';
+            initializeVisualization();
+            const result = await encryptData(text, key);
+            
+            if (result) {
+                updateResult(`Зашифрованный текст (HEX):\n${result}`);
             }
         }
-
-        function encrypt() {
-            try {
-                const text = document.getElementById('text').value;
-                const key = document.getElementById('key').value;
-                
-                if (!text) {
-                    showStatus('Введите текст для шифрования', true);
-                    return;
-                }
-                
-                if (!key || key.length < KEY_MIN_LENGTH) {
-                    showStatus(`Ключ должен содержать минимум ${KEY_MIN_LENGTH} символов`, true);
-                    return;
-                }
-                
-                showStatus('Шифрование запущено...', false, true);
-                
-                // Анимируем раунды
-                const indicators = document.querySelectorAll('.round-indicator');
-                let round = 0;
-                
-                const animation = setInterval(() => {
-                    if (round < indicators.length) {
-                        indicators[round].classList.add('round-active');
-                        round++;
-                    } else {
-                        clearInterval(animation);
-                        
-                        // Выполняем шифрование после анимации
-                        const result = cipher.encrypt(text, key);
-                        document.getElementById('iv').value = result.iv;
-                        document.getElementById('result').textContent = 
-                            `IV: ${result.iv}\n\n` +
-                            `ШИФРОТЕКСТ (HEX):\n${result.ciphertext}`;
-                        
-                        showStatus(`3D S-Box шифрование успешно завершено за ${ROUNDS} раундов!`);
-                    }
-                }, 100);
-                
-            } catch (error) {
-                showStatus(`Ошибка шифрования: ${error.message}`, true);
+        
+        async function startDecryption() {
+            const text = document.getElementById('inputText').value;
+            const key = document.getElementById('encryptionKey').value;
+            
+            if (!text) {
+                updateStatus('Введите шифротекст для дешифрования', 'error');
+                return;
+            }
+            
+            if (!key || key.length < CONFIG.KEY_MIN_LENGTH) {
+                updateStatus(`Ключ должен содержать минимум ${CONFIG.KEY_MIN_LENGTH} символов`, 'error');
+                return;
+            }
+            
+            // Проверяем, что ввод выглядит как HEX
+            if (!/^[0-9a-fA-F]+$/.test(text)) {
+                updateStatus('Введите корректный HEX-шифротекст', 'error');
+                return;
+            }
+            
+            initializeVisualization();
+            const result = await decryptData(text, key);
+            
+            if (result) {
+                updateResult(`Расшифрованный текст:\n${result}`);
             }
         }
-
-        function decrypt() {
-            try {
-                const text = document.getElementById('text').value;
-                const key = document.getElementById('key').value;
-                const iv = document.getElementById('iv').value;
-                
-                if (!text) {
-                    showStatus('Введите шифротекст', true);
-                    return;
-                }
-                
-                if (!key || key.length < KEY_MIN_LENGTH) {
-                    showStatus(`Ключ должен содержать минимум ${KEY_MIN_LENGTH} символов`, true);
-                    return;
-                }
-                
-                if (!iv || iv.length !== IV_LENGTH * 2) {
-                    showStatus(`IV должен быть ${IV_LENGTH * 2} hex-символов`, true);
-                    return;
-                }
-                
-                showStatus('Дешифрование запущено...', false, true);
-                
-                // Анимируем раунды в обратном порядке
-                const indicators = document.querySelectorAll('.round-indicator');
-                let round = indicators.length - 1;
-                
-                const animation = setInterval(() => {
-                    if (round >= 0) {
-                        indicators[round].classList.add('round-active');
-                        round--;
-                    } else {
-                        clearInterval(animation);
-                        
-                        // Выполняем дешифрование после анимации
-                        const result = cipher.decrypt(text, key, iv);
-                        document.getElementById('result').textContent = 
-                            `РАСШИФРОВАННЫЙ ТЕКСТ:\n${result}`;
-                        
-                        showStatus(`3D S-Box дешифрование успешно завершено за ${ROUNDS} раундов!`);
-                    }
-                }, 100);
-                
-            } catch (error) {
-                showStatus(`Ошибка дешифрования: ${error.message}`, true);
-            }
-        }
-
+        
         function generateKey() {
-            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_-+=';
-            let result = '';
-            for (let i = 0; i < 24; i++) {
-                result += chars[Math.floor(Math.random() * chars.length)];
-            }
-            document.getElementById('key').value = result;
-            updateStrengthMeter();
-            showStatus('Сгенерирован новый криптостойкий ключ', false, false, true);
-        }
-
-        function generateIV() {
-            const iv = cipher.generateRandomHex(IV_LENGTH * 2);
-            document.getElementById('iv').value = iv;
-            showStatus('Сгенерирован новый вектор инициализации (IV)', false, false, true);
-        }
-
-        // Инициализация
-        document.addEventListener('DOMContentLoaded', function() {
-            generateKey();
-            generateIV();
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_-+=[]{}|;:,.<>?';
+            let key = '';
             
-            // Слушатели событий
-            document.getElementById('key').addEventListener('input', updateStrengthMeter);
+            for (let i = 0; i < 24; i++) {
+                key += chars[Math.floor(Math.random() * chars.length)];
+            }
+            
+            document.getElementById('encryptionKey').value = key;
+            updateStatus('Сгенерирован новый ключ', 'success');
+        }
+        
+        function clearAll() {
+            document.getElementById('inputText').value = '';
+            document.getElementById('encryptionKey').value = '';
+            document.getElementById('resultArea').textContent = 'Результаты операций будут отображены здесь...';
+            updateStatus('Все поля очищены. Система готова к работе.', 'warning');
+            initializeVisualization();
+        }
+        
+        // Инициализация при загрузке
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeVisualization();
+            generateKey();
         });
     </script>
 </body>
