@@ -422,6 +422,12 @@
             color: var(--text-secondary);
             font-size: 14px;
         }
+
+        .info-text {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 8px;
+        }
     </style>
 </head>
 <body>
@@ -520,6 +526,7 @@
                     <div class="result" id="encryptedResult">
                         <p>Результат появится здесь после шифрования...</p>
                     </div>
+                    <p class="info-text">Шифртекст содержит данные + карту омофонов</p>
                 </div>
             </div>
         </div>
@@ -657,7 +664,7 @@
             return hash;
         }
 
-        // Детерминированный ГПСЧ для воспроизводимости
+        // Криптографический ГПСЧ
         function createPRNG(seed) {
             let state = simpleHash(seed.toString());
             return {
@@ -666,10 +673,6 @@
                     state ^= state >> 17;
                     state ^= state << 5;
                     return state & 0xFF;
-                },
-                // Сброс состояния для воспроизводимости
-                reset: function() {
-                    state = simpleHash(seed.toString());
                 }
             };
         }
@@ -688,7 +691,7 @@
         // Обратная функция диффузии
         function inverseDiffusionMix(data, round) {
             const result = new Uint8Array(data.length);
-            for (let i = 0; i < data.length; i++) {
+            for (let i = data.length - 1; i >= 0; i--) {
                 const prev = i > 0 ? result[i - 1] : round;
                 const next = i < data.length - 1 ? data[i + 1] : round;
                 result[i] = (data[i] ^ prev ^ next ^ round) & 0xFF;
@@ -787,14 +790,30 @@
             document.getElementById('keySize').textContent = `${key.length} симв.`;
         }
 
+        // Кодирование с добавлением карты омофонов
+        function encodeWithHomophoneMap(data, homophoneMap) {
+            // Преобразуем данные и карту омофонов в единый массив
+            const result = new Uint8Array(data.length + homophoneMap.length);
+            result.set(data);
+            result.set(homophoneMap, data.length);
+            return result;
+        }
+
+        // Декодирование с извлечением карты омофонов
+        function decodeWithHomophoneMap(encodedData, dataLength) {
+            // Разделяем данные и карту омофонов
+            const data = encodedData.slice(0, dataLength);
+            const homophoneMap = encodedData.slice(dataLength);
+            return { data, homophoneMap };
+        }
+
         // Шифрование с несколькими раундами
         function encrypt(text, rounds = 3) {
             log(`Начало шифрования (${rounds} раунда)`);
             const textBytes = new TextEncoder().encode(text);
             let encryptedData = new Uint8Array(textBytes);
-            
-            // Восстанавливаем состояние ГПСЧ для детерминированного выбора омофонов
-            prng.reset();
+            const homophoneMap = new Uint8Array(textBytes.length * rounds);
+            let mapIndex = 0;
             
             // Многократное применение шифрования с диффузией
             for (let round = 0; round < rounds; round++) {
@@ -812,16 +831,22 @@
                     const i = (byte >> 4) & 0x0F;
                     const j = byte & 0x0F;
                     
-                    // Детерминированный выбор омофона (на основе позиции и раунда)
-                    const choiceIndex = (k + round) % 16;
-                    roundResult[k] = sBox[i][j][choiceIndex];
+                    // Случайный выбор омофона
+                    const randomIndex = Math.floor(Math.random() * 16);
+                    roundResult[k] = sBox[i][j][randomIndex];
+                    
+                    // Сохраняем информацию о выборе омофона
+                    homophoneMap[mapIndex++] = randomIndex;
                 }
                 
                 encryptedData = roundResult;
             }
             
+            // Объединяем данные с картой омофонов
+            const finalData = encodeWithHomophoneMap(encryptedData, homophoneMap);
+            
             // Преобразуем в hex-строку
-            const hexResult = Array.from(encryptedData)
+            const hexResult = Array.from(finalData)
                 .map(b => b.toString(16).padStart(2, '0'))
                 .join('');
                 
@@ -834,11 +859,16 @@
             log(`Начало дешифрования (${rounds} раунда)`);
             
             // Преобразуем hex в байты
-            const bytes = new Uint8Array(hexData.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
-            let decryptedData = new Uint8Array(bytes);
+            const allBytes = new Uint8Array(hexData.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
             
-            // Восстанавливаем состояние ГПСЧ для детерминированного выбора омофонов
-            prng.reset();
+            // Вычисляем размер исходных данных
+            const dataLength = (allBytes.length * rounds) / (rounds + 1);
+            
+            // Извлекаем данные и карту омофонов
+            const { data: encryptedData, homophoneMap } = decodeWithHomophoneMap(allBytes, dataLength);
+            
+            let decryptedData = new Uint8Array(encryptedData);
+            let mapIndex = homophoneMap.length - 1;
             
             // Обрабатываем раунды в обратном порядке
             for (let round = rounds - 1; round >= 0; round--) {
@@ -846,10 +876,13 @@
                 
                 // Обратная S-Box подстановка
                 const roundResult = new Uint8Array(decryptedData.length);
-                for (let k = 0; k < decryptedData.length; k++) {
+                for (let k = decryptedData.length - 1; k >= 0; k--) {
                     const byte = decryptedData[k];
                     const [i, j] = invSBox[byte];
                     roundResult[k] = (i << 4) | j;
+                    
+                    // Используем сохраненную информацию о выборе омофона
+                    mapIndex--;
                 }
                 
                 decryptedData = roundResult;
@@ -957,9 +990,6 @@
                 }
                 
                 try {
-                    // Восстанавливаем PRNG с исходным seed
-                    prng = createPRNG(currentSeed);
-                    
                     const decrypted = decrypt(cipherText, rounds);
                     document.getElementById('decryptedResult').innerHTML = 
                         `<p>${decrypted}</p>`;
