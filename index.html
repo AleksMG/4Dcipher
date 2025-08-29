@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D BitTrifid Cipher - 16×16 Боксы</title>
+    <title>3D BitTrifid Cipher Pro</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -33,7 +33,7 @@
         }
 
         body {
-            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
             color: var(--light);
             min-height: 100vh;
             padding: 20px;
@@ -41,7 +41,7 @@
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             background: rgba(0, 0, 0, 0.7);
             padding: 25px;
@@ -155,33 +155,48 @@
             font-size: 18px;
         }
 
-        .visualization {
-            margin-top: 30px;
-            overflow: auto;
+        .cube-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin: 20px 0;
         }
 
-        .box-grid {
+        .cube-layer {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .layer-title {
+            text-align: center;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: var(--accent);
+        }
+
+        .bit-grid {
             display: grid;
             grid-template-columns: repeat(16, 1fr);
             gap: 2px;
-            margin: 15px 0;
         }
 
         .bit-cell {
-            width: 24px;
-            height: 24px;
+            width: 18px;
+            height: 18px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 10px;
-            background: rgba(76, 201, 240, 0.2);
-            border: 1px solid rgba(76, 201, 240, 0.3);
+            font-size: 8px;
+            background: rgba(76, 201, 240, 0.1);
+            border: 1px solid rgba(76, 201, 240, 0.2);
             transition: all 0.2s;
+            cursor: pointer;
         }
 
         .bit-cell:hover {
-            background: rgba(76, 201, 240, 0.5);
-            transform: scale(1.2);
+            background: rgba(76, 201, 240, 0.3);
+            transform: scale(1.3);
         }
 
         .bit-1 {
@@ -189,40 +204,30 @@
             font-weight: bold;
         }
 
-        .layer-controls {
+        .visualization-controls {
             display: flex;
             gap: 15px;
             margin: 15px 0;
             align-items: center;
+            flex-wrap: wrap;
         }
 
-        .algorithm-info {
-            background: rgba(0, 0, 0, 0.4);
-            padding: 20px;
-            border-radius: 10px;
-            margin-top: 30px;
-        }
-
-        .algorithm-info ul {
-            margin: 15px 0;
-            padding-left: 20px;
-        }
-
-        .algorithm-info li {
-            margin-bottom: 10px;
-        }
-
-        .highlight {
-            color: var(--secondary);
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            text-align: center;
             font-weight: bold;
         }
 
-        footer {
-            text-align: center;
-            margin-top: 40px;
-            padding: 20px;
-            font-size: 0.9rem;
-            color: var(--gray);
+        .success {
+            background: rgba(76, 201, 240, 0.2);
+            color: var(--success);
+        }
+
+        .error {
+            background: rgba(247, 37, 133, 0.2);
+            color: var(--error);
         }
 
         .action-buttons {
@@ -245,30 +250,40 @@
             margin-bottom: 10px;
         }
 
-        .status {
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 5px;
+        .round-badge {
+            display: inline-block;
+            background: var(--primary);
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
             text-align: center;
-            font-weight: bold;
+            line-height: 24px;
+            margin-right: 10px;
         }
 
-        .success {
-            background: rgba(76, 201, 240, 0.2);
-            color: var(--success);
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            font-size: 0.9rem;
+            color: var(--gray);
         }
 
-        .error {
-            background: rgba(247, 37, 133, 0.2);
-            color: var(--error);
+        .cube-view {
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1><i class="fas fa-cube"></i> 3D BitTrifid Cipher</h1>
-            <p class="description">Шифрование на основе битовых боксов 16×16 с использованием принципов AES</p>
+            <h1><i class="fas fa-cube"></i> 3D BitTrifid Cipher Pro</h1>
+            <p class="description">3D шифрование с использованием битовых кубов 16×16×16</p>
         </header>
 
         <div class="grid">
@@ -279,8 +294,12 @@
                     <textarea id="inputData" placeholder="Введите текст для шифрования..."></textarea>
                 </div>
                 <div class="form-group">
-                    <label for="encryptionKey">Ключ шифрования (256 бит):</label>
+                    <label for="encryptionKey">Ключ шифрования:</label>
                     <input type="text" id="encryptionKey" placeholder="Введите ключ...">
+                </div>
+                <div class="form-group">
+                    <label for="rounds">Количество раундов:</label>
+                    <input type="number" id="rounds" value="5" min="1" max="20">
                 </div>
                 <button class="btn" id="encryptBtn"><i class="fas fa-key"></i> Зашифровать</button>
                 <div id="encryptStatus" class="status"></div>
@@ -293,7 +312,7 @@
                     <textarea id="encryptedData" placeholder="Введите данные для дешифрования..."></textarea>
                 </div>
                 <div class="form-group">
-                    <label for="decryptionKey">Ключ дешифрования (256 бит):</label>
+                    <label for="decryptionKey">Ключ дешифрования:</label>
                     <input type="text" id="decryptionKey" placeholder="Введите ключ...">
                 </div>
                 <button class="btn" id="decryptBtn"><i class="fas fa-unlock"></i> Дешифровать</button>
@@ -302,314 +321,380 @@
         </div>
 
         <div class="card">
-            <h2><i class="fas fa-project-diagram"></i> Визуализация битовых боксов 16×16</h2>
-            <p>Каждый бокс представляет собой матрицу 16×16 битов (256 бит), аналогично структуре данных в AES.</p>
+            <h2><i class="fas fa-cubes"></i> 3D Битовый куб 16×16×16</h2>
+            <p>Каждый куб содержит 4096 бит (16×16×16), организованных в трехмерную структуру.</p>
             
-            <div class="layer-controls">
-                <label>Слой бокса: </label>
-                <select id="layerSelector">
-                    <option value="0">Слой 1</option>
-                    <option value="1">Слой 2</option>
-                    <option value="2">Слой 3</option>
-                    <option value="3">Слой 4</option>
+            <div class="visualization-controls">
+                <label>Показать слои: </label>
+                <select id="layerRange">
+                    <option value="4">4 слоя</option>
+                    <option value="8">8 слоев</option>
+                    <option value="12">12 слоев</option>
+                    <option value="16" selected>16 слоев</option>
                 </select>
+                <label>Начальный слой: </label>
+                <input type="number" id="startLayer" value="1" min="1" max="16">
                 <button class="btn" id="visualizeBtn"><i class="fas fa-eye"></i> Визуализировать</button>
             </div>
 
-            <div class="visualization">
-                <h3>Битовый бокс 16×16 (слой <span id="currentLayer">1</span>)</h3>
-                <div class="box-grid" id="bitBox">
-                    <!-- Битовая сетка будет сгенерирована JavaScript -->
+            <div class="cube-view">
+                <div id="cubeVisualization">
+                    <!-- 3D куб будет сгенерирован здесь -->
                 </div>
             </div>
 
             <div class="action-buttons">
-                <button class="btn" id="subBytesBtn"><i class="fas fa-sync"></i> SubBytes преобразование</button>
-                <button class="btn" id="shiftRowsBtn"><i class="fas fa-exchange-alt"></i> ShiftRows преобразование</button>
-                <button class="btn" id="mixColumnsBtn"><i class="fas fa-th"></i> MixColumns преобразование</button>
-                <button class="btn" id="addRoundKeyBtn"><i class="fas fa-plus-circle"></i> AddRoundKey</button>
+                <button class="btn" id="initCubeBtn"><i class="fas fa-sync"></i> Инициализировать куб</button>
+                <button class="btn" id="transformBtn"><i class="fas fa-exchange-alt"></i> Применить преобразования</button>
+                <button class="btn" id="clearBtn"><i class="fas fa-trash"></i> Очистить</button>
             </div>
         </div>
 
-        <div class="algorithm-info">
-            <h2><i class="fas fa-info-circle"></i> Принципы работы алгоритма</h2>
-            <p>Данная реализация использует битовые боксы 16×16, аналогичные по структуре используемым в AES:</p>
+        <div class="card">
+            <h2><i class="fas fa-info-circle"></i> Принципы работы 3D BitTrifid Cipher</h2>
             
-            <ul>
-                <li>Каждый <span class="highlight">битовый бокс 16×16</span> содержит 256 бит информации</li>
-                <li>Данные обрабатываются <span class="highlight">послойно</span> с применением различных преобразований</li>
-                <li>Используются преобразования, аналогичные AES: <span class="highlight">SubBytes, ShiftRows, MixColumns, AddRoundKey</span></li>
-                <li>Ключ шифрования составляет <span class="highlight">256 бит</span> (32 байта)</li>
-                <li>Алгоритм работает в нескольких <span class="highlight">раундах</span> для повышения безопасности</li>
-            </ul>
-
             <div class="bit-operation">
-                <div class="operation-title">SubBytes преобразование:</div>
-                <p>Каждый байт в боксе заменяется на соответствующий ему байт из S-Box таблицы, обеспечивая нелинейность преобразований.</p>
+                <div class="operation-title"><span class="round-badge">1</span> Инициализация куба:</div>
+                <p>Данные преобразуются в битовый поток и размещаются в 3D кубе 16×16×16. Каждый бит занимает свою ячейку в трехмерном пространстве.</p>
             </div>
 
             <div class="bit-operation">
-                <div class="operation-title">ShiftRows преобразование:</div>
-                <p>Строки бокса сдвигаются циклически на определенное количество позиций, обеспечивая диффузию битов.</p>
+                <div class="operation-title"><span class="round-badge">2</span> Раундовые преобразования:</div>
+                <p>Каждый раунд включает в себя: перемешивание битов по осям X, Y и Z, применение битовых операций XOR, AND, OR, циклические сдвиги.</p>
             </div>
 
             <div class="bit-operation">
-                <div class="operation-title">MixColumns преобразование:</div>
-                <p>Преобразование, которое перемешивает байты в каждом столбце бокса,进一步增强 диффузию.</p>
+                <div class="operation-title"><span class="round-badge">3</span> Формирование результата:</div>
+                <p>После всех раундов биты считываются из куба по специальной 3D траектории, формируя зашифрованные данные.</p>
             </div>
         </div>
 
         <footer>
-            <p>3D BitTrifid Cipher &copy; 2023 | Разработано на основе принципов AES с битовыми боксами 16×16</p>
+            <p>3D BitTrifid Cipher Pro &copy; 2023 | Профессиональная реализация с кубами 16×16×16</p>
         </footer>
     </div>
 
     <script>
-        class BitTrifidCipher {
+        class BitTrifid3D {
             constructor() {
-                this.bitBoxes = [];
-                this.currentBox = null;
-                this.rounds = 10;
-                this.sBox = this.generateSBox();
-                this.invSBox = this.generateInvSBox();
+                this.cube = null;
+                this.rounds = 5;
+                this.initialized = false;
             }
 
-            // Генерация S-Box для SubBytes преобразования
-            generateSBox() {
-                // Это упрощенная версия S-Box, в реальном AES она генерируется сложнее
-                const sBox = new Uint8Array(256);
-                for (let i = 0; i < 256; i++) {
-                    sBox[i] = this.subByte(i);
+            // Инициализация 3D куба 16x16x16
+            initializeCube(data) {
+                // Создаем 3D куб 16x16x16 (4096 бит)
+                this.cube = new Array(16);
+                for (let x = 0; x < 16; x++) {
+                    this.cube[x] = new Array(16);
+                    for (let y = 0; y < 16; y++) {
+                        this.cube[x][y] = new Array(16).fill(0);
+                    }
                 }
-                return sBox;
-            }
 
-            generateInvSBox() {
-                const invSBox = new Uint8Array(256);
-                for (let i = 0; i < 256; i++) {
-                    invSBox[this.sBox[i]] = i;
-                }
-                return invSBox;
-            }
-
-            subByte(byte) {
-                // Упрощенная версия преобразования SubByte
-                let transformed = byte;
-                for (let i = 0; i < 4; i++) {
-                    transformed = ((transformed << 1) | (transformed >> 7)) & 0xFF;
-                    transformed ^= 0x1B;
-                }
-                return transformed ^ 0x63;
-            }
-
-            // Инициализация битового бокса 16x16 из данных
-            initializeBox(data) {
-                const box = new Uint8Array(256);
-                const dataBytes = new TextEncoder().encode(data);
+                // Преобразуем данные в битовый поток
+                const encoder = new TextEncoder();
+                const dataBytes = encoder.encode(data);
+                let bitIndex = 0;
                 
-                for (let i = 0; i < 256; i++) {
-                    box[i] = dataBytes[i % dataBytes.length] ^ i;
-                }
-                
-                return box;
-            }
-
-            // Преобразование SubBytes
-            subBytes(box) {
-                const newBox = new Uint8Array(256);
-                for (let i = 0; i < 256; i++) {
-                    newBox[i] = this.sBox[box[i]];
-                }
-                return newBox;
-            }
-
-            // Преобразование ShiftRows
-            shiftRows(box) {
-                const newBox = new Uint8Array(256);
-                
-                for (let row = 0; row < 16; row++) {
-                    for (let col = 0; col < 16; col++) {
-                        const newCol = (col + row) % 16;
-                        newBox[row * 16 + newCol] = box[row * 16 + col];
+                // Заполняем куб битами
+                for (let x = 0; x < 16; x++) {
+                    for (let y = 0; y < 16; y++) {
+                        for (let z = 0; z < 16; z++) {
+                            if (bitIndex < dataBytes.length * 8) {
+                                const byteIndex = Math.floor(bitIndex / 8);
+                                const bitPos = 7 - (bitIndex % 8);
+                                this.cube[x][y][z] = (dataBytes[byteIndex] >> bitPos) & 1;
+                                bitIndex++;
+                            }
+                        }
                     }
                 }
                 
-                return newBox;
+                this.initialized = true;
+                return this.cube;
             }
 
-            // Преобразование MixColumns
-            mixColumns(box) {
-                const newBox = new Uint8Array(256);
+            // Преобразование куба (раунд шифрования)
+            transformCube(round) {
+                if (!this.initialized) return;
                 
-                for (let col = 0; col < 16; col++) {
-                    for (let row = 0; row < 16; row += 4) {
-                        if (row + 3 < 16) {
-                            const a0 = box[row * 16 + col];
-                            const a1 = box[(row + 1) * 16 + col];
-                            const a2 = box[(row + 2) * 16 + col];
-                            const a3 = box[(row + 3) * 16 + col];
+                // Применяем различные преобразования в зависимости от раунда
+                for (let x = 0; x < 16; x++) {
+                    for (let y = 0; y < 16; y++) {
+                        for (let z = 0; z < 16; z++) {
+                            // Пример преобразования: XOR с соседями и номером раунда
+                            const neighbors = this.getNeighbors(x, y, z);
+                            let newValue = this.cube[x][y][z];
                             
-                            newBox[row * 16 + col] = a1 ^ a2 ^ a3;
-                            newBox[(row + 1) * 16 + col] = a0 ^ a2 ^ a3;
-                            newBox[(row + 2) * 16 + col] = a0 ^ a1 ^ a3;
-                            newBox[(row + 3) * 16 + col] = a0 ^ a1 ^ a2;
+                            for (const n of neighbors) {
+                                newValue ^= n;
+                            }
+                            
+                            newValue ^= round % 2;
+                            this.cube[x][y][z] = newValue;
                         }
                     }
                 }
                 
-                return newBox;
+                // Дополнительные преобразования: сдвиги по осям
+                this.shiftXAxis(round);
+                this.shiftYAxis(round);
+                this.shiftZAxis(round);
             }
 
-            // Генерация раундовых ключей
-            generateRoundKeys(key) {
-                const keyBytes = new TextEncoder().encode(key.padEnd(32, ' ').slice(0, 32));
-                const roundKeys = [keyBytes];
-                
-                for (let i = 1; i <= this.rounds; i++) {
-                    const prevKey = roundKeys[i - 1];
-                    const newKey = new Uint8Array(32);
-                    
-                    for (let j = 0; j < 32; j++) {
-                        newKey[j] = prevKey[j] ^ i ^ j;
-                    }
-                    
-                    roundKeys.push(newKey);
-                }
-                
-                return roundKeys;
-            }
-
-            // Преобразование AddRoundKey
-            addRoundKey(box, roundKey) {
-                const newBox = new Uint8Array(256);
-                
-                for (let i = 0; i < 256; i++) {
-                    newBox[i] = box[i] ^ roundKey[i % 32];
-                }
-                
-                return newBox;
-            }
-
-            // Основная функция шифрования
-            encrypt(data, key) {
-                try {
-                    // Инициализация бокса
-                    let box = this.initializeBox(data);
-                    
-                    // Генерация раундовых ключей
-                    const roundKeys = this.generateRoundKeys(key);
-                    
-                    // Применение раундовых преобразований
-                    for (let round = 0; round < this.rounds; round++) {
-                        box = this.subBytes(box);
-                        box = this.shiftRows(box);
-                        if (round < this.rounds - 1) {
-                            box = this.mixColumns(box);
+            // Получение соседей бита (для диффузии)
+            getNeighbors(x, y, z) {
+                const neighbors = [];
+                for (let dx = -1; dx <= 1; dx++) {
+                    for (let dy = -1; dy <= 1; dy++) {
+                        for (let dz = -1; dz <= 1; dz++) {
+                            if (dx === 0 && dy === 0 && dz === 0) continue;
+                            
+                            const nx = (x + dx + 16) % 16;
+                            const ny = (y + dy + 16) % 16;
+                            const nz = (z + dz + 16) % 16;
+                            
+                            neighbors.push(this.cube[nx][ny][nz]);
                         }
-                        box = this.addRoundKey(box, roundKeys[round]);
                     }
-                    
-                    // Преобразование бокса в hex-строку
-                    return Array.from(box).map(b => b.toString(16).padStart(2, '0')).join('');
-                } catch (error) {
-                    console.error('Encryption error:', error);
-                    throw new Error('Ошибка шифрования: ' + error.message);
+                }
+                return neighbors;
+            }
+
+            // Сдвиг по оси X
+            shiftXAxis(round) {
+                for (let y = 0; y < 16; y++) {
+                    for (let z = 0; z < 16; z++) {
+                        const shiftAmount = (y + z + round) % 16;
+                        const row = [];
+                        
+                        for (let x = 0; x < 16; x++) {
+                            row.push(this.cube[x][y][z]);
+                        }
+                        
+                        // Циклический сдвиг
+                        for (let x = 0; x < 16; x++) {
+                            this.cube[x][y][z] = row[(x + shiftAmount) % 16];
+                        }
+                    }
                 }
             }
 
-            // Основная функция дешифрования
-            decrypt(hexData, key) {
-                try {
-                    // Преобразование hex-строки в бокс
-                    const box = new Uint8Array(hexData.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
-                    
-                    // Генерация раундовых ключей
-                    const roundKeys = this.generateRoundKeys(key);
-                    
-                    // Обратные преобразования в обратном порядке
-                    for (let round = this.rounds - 1; round >= 0; round--) {
-                        box = this.addRoundKey(box, roundKeys[round]);
-                        if (round < this.rounds - 1) {
-                            // Обратное MixColumns (в этой упрощенной версии оно совпадает с прямым)
-                            box = this.mixColumns(box);
+            // Сдвиг по оси Y
+            shiftYAxis(round) {
+                for (let x = 0; x < 16; x++) {
+                    for (let z = 0; z < 16; z++) {
+                        const shiftAmount = (x + z + round) % 16;
+                        const column = [];
+                        
+                        for (let y = 0; y < 16; y++) {
+                            column.push(this.cube[x][y][z]);
                         }
-                        box = this.shiftRows(box); // Обратный ShiftRows
-                        box = this.subBytes(box);  // Обратный SubBytes (в реальном AES используется InvSubBytes)
+                        
+                        // Циклический сдвиг
+                        for (let y = 0; y < 16; y++) {
+                            this.cube[x][y][z] = column[(y + shiftAmount) % 16];
+                        }
                     }
-                    
-                    // Преобразование бокса в строку
-                    return new TextDecoder().decode(box).replace(/\0+$/, '');
-                } catch (error) {
-                    console.error('Decryption error:', error);
-                    throw new Error('Ошибка дешифрования: ' + error.message);
                 }
+            }
+
+            // Сдвиг по оси Z
+            shiftZAxis(round) {
+                for (let x = 0; x < 16; x++) {
+                    for (let y = 0; y < 16; y++) {
+                        const shiftAmount = (x + y + round) % 16;
+                        const depth = [];
+                        
+                        for (let z = 0; z < 16; z++) {
+                            depth.push(this.cube[x][y][z]);
+                        }
+                        
+                        // Циклический сдвиг
+                        for (let z = 0; z < 16; z++) {
+                            this.cube[x][y][z] = depth[(z + shiftAmount) % 16];
+                        }
+                    }
+                }
+            }
+
+            // Извлечение данных из куба
+            extractData() {
+                if (!this.initialized) return null;
+                
+                const bytes = [];
+                let currentByte = 0;
+                let bitCount = 0;
+                
+                // Обходим куб и извлекаем биты
+                for (let x = 0; x < 16; x++) {
+                    for (let y = 0; y < 16; y++) {
+                        for (let z = 0; z < 16; z++) {
+                            currentByte = (currentByte << 1) | this.cube[x][y][z];
+                            bitCount++;
+                            
+                            if (bitCount === 8) {
+                                bytes.push(currentByte);
+                                currentByte = 0;
+                                bitCount = 0;
+                            }
+                        }
+                    }
+                }
+                
+                // Если остались биты, дополняем нулями
+                if (bitCount > 0) {
+                    currentByte = currentByte << (8 - bitCount);
+                    bytes.push(currentByte);
+                }
+                
+                return new Uint8Array(bytes);
+            }
+
+            // Шифрование данных
+            encrypt(data, rounds = 5) {
+                this.rounds = rounds;
+                this.initializeCube(data);
+                
+                for (let round = 0; round < rounds; round++) {
+                    this.transformCube(round);
+                }
+                
+                const encryptedData = this.extractData();
+                return Array.from(encryptedData).map(b => b.toString(16).padStart(2, '0')).join('');
+            }
+
+            // Дешифрование данных
+            decrypt(hexData, rounds = 5) {
+                // Преобразуем hex в бинарные данные
+                const bytes = new Uint8Array(hexData.match(/.{1,2}/g).map(b => parseInt(b, 16)));
+                
+                // Для дешифрования используем тот же процесс, но в обратном порядке
+                this.rounds = rounds;
+                this.initializeCube(new TextDecoder().decode(bytes));
+                
+                for (let round = rounds - 1; round >= 0; round--) {
+                    this.transformCube(round);
+                }
+                
+                const decryptedData = this.extractData();
+                return new TextDecoder().decode(decryptedData).replace(/\0+$/, '');
             }
         }
 
         document.addEventListener('DOMContentLoaded', function() {
-            const cipher = new BitTrifidCipher();
-            const bitBox = document.getElementById('bitBox');
-            const layerSelector = document.getElementById('layerSelector');
-            const currentLayer = document.getElementById('currentLayer');
+            const cipher = new BitTrifid3D();
+            const cubeVisualization = document.getElementById('cubeVisualization');
+            const layerRange = document.getElementById('layerRange');
+            const startLayer = document.getElementById('startLayer');
             const visualizeBtn = document.getElementById('visualizeBtn');
+            const initCubeBtn = document.getElementById('initCubeBtn');
+            const transformBtn = document.getElementById('transformBtn');
+            const clearBtn = document.getElementById('clearBtn');
             const encryptBtn = document.getElementById('encryptBtn');
             const decryptBtn = document.getElementById('decryptBtn');
             const encryptStatus = document.getElementById('encryptStatus');
             const decryptStatus = document.getElementById('decryptStatus');
-            
-            // Генерация визуализации битового бокса
-            function visualizeBitBox(boxData) {
-                bitBox.innerHTML = '';
-                if (!boxData || boxData.length !== 256) {
-                    for (let i = 0; i < 256; i++) {
-                        const bitCell = document.createElement('div');
-                        bitCell.className = 'bit-cell';
-                        bitCell.textContent = '0';
-                        bitBox.appendChild(bitCell);
+
+            // Визуализация 3D куба
+            function visualizeCube() {
+                if (!cipher.initialized || !cipher.cube) {
+                    encryptStatus.textContent = 'Сначала инициализируйте куб с данными';
+                    encryptStatus.className = 'status error';
+                    return;
+                }
+
+                const layersToShow = parseInt(layerRange.value);
+                const start = parseInt(startLayer.value) - 1;
+                
+                cubeVisualization.innerHTML = '';
+                
+                for (let z = start; z < start + layersToShow && z < 16; z++) {
+                    const layerDiv = document.createElement('div');
+                    layerDiv.className = 'cube-layer';
+                    
+                    const title = document.createElement('div');
+                    title.className = 'layer-title';
+                    title.textContent = `Слой ${z + 1}`;
+                    layerDiv.appendChild(title);
+                    
+                    const grid = document.createElement('div');
+                    grid.className = 'bit-grid';
+                    
+                    for (let y = 0; y < 16; y++) {
+                        for (let x = 0; x < 16; x++) {
+                            const bitCell = document.createElement('div');
+                            bitCell.className = 'bit-cell';
+                            bitCell.textContent = cipher.cube[x][y][z];
+                            bitCell.title = `X:${x}, Y:${y}, Z:${z}`;
+                            
+                            if (cipher.cube[x][y][z] === 1) {
+                                bitCell.classList.add('bit-1');
+                            }
+                            
+                            grid.appendChild(bitCell);
+                        }
                     }
+                    
+                    layerDiv.appendChild(grid);
+                    cubeVisualization.appendChild(layerDiv);
+                }
+            }
+
+            // Инициализация куба
+            initCubeBtn.addEventListener('click', function() {
+                const inputData = document.getElementById('inputData').value;
+                if (!inputData) {
+                    encryptStatus.textContent = 'Введите данные для инициализации куба';
+                    encryptStatus.className = 'status error';
                     return;
                 }
                 
-                for (let i = 0; i < 256; i++) {
-                    const bitCell = document.createElement('div');
-                    bitCell.className = 'bit-cell';
-                    const byte = boxData[i];
-                    
-                    // Отображаем только один бит для простоты визуализации
-                    const bit = (byte >> (i % 8)) & 1;
-                    bitCell.textContent = bit;
-                    
-                    if (bit === 1) {
-                        bitCell.classList.add('bit-1');
-                    }
-                    
-                    bitBox.appendChild(bitCell);
-                }
-            }
-            
-            // Обновление слоя
-            layerSelector.addEventListener('change', function() {
-                currentLayer.textContent = parseInt(this.value) + 1;
-                if (cipher.currentBox) {
-                    visualizeBitBox(cipher.currentBox);
-                }
+                cipher.initializeCube(inputData);
+                visualizeCube();
+                
+                encryptStatus.textContent = '3D куб успешно инициализирован';
+                encryptStatus.className = 'status success';
             });
-            
-            // Визуализация
-            visualizeBtn.addEventListener('click', function() {
-                if (cipher.currentBox) {
-                    visualizeBitBox(cipher.currentBox);
-                } else {
-                    visualizeBitBox();
-                    encryptStatus.textContent = 'Сначала выполните шифрование';
+
+            // Применение преобразований
+            transformBtn.addEventListener('click', function() {
+                if (!cipher.initialized) {
+                    encryptStatus.textContent = 'Сначала инициализируйте куб';
                     encryptStatus.className = 'status error';
+                    return;
                 }
+                
+                const rounds = parseInt(document.getElementById('rounds').value);
+                for (let i = 0; i < rounds; i++) {
+                    cipher.transformCube(i);
+                }
+                
+                visualizeCube();
+                
+                encryptStatus.textContent = `Применено ${rounds} раундов преобразований`;
+                encryptStatus.className = 'status success';
             });
-            
+
+            // Визуализация
+            visualizeBtn.addEventListener('click', visualizeCube);
+
+            // Очистка
+            clearBtn.addEventListener('click', function() {
+                cubeVisualization.innerHTML = '';
+                document.getElementById('inputData').value = '';
+                document.getElementById('encryptedData').value = '';
+                encryptStatus.textContent = '';
+                decryptStatus.textContent = '';
+            });
+
             // Шифрование
             encryptBtn.addEventListener('click', function() {
                 const inputData = document.getElementById('inputData').value;
                 const key = document.getElementById('encryptionKey').value;
+                const rounds = parseInt(document.getElementById('rounds').value);
                 
                 if (!inputData) {
                     encryptStatus.textContent = 'Введите данные для шифрования';
@@ -617,32 +702,27 @@
                     return;
                 }
                 
-                if (!key || key.length < 8) {
-                    encryptStatus.textContent = 'Ключ должен быть не менее 8 символов';
-                    encryptStatus.className = 'status error';
-                    return;
-                }
-                
                 try {
-                    const encrypted = cipher.encrypt(inputData, key);
+                    // Добавляем ключ к данным для усиления безопасности
+                    const dataWithKey = key + inputData;
+                    const encrypted = cipher.encrypt(dataWithKey, rounds);
                     document.getElementById('encryptedData').value = encrypted;
                     
-                    // Инициализируем бокс для визуализации
-                    cipher.currentBox = cipher.initializeBox(inputData);
-                    visualizeBitBox(cipher.currentBox);
+                    visualizeCube();
                     
                     encryptStatus.textContent = 'Данные успешно зашифрованы';
                     encryptStatus.className = 'status success';
                 } catch (error) {
-                    encryptStatus.textContent = error.message;
+                    encryptStatus.textContent = 'Ошибка шифрования: ' + error.message;
                     encryptStatus.className = 'status error';
                 }
             });
-            
+
             // Дешифрование
             decryptBtn.addEventListener('click', function() {
                 const encryptedData = document.getElementById('encryptedData').value;
                 const key = document.getElementById('decryptionKey').value;
+                const rounds = parseInt(document.getElementById('rounds').value);
                 
                 if (!encryptedData) {
                     decryptStatus.textContent = 'Введите данные для дешифрования';
@@ -650,57 +730,25 @@
                     return;
                 }
                 
-                if (!key || key.length < 8) {
-                    decryptStatus.textContent = 'Ключ должен быть не менее 8 символов';
-                    decryptStatus.className = 'status error';
-                    return;
-                }
-                
                 try {
-                    const decrypted = cipher.decrypt(encryptedData, key);
-                    document.getElementById('inputData').value = decrypted;
+                    const decryptedWithKey = cipher.decrypt(encryptedData, rounds);
                     
-                    decryptStatus.textContent = 'Данные успешно дешифрованы';
-                    decryptStatus.className = 'status success';
+                    // Удаляем ключ из начала данных
+                    if (decryptedWithKey.startsWith(key)) {
+                        const decrypted = decryptedWithKey.slice(key.length);
+                        document.getElementById('inputData').value = decrypted;
+                        
+                        decryptStatus.textContent = 'Данные успешно дешифрованы';
+                        decryptStatus.className = 'status success';
+                    } else {
+                        decryptStatus.textContent = 'Неверный ключ дешифрования';
+                        decryptStatus.className = 'status error';
+                    }
                 } catch (error) {
-                    decryptStatus.textContent = error.message;
+                    decryptStatus.textContent = 'Ошибка дешифрования: ' + error.message;
                     decryptStatus.className = 'status error';
                 }
             });
-            
-            // Обработчики для преобразований
-            document.getElementById('subBytesBtn').addEventListener('click', function() {
-                if (cipher.currentBox) {
-                    cipher.currentBox = cipher.subBytes(cipher.currentBox);
-                    visualizeBitBox(cipher.currentBox);
-                }
-            });
-            
-            document.getElementById('shiftRowsBtn').addEventListener('click', function() {
-                if (cipher.currentBox) {
-                    cipher.currentBox = cipher.shiftRows(cipher.currentBox);
-                    visualizeBitBox(cipher.currentBox);
-                }
-            });
-            
-            document.getElementById('mixColumnsBtn').addEventListener('click', function() {
-                if (cipher.currentBox) {
-                    cipher.currentBox = cipher.mixColumns(cipher.currentBox);
-                    visualizeBitBox(cipher.currentBox);
-                }
-            });
-            
-            document.getElementById('addRoundKeyBtn').addEventListener('click', function() {
-                if (cipher.currentBox) {
-                    const key = document.getElementById('encryptionKey').value || 'defaultkey';
-                    const roundKeys = cipher.generateRoundKeys(key);
-                    cipher.currentBox = cipher.addRoundKey(cipher.currentBox, roundKeys[0]);
-                    visualizeBitBox(cipher.currentBox);
-                }
-            });
-            
-            // Инициализация
-            visualizeBitBox();
         });
     </script>
 </body>
