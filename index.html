@@ -601,6 +601,7 @@
         let prng = null;
         const logOutput = document.getElementById('logOutput');
         let isInitialized = false;
+        let currentSeed = '';
 
         // Логирование
         function log(message) {
@@ -656,7 +657,7 @@
             return hash;
         }
 
-        // ГПСЧ
+        // Детерминированный ГПСЧ для воспроизводимости
         function createPRNG(seed) {
             let state = simpleHash(seed.toString());
             return {
@@ -665,6 +666,10 @@
                     state ^= state >> 17;
                     state ^= state << 5;
                     return state & 0xFF;
+                },
+                // Сброс состояния для воспроизводимости
+                reset: function() {
+                    state = simpleHash(seed.toString());
                 }
             };
         }
@@ -680,10 +685,22 @@
             return result;
         }
 
+        // Обратная функция диффузии
+        function inverseDiffusionMix(data, round) {
+            const result = new Uint8Array(data.length);
+            for (let i = 0; i < data.length; i++) {
+                const prev = i > 0 ? result[i - 1] : round;
+                const next = i < data.length - 1 ? data[i + 1] : round;
+                result[i] = (data[i] ^ prev ^ next ^ round) & 0xFF;
+            }
+            return result;
+        }
+
         // Генерация S-Box
         function generateSBox(key, nonce = '') {
             log(`Генерация S-Box с ключом: ${key} и nonce: ${nonce}`);
             const seed = key + nonce;
+            currentSeed = seed;
             prng = createPRNG(seed);
             
             const sbox = Array.from({length: 16}, () => 
@@ -776,6 +793,9 @@
             const textBytes = new TextEncoder().encode(text);
             let encryptedData = new Uint8Array(textBytes);
             
+            // Восстанавливаем состояние ГПСЧ для детерминированного выбора омофонов
+            prng.reset();
+            
             // Многократное применение шифрования с диффузией
             for (let round = 0; round < rounds; round++) {
                 log(`Раунд шифрования ${round + 1}/${rounds}`);
@@ -792,9 +812,9 @@
                     const i = (byte >> 4) & 0x0F;
                     const j = byte & 0x0F;
                     
-                    // Случайный выбор омофона
-                    const randomIndex = Math.floor(Math.random() * 16);
-                    roundResult[k] = sBox[i][j][randomIndex];
+                    // Детерминированный выбор омофона (на основе позиции и раунда)
+                    const choiceIndex = (k + round) % 16;
+                    roundResult[k] = sBox[i][j][choiceIndex];
                 }
                 
                 encryptedData = roundResult;
@@ -817,6 +837,9 @@
             const bytes = new Uint8Array(hexData.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
             let decryptedData = new Uint8Array(bytes);
             
+            // Восстанавливаем состояние ГПСЧ для детерминированного выбора омофонов
+            prng.reset();
+            
             // Обрабатываем раунды в обратном порядке
             for (let round = rounds - 1; round >= 0; round--) {
                 log(`Раунд дешифрования ${rounds - round}/${rounds}`);
@@ -831,9 +854,9 @@
                 
                 decryptedData = roundResult;
                 
-                // Обратная диффузия (такая же как и прямая)
+                // Обратная диффузия
                 if (round > 0) {
-                    decryptedData = diffusionMix(decryptedData, round);
+                    decryptedData = inverseDiffusionMix(decryptedData, round);
                 }
             }
             
@@ -934,6 +957,9 @@
                 }
                 
                 try {
+                    // Восстанавливаем PRNG с исходным seed
+                    prng = createPRNG(currentSeed);
+                    
                     const decrypted = decrypt(cipherText, rounds);
                     document.getElementById('decryptedResult').innerHTML = 
                         `<p>${decrypted}</p>`;
