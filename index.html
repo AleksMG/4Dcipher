@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D BitTrifid Cipher Pro</title>
+    <title>3D BitTrifid Cipher - Правильная реализация</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -21,8 +21,6 @@
             --border-radius: 8px;
             --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             --transition: all 0.3s ease;
-            --card-bg: rgba(255, 255, 255, 0.95);
-            --input-bg: rgba(255, 255, 255, 0.9);
         }
 
         * {
@@ -33,7 +31,7 @@
         }
 
         body {
-            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            background: linear-gradient(135deg, #1a2a6c, #203a43, #2c5364);
             color: var(--light);
             min-height: 100vh;
             padding: 20px;
@@ -68,19 +66,6 @@
             font-size: 1.8rem;
             margin: 20px 0;
             color: var(--secondary);
-        }
-
-        h3 {
-            font-size: 1.4rem;
-            margin: 15px 0;
-            color: var(--secondary);
-        }
-
-        .description {
-            text-align: center;
-            margin-bottom: 25px;
-            font-size: 1.1rem;
-            line-height: 1.6;
         }
 
         .grid {
@@ -151,10 +136,6 @@
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
         }
 
-        .btn i {
-            font-size: 18px;
-        }
-
         .cube-container {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -178,25 +159,19 @@
         .bit-grid {
             display: grid;
             grid-template-columns: repeat(16, 1fr);
-            gap: 2px;
+            gap: 1px;
         }
 
         .bit-cell {
-            width: 18px;
-            height: 18px;
+            width: 16px;
+            height: 16px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 8px;
+            font-size: 7px;
             background: rgba(76, 201, 240, 0.1);
             border: 1px solid rgba(76, 201, 240, 0.2);
-            transition: all 0.2s;
             cursor: pointer;
-        }
-
-        .bit-cell:hover {
-            background: rgba(76, 201, 240, 0.3);
-            transform: scale(1.3);
         }
 
         .bit-1 {
@@ -237,53 +212,29 @@
             flex-wrap: wrap;
         }
 
-        .bit-operation {
-            background: rgba(247, 37, 133, 0.2);
+        .process-steps {
+            margin-top: 20px;
             padding: 15px;
-            border-radius: 8px;
-            margin: 15px 0;
-        }
-
-        .operation-title {
-            color: var(--accent);
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-
-        .round-badge {
-            display: inline-block;
-            background: var(--primary);
-            color: white;
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            text-align: center;
-            line-height: 24px;
-            margin-right: 10px;
-        }
-
-        footer {
-            text-align: center;
-            margin-top: 40px;
-            padding: 20px;
-            font-size: 0.9rem;
-            color: var(--gray);
-        }
-
-        .cube-view {
-            max-height: 400px;
-            overflow-y: auto;
-            padding: 10px;
             background: rgba(0, 0, 0, 0.3);
             border-radius: 8px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .step {
+            margin-bottom: 10px;
+            padding: 8px;
+            background: rgba(76, 201, 240, 0.1);
+            border-radius: 5px;
+            font-size: 14px;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1><i class="fas fa-cube"></i> 3D BitTrifid Cipher Pro</h1>
-            <p class="description">3D шифрование с использованием битовых кубов 16×16×16</p>
+            <h1><i class="fas fa-cube"></i> 3D BitTrifid Cipher</h1>
+            <p>Реализация с битовыми кубами 16×16×16</p>
         </header>
 
         <div class="grid">
@@ -299,7 +250,7 @@
                 </div>
                 <div class="form-group">
                     <label for="rounds">Количество раундов:</label>
-                    <input type="number" id="rounds" value="5" min="1" max="20">
+                    <input type="number" id="rounds" value="5" min="1" max="10">
                 </div>
                 <button class="btn" id="encryptBtn"><i class="fas fa-key"></i> Зашифровать</button>
                 <div id="encryptStatus" class="status"></div>
@@ -322,7 +273,6 @@
 
         <div class="card">
             <h2><i class="fas fa-cubes"></i> 3D Битовый куб 16×16×16</h2>
-            <p>Каждый куб содержит 4096 бит (16×16×16), организованных в трехмерную структуру.</p>
             
             <div class="visualization-controls">
                 <label>Показать слои: </label>
@@ -337,41 +287,19 @@
                 <button class="btn" id="visualizeBtn"><i class="fas fa-eye"></i> Визуализировать</button>
             </div>
 
-            <div class="cube-view">
-                <div id="cubeVisualization">
-                    <!-- 3D куб будет сгенерирован здесь -->
-                </div>
+            <div class="cube-container" id="cubeVisualization">
+                <!-- 3D куб будет сгенерирован здесь -->
             </div>
 
             <div class="action-buttons">
                 <button class="btn" id="initCubeBtn"><i class="fas fa-sync"></i> Инициализировать куб</button>
                 <button class="btn" id="transformBtn"><i class="fas fa-exchange-alt"></i> Применить преобразования</button>
-                <button class="btn" id="clearBtn"><i class="fas fa-trash"></i> Очистить</button>
+            </div>
+
+            <div class="process-steps" id="processSteps">
+                <!-- Шаги процесса будут отображаться здесь -->
             </div>
         </div>
-
-        <div class="card">
-            <h2><i class="fas fa-info-circle"></i> Принципы работы 3D BitTrifid Cipher</h2>
-            
-            <div class="bit-operation">
-                <div class="operation-title"><span class="round-badge">1</span> Инициализация куба:</div>
-                <p>Данные преобразуются в битовый поток и размещаются в 3D кубе 16×16×16. Каждый бит занимает свою ячейку в трехмерном пространстве.</p>
-            </div>
-
-            <div class="bit-operation">
-                <div class="operation-title"><span class="round-badge">2</span> Раундовые преобразования:</div>
-                <p>Каждый раунд включает в себя: перемешивание битов по осям X, Y и Z, применение битовых операций XOR, AND, OR, циклические сдвиги.</p>
-            </div>
-
-            <div class="bit-operation">
-                <div class="operation-title"><span class="round-badge">3</span> Формирование результата:</div>
-                <p>После всех раундов биты считываются из куба по специальной 3D траектории, формируя зашифрованные данные.</p>
-            </div>
-        </div>
-
-        <footer>
-            <p>3D BitTrifid Cipher Pro &copy; 2023 | Профессиональная реализация с кубами 16×16×16</p>
-        </footer>
     </div>
 
     <script>
@@ -382,9 +310,8 @@
                 this.initialized = false;
             }
 
-            // Инициализация 3D куба 16x16x16
-            initializeCube(data) {
-                // Создаем 3D куб 16x16x16 (4096 бит)
+            // Инициализация 3D куба 16x16x16 на основе ключа
+            initializeCube(key) {
                 this.cube = new Array(16);
                 for (let x = 0; x < 16; x++) {
                     this.cube[x] = new Array(16);
@@ -393,21 +320,16 @@
                     }
                 }
 
-                // Преобразуем данные в битовый поток
+                // Заполняем куб на основе ключа
                 const encoder = new TextEncoder();
-                const dataBytes = encoder.encode(data);
-                let bitIndex = 0;
+                const keyBytes = encoder.encode(key);
                 
-                // Заполняем куб битами
                 for (let x = 0; x < 16; x++) {
                     for (let y = 0; y < 16; y++) {
                         for (let z = 0; z < 16; z++) {
-                            if (bitIndex < dataBytes.length * 8) {
-                                const byteIndex = Math.floor(bitIndex / 8);
-                                const bitPos = 7 - (bitIndex % 8);
-                                this.cube[x][y][z] = (dataBytes[byteIndex] >> bitPos) & 1;
-                                bitIndex++;
-                            }
+                            const index = (x * 256 + y * 16 + z) % keyBytes.length;
+                            const bit = (keyBytes[index] >> (z % 8)) & 1;
+                            this.cube[x][y][z] = bit;
                         }
                     }
                 }
@@ -416,171 +338,223 @@
                 return this.cube;
             }
 
-            // Преобразование куба (раунд шифрования)
-            transformCube(round) {
-                if (!this.initialized) return;
+            // Преобразование координат в битовый поток (как в оригинальном Trifid)
+            coordinatesToBitStream(coordinates) {
+                const bitStream = [];
                 
-                // Применяем различные преобразования в зависимости от раунда
+                // Разделяем координаты на три потока
+                const xStream = coordinates.map(coord => coord.x);
+                const yStream = coordinates.map(coord => coord.y);
+                const zStream = coordinates.map(coord => coord.z);
+                
+                // Объединяем потоки
+                const combinedStream = [...xStream, ...yStream, ...zStream];
+                
+                // Преобразуем в биты
+                for (const value of combinedStream) {
+                    for (let i = 3; i >= 0; i--) {
+                        bitStream.push((value >> i) & 1);
+                    }
+                }
+                
+                return bitStream;
+            }
+
+            // Преобразование битового потока в координаты
+            bitStreamToCoordinates(bitStream) {
+                const coordinates = [];
+                const values = [];
+                
+                // Преобразуем биты в значения
+                for (let i = 0; i < bitStream.length; i += 4) {
+                    if (i + 3 < bitStream.length) {
+                        let value = 0;
+                        for (let j = 0; j < 4; j++) {
+                            value = (value << 1) | bitStream[i + j];
+                        }
+                        values.push(value);
+                    }
+                }
+                
+                // Разделяем на три потока координат
+                const third = Math.floor(values.length / 3);
+                const xValues = values.slice(0, third);
+                const yValues = values.slice(third, 2 * third);
+                const zValues = values.slice(2 * third);
+                
+                // Создаем координаты
+                for (let i = 0; i < Math.min(xValues.length, yValues.length, zValues.length); i++) {
+                    coordinates.push({
+                        x: xValues[i] % 16,
+                        y: yValues[i] % 16,
+                        z: zValues[i] % 16
+                    });
+                }
+                
+                return coordinates;
+            }
+
+            // Поиск координат бита в кубе
+            findBitCoordinates(bit) {
                 for (let x = 0; x < 16; x++) {
                     for (let y = 0; y < 16; y++) {
                         for (let z = 0; z < 16; z++) {
-                            // Пример преобразования: XOR с соседями и номером раунда
-                            const neighbors = this.getNeighbors(x, y, z);
-                            let newValue = this.cube[x][y][z];
-                            
-                            for (const n of neighbors) {
-                                newValue ^= n;
-                            }
-                            
-                            newValue ^= round % 2;
-                            this.cube[x][y][z] = newValue;
-                        }
-                    }
-                }
-                
-                // Дополнительные преобразования: сдвиги по осям
-                this.shiftXAxis(round);
-                this.shiftYAxis(round);
-                this.shiftZAxis(round);
-            }
-
-            // Получение соседей бита (для диффузии)
-            getNeighbors(x, y, z) {
-                const neighbors = [];
-                for (let dx = -1; dx <= 1; dx++) {
-                    for (let dy = -1; dy <= 1; dy++) {
-                        for (let dz = -1; dz <= 1; dz++) {
-                            if (dx === 0 && dy === 0 && dz === 0) continue;
-                            
-                            const nx = (x + dx + 16) % 16;
-                            const ny = (y + dy + 16) % 16;
-                            const nz = (z + dz + 16) % 16;
-                            
-                            neighbors.push(this.cube[nx][ny][nz]);
-                        }
-                    }
-                }
-                return neighbors;
-            }
-
-            // Сдвиг по оси X
-            shiftXAxis(round) {
-                for (let y = 0; y < 16; y++) {
-                    for (let z = 0; z < 16; z++) {
-                        const shiftAmount = (y + z + round) % 16;
-                        const row = [];
-                        
-                        for (let x = 0; x < 16; x++) {
-                            row.push(this.cube[x][y][z]);
-                        }
-                        
-                        // Циклический сдвиг
-                        for (let x = 0; x < 16; x++) {
-                            this.cube[x][y][z] = row[(x + shiftAmount) % 16];
-                        }
-                    }
-                }
-            }
-
-            // Сдвиг по оси Y
-            shiftYAxis(round) {
-                for (let x = 0; x < 16; x++) {
-                    for (let z = 0; z < 16; z++) {
-                        const shiftAmount = (x + z + round) % 16;
-                        const column = [];
-                        
-                        for (let y = 0; y < 16; y++) {
-                            column.push(this.cube[x][y][z]);
-                        }
-                        
-                        // Циклический сдвиг
-                        for (let y = 0; y < 16; y++) {
-                            this.cube[x][y][z] = column[(y + shiftAmount) % 16];
-                        }
-                    }
-                }
-            }
-
-            // Сдвиг по оси Z
-            shiftZAxis(round) {
-                for (let x = 0; x < 16; x++) {
-                    for (let y = 0; y < 16; y++) {
-                        const shiftAmount = (x + y + round) % 16;
-                        const depth = [];
-                        
-                        for (let z = 0; z < 16; z++) {
-                            depth.push(this.cube[x][y][z]);
-                        }
-                        
-                        // Циклический сдвиг
-                        for (let z = 0; z < 16; z++) {
-                            this.cube[x][y][z] = depth[(z + shiftAmount) % 16];
-                        }
-                    }
-                }
-            }
-
-            // Извлечение данных из куба
-            extractData() {
-                if (!this.initialized) return null;
-                
-                const bytes = [];
-                let currentByte = 0;
-                let bitCount = 0;
-                
-                // Обходим куб и извлекаем биты
-                for (let x = 0; x < 16; x++) {
-                    for (let y = 0; y < 16; y++) {
-                        for (let z = 0; z < 16; z++) {
-                            currentByte = (currentByte << 1) | this.cube[x][y][z];
-                            bitCount++;
-                            
-                            if (bitCount === 8) {
-                                bytes.push(currentByte);
-                                currentByte = 0;
-                                bitCount = 0;
+                            if (this.cube[x][y][z] === bit) {
+                                return { x, y, z };
                             }
                         }
                     }
                 }
-                
-                // Если остались биты, дополняем нулями
-                if (bitCount > 0) {
-                    currentByte = currentByte << (8 - bitCount);
-                    bytes.push(currentByte);
-                }
-                
-                return new Uint8Array(bytes);
+                return null;
             }
 
-            // Шифрование данных
-            encrypt(data, rounds = 5) {
+            // Шифрование данных с использованием 3D куба
+            encrypt(data, key, rounds = 5) {
                 this.rounds = rounds;
-                this.initializeCube(data);
+                this.initializeCube(key);
                 
-                for (let round = 0; round < rounds; round++) {
-                    this.transformCube(round);
+                const encoder = new TextEncoder();
+                const dataBytes = encoder.encode(data);
+                let binaryData = [];
+                
+                // Преобразуем данные в бинарный формат
+                for (const byte of dataBytes) {
+                    for (let i = 7; i >= 0; i--) {
+                        binaryData.push((byte >> i) & 1);
+                    }
                 }
                 
-                const encryptedData = this.extractData();
-                return Array.from(encryptedData).map(b => b.toString(16).padStart(2, '0')).join('');
+                // Добавляем padding если необходимо
+                while (binaryData.length % 4 !== 0) {
+                    binaryData.push(0);
+                }
+                
+                const coordinates = [];
+                
+                // Преобразуем биты в координаты
+                for (let i = 0; i < binaryData.length; i += 4) {
+                    const bits = binaryData.slice(i, i + 4);
+                    const value = bits.reduce((acc, bit, idx) => acc | (bit << (3 - idx)), 0);
+                    
+                    // Ищем координаты в кубе
+                    for (let x = 0; x < 16; x++) {
+                        for (let y = 0; y < 16; y++) {
+                            for (let z = 0; z < 16; z++) {
+                                if (this.cube[x][y][z] === value) {
+                                    coordinates.push({ x, y, z });
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                // Применяем преобразования как в оригинальном Trifid
+                const bitStream = this.coordinatesToBitStream(coordinates);
+                
+                // Применяем несколько раундов преобразований
+                for (let round = 0; round < rounds; round++) {
+                    // Сдвигаем биты
+                    for (let i = 0; i < bitStream.length; i++) {
+                        bitStream[i] = bitStream[i] ^ (round % 2);
+                    }
+                }
+                
+                // Преобразуем обратно в координаты
+                const newCoordinates = this.bitStreamToCoordinates(bitStream);
+                
+                // Преобразуем координаты в биты
+                let encryptedBits = [];
+                for (const coord of newCoordinates) {
+                    encryptedBits.push(this.cube[coord.x][coord.y][coord.z]);
+                }
+                
+                // Преобразуем биты в байты
+                const encryptedBytes = [];
+                for (let i = 0; i < encryptedBits.length; i += 8) {
+                    if (i + 7 < encryptedBits.length) {
+                        let byte = 0;
+                        for (let j = 0; j < 8; j++) {
+                            byte = (byte << 1) | encryptedBits[i + j];
+                        }
+                        encryptedBytes.push(byte);
+                    }
+                }
+                
+                return Array.from(encryptedBytes).map(b => b.toString(16).padStart(2, '0')).join('');
             }
 
             // Дешифрование данных
-            decrypt(hexData, rounds = 5) {
-                // Преобразуем hex в бинарные данные
-                const bytes = new Uint8Array(hexData.match(/.{1,2}/g).map(b => parseInt(b, 16)));
-                
-                // Для дешифрования используем тот же процесс, но в обратном порядке
+            decrypt(hexData, key, rounds = 5) {
                 this.rounds = rounds;
-                this.initializeCube(new TextDecoder().decode(bytes));
+                this.initializeCube(key);
                 
-                for (let round = rounds - 1; round >= 0; round--) {
-                    this.transformCube(round);
+                // Преобразуем hex в биты
+                const bytes = new Uint8Array(hexData.match(/.{1,2}/g).map(b => parseInt(b, 16)));
+                let binaryData = [];
+                
+                for (const byte of bytes) {
+                    for (let i = 7; i >= 0; i--) {
+                        binaryData.push((byte >> i) & 1);
+                    }
                 }
                 
-                const decryptedData = this.extractData();
-                return new TextDecoder().decode(decryptedData).replace(/\0+$/, '');
+                // Обратное преобразование битов в координаты
+                const coordinates = [];
+                for (let i = 0; i < binaryData.length; i += 4) {
+                    if (i + 3 < binaryData.length) {
+                        const value = binaryData.slice(i, i + 4).reduce((acc, bit, idx) => acc | (bit << (3 - idx)), 0);
+                        
+                        for (let x = 0; x < 16; x++) {
+                            for (let y = 0; y < 16; y++) {
+                                for (let z = 0; z < 16; z++) {
+                                    if (this.cube[x][y][z] === value) {
+                                        coordinates.push({ x, y, z });
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                // Применяем обратные преобразования
+                const bitStream = this.coordinatesToBitStream(coordinates);
+                
+                // Обратные раунды преобразований
+                for (let round = rounds - 1; round >= 0; round--) {
+                    for (let i = 0; i < bitStream.length; i++) {
+                        bitStream[i] = bitStream[i] ^ (round % 2);
+                    }
+                }
+                
+                // Преобразуем обратно в координаты
+                const newCoordinates = this.bitStreamToCoordinates(bitStream);
+                
+                // Извлекаем биты из координат
+                let decryptedBits = [];
+                for (const coord of newCoordinates) {
+                    decryptedBits.push(this.cube[coord.x][coord.y][coord.z]);
+                }
+                
+                // Убираем padding
+                while (decryptedBits.length > 0 && decryptedBits[decryptedBits.length - 1] === 0) {
+                    decryptedBits.pop();
+                }
+                
+                // Преобразуем биты в байты
+                const decryptedBytes = [];
+                for (let i = 0; i < decryptedBits.length; i += 8) {
+                    if (i + 7 < decryptedBits.length) {
+                        let byte = 0;
+                        for (let j = 0; j < 8; j++) {
+                            byte = (byte << 1) | decryptedBits[i + j];
+                        }
+                        decryptedBytes.push(byte);
+                    }
+                }
+                
+                return new TextDecoder().decode(new Uint8Array(decryptedBytes));
             }
         }
 
@@ -592,16 +566,16 @@
             const visualizeBtn = document.getElementById('visualizeBtn');
             const initCubeBtn = document.getElementById('initCubeBtn');
             const transformBtn = document.getElementById('transformBtn');
-            const clearBtn = document.getElementById('clearBtn');
             const encryptBtn = document.getElementById('encryptBtn');
             const decryptBtn = document.getElementById('decryptBtn');
             const encryptStatus = document.getElementById('encryptStatus');
             const decryptStatus = document.getElementById('decryptStatus');
+            const processSteps = document.getElementById('processSteps');
 
             // Визуализация 3D куба
             function visualizeCube() {
                 if (!cipher.initialized || !cipher.cube) {
-                    encryptStatus.textContent = 'Сначала инициализируйте куб с данными';
+                    encryptStatus.textContent = 'Сначала инициализируйте куб с ключом';
                     encryptStatus.className = 'status error';
                     return;
                 }
@@ -610,6 +584,7 @@
                 const start = parseInt(startLayer.value) - 1;
                 
                 cubeVisualization.innerHTML = '';
+                processSteps.innerHTML = '<div class="step">Визуализация куба...</div>';
                 
                 for (let z = start; z < start + layersToShow && z < 16; z++) {
                     const layerDiv = document.createElement('div');
@@ -641,53 +616,24 @@
                     layerDiv.appendChild(grid);
                     cubeVisualization.appendChild(layerDiv);
                 }
+                
+                processSteps.innerHTML += '<div class="step">Визуализация завершена</div>';
             }
 
             // Инициализация куба
             initCubeBtn.addEventListener('click', function() {
-                const inputData = document.getElementById('inputData').value;
-                if (!inputData) {
-                    encryptStatus.textContent = 'Введите данные для инициализации куба';
+                const key = document.getElementById('encryptionKey').value || document.getElementById('decryptionKey').value;
+                if (!key) {
+                    encryptStatus.textContent = 'Введите ключ для инициализации куба';
                     encryptStatus.className = 'status error';
                     return;
                 }
                 
-                cipher.initializeCube(inputData);
+                cipher.initializeCube(key);
                 visualizeCube();
                 
-                encryptStatus.textContent = '3D куб успешно инициализирован';
+                encryptStatus.textContent = '3D куб успешно инициализирован на основе ключа';
                 encryptStatus.className = 'status success';
-            });
-
-            // Применение преобразований
-            transformBtn.addEventListener('click', function() {
-                if (!cipher.initialized) {
-                    encryptStatus.textContent = 'Сначала инициализируйте куб';
-                    encryptStatus.className = 'status error';
-                    return;
-                }
-                
-                const rounds = parseInt(document.getElementById('rounds').value);
-                for (let i = 0; i < rounds; i++) {
-                    cipher.transformCube(i);
-                }
-                
-                visualizeCube();
-                
-                encryptStatus.textContent = `Применено ${rounds} раундов преобразований`;
-                encryptStatus.className = 'status success';
-            });
-
-            // Визуализация
-            visualizeBtn.addEventListener('click', visualizeCube);
-
-            // Очистка
-            clearBtn.addEventListener('click', function() {
-                cubeVisualization.innerHTML = '';
-                document.getElementById('inputData').value = '';
-                document.getElementById('encryptedData').value = '';
-                encryptStatus.textContent = '';
-                decryptStatus.textContent = '';
             });
 
             // Шифрование
@@ -702,17 +648,23 @@
                     return;
                 }
                 
+                if (!key) {
+                    encryptStatus.textContent = 'Введите ключ шифрования';
+                    encryptStatus.className = 'status error';
+                    return;
+                }
+                
                 try {
-                    // Добавляем ключ к данным для усиления безопасности
-                    const dataWithKey = key + inputData;
-                    const encrypted = cipher.encrypt(dataWithKey, rounds);
+                    processSteps.innerHTML = '<div class="step">Начало шифрования...</div>';
+                    
+                    const encrypted = cipher.encrypt(inputData, key, rounds);
                     document.getElementById('encryptedData').value = encrypted;
                     
-                    visualizeCube();
-                    
+                    processSteps.innerHTML += '<div class="step">Шифрование завершено</div>';
                     encryptStatus.textContent = 'Данные успешно зашифрованы';
                     encryptStatus.className = 'status success';
                 } catch (error) {
+                    processSteps.innerHTML += `<div class="step error">Ошибка: ${error.message}</div>`;
                     encryptStatus.textContent = 'Ошибка шифрования: ' + error.message;
                     encryptStatus.className = 'status error';
                 }
@@ -730,25 +682,30 @@
                     return;
                 }
                 
+                if (!key) {
+                    decryptStatus.textContent = 'Введите ключ дешифрования';
+                    decryptStatus.className = 'status error';
+                    return;
+                }
+                
                 try {
-                    const decryptedWithKey = cipher.decrypt(encryptedData, rounds);
+                    processSteps.innerHTML = '<div class="step">Начало дешифрования...</div>';
                     
-                    // Удаляем ключ из начала данных
-                    if (decryptedWithKey.startsWith(key)) {
-                        const decrypted = decryptedWithKey.slice(key.length);
-                        document.getElementById('inputData').value = decrypted;
-                        
-                        decryptStatus.textContent = 'Данные успешно дешифрованы';
-                        decryptStatus.className = 'status success';
-                    } else {
-                        decryptStatus.textContent = 'Неверный ключ дешифрования';
-                        decryptStatus.className = 'status error';
-                    }
+                    const decrypted = cipher.decrypt(encryptedData, key, rounds);
+                    document.getElementById('inputData').value = decrypted;
+                    
+                    processSteps.innerHTML += '<div class="step">Дешифрование завершено</div>';
+                    decryptStatus.textContent = 'Данные успешно дешифрованы';
+                    decryptStatus.className = 'status success';
                 } catch (error) {
+                    processSteps.innerHTML += `<div class="step error">Ошибка: ${error.message}</div>`;
                     decryptStatus.textContent = 'Ошибка дешифрования: ' + error.message;
                     decryptStatus.className = 'status error';
                 }
             });
+
+            // Визуализация
+            visualizeBtn.addEventListener('click', visualizeCube);
         });
     </script>
 </body>
