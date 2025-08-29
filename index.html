@@ -249,6 +249,26 @@
             font-size: 1.5em;
             margin-bottom: 10px;
         }
+        
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
     </style>
 </head>
 <body>
@@ -295,6 +315,8 @@
                 🔓 Расшифровать
             </button>
         </div>
+
+        <div id="statusMessage"></div>
 
         <div class="grid">
             <div class="card">
@@ -348,14 +370,13 @@
     </div>
 
     <script>
-        // Для совместимости с браузером используем Web Crypto API
+        // Упрощенная и надежная реализация
         class HolyGrailCipher {
             constructor() {
                 this.standardAlphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
                 this.homophonicTables = this.generateHomophonicTables();
             }
 
-            // Генерация таблиц омофонов
             generateHomophonicTables() {
                 const tables = {};
                 const homophoneSets = [
@@ -399,46 +420,37 @@
                 return tables;
             }
 
-            // Генерация IV (96 бит)
             async generateIV() {
                 const iv = new Uint8Array(12);
                 crypto.getRandomValues(iv);
                 return iv;
             }
 
-            // Деривация ключа
-            async deriveKey(masterKey, usage) {
+            async importKey(masterKey) {
                 const encoder = new TextEncoder();
-                const keyMaterial = await crypto.subtle.importKey(
+                const keyData = encoder.encode(masterKey);
+                
+                // Проверяем длину ключа
+                if (keyData.length !== 32) {
+                    throw new Error("Ключ должен быть ровно 32 байта (256 бит)");
+                }
+                
+                return await crypto.subtle.importKey(
                     'raw',
-                    encoder.encode(masterKey),
-                    'HKDF',
-                    false,
-                    ['deriveKey']
-                );
-
-                return await crypto.subtle.deriveKey(
-                    {
-                        name: 'HKDF',
-                        salt: encoder.encode('holy-grail-salt'),
-                        info: encoder.encode(usage),
-                        hash: 'SHA-256'
-                    },
-                    keyMaterial,
-                    { name: 'AES-GCM', length: 256 },
+                    keyData,
+                    { name: 'AES-GCM' },
                     false,
                     ['encrypt', 'decrypt']
                 );
             }
 
-            // Основное шифрование
             async encrypt(plaintext, masterKey) {
                 try {
                     // Генерация IV
                     const iv = await this.generateIV();
                     
-                    // Деривация ключа
-                    const cryptoKey = await this.deriveKey(masterKey, 'encryption');
+                    // Импорт ключа
+                    const cryptoKey = await this.importKey(masterKey);
                     
                     // Шифрование AES-GCM
                     const encoder = new TextEncoder();
@@ -447,15 +459,20 @@
                     const encrypted = await crypto.subtle.encrypt(
                         {
                             name: 'AES-GCM',
-                            iv: iv
+                            iv: iv,
+                            tagLength: 128
                         },
                         cryptoKey,
                         data
                     );
                     
-                    // Преобразование в Base64
-                    const combined = new Uint8Array(encrypted);
-                    const base64 = btoa(String.fromCharCode.apply(null, combined));
+                    // Комбинируем IV + encrypted data
+                    const combined = new Uint8Array(iv.length + encrypted.byteLength);
+                    combined.set(iv, 0);
+                    combined.set(new Uint8Array(encrypted), iv.length);
+                    
+                    // Конвертируем в Base64
+                    const base64 = this.bytesToBase64(combined);
                     
                     // Омофонное преобразование
                     let homophonicResult = '';
@@ -472,12 +489,9 @@
                         }
                     }
                     
-                    // Комбинируем IV + результат
-                    const result = new Uint8Array(iv.length + homophonicResult.length);
-                    result.set(iv);
-                    result.set(new TextEncoder().encode(homophonicResult), iv.length);
-                    
-                    return Array.from(result).map(b => b.toString(16).padStart(2, '0')).join('');
+                    // Конвертируем в hex для удобства отображения
+                    const finalBytes = new TextEncoder().encode(homophonicResult);
+                    return this.bytesToHex(finalBytes);
                     
                 } catch (error) {
                     console.error('Encryption error:', error);
@@ -485,17 +499,11 @@
                 }
             }
 
-            // Дешифрование
             async decrypt(ciphertextHex, masterKey) {
                 try {
-                    // Конвертация из Hex
-                    const bytes = new Uint8Array(ciphertextHex.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
-                    
-                    // Извлечение IV (первые 12 байт)
-                    const iv = bytes.slice(0, 12);
-                    
-                    // Извлечение омофонного текста
-                    const homophonicText = new TextDecoder().decode(bytes.slice(12));
+                    // Конвертация из Hex в bytes
+                    const bytes = this.hexToBytes(ciphertextHex);
+                    const homophonicText = new TextDecoder().decode(bytes);
                     
                     // Обратное омофонное преобразование
                     let base64 = '';
@@ -516,20 +524,23 @@
                     }
                     
                     // Конвертация Base64 в bytes
-                    const binary = atob(base64);
-                    const encrypted = new Uint8Array(binary.length);
-                    for (let i = 0; i < binary.length; i++) {
-                        encrypted[i] = binary.charCodeAt(i);
-                    }
+                    const combined = this.base64ToBytes(base64);
                     
-                    // Деривация ключа
-                    const cryptoKey = await this.deriveKey(masterKey, 'encryption');
+                    // Извлечение IV (первые 12 байт)
+                    const iv = combined.slice(0, 12);
+                    
+                    // Извлечение зашифрованных данных
+                    const encrypted = combined.slice(12);
+                    
+                    // Импорт ключа
+                    const cryptoKey = await this.importKey(masterKey);
                     
                     // Дешифрование AES-GCM
                     const decrypted = await crypto.subtle.decrypt(
                         {
                             name: 'AES-GCM',
-                            iv: iv
+                            iv: iv,
+                            tagLength: 128
                         },
                         cryptoKey,
                         encrypted
@@ -539,8 +550,34 @@
                     
                 } catch (error) {
                     console.error('Decryption error:', error);
-                    return 'Ошибка дешифрования: неверный ключ или данные';
+                    throw new Error('Ошибка дешифрования: неверный ключ или данные');
                 }
+            }
+
+            // Вспомогательные функции
+            bytesToBase64(bytes) {
+                return btoa(String.fromCharCode(...bytes));
+            }
+
+            base64ToBytes(base64) {
+                const binary = atob(base64);
+                const bytes = new Uint8Array(binary.length);
+                for (let i = 0; i < binary.length; i++) {
+                    bytes[i] = binary.charCodeAt(i);
+                }
+                return bytes;
+            }
+
+            bytesToHex(bytes) {
+                return Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
+            }
+
+            hexToBytes(hex) {
+                const bytes = new Uint8Array(hex.length / 2);
+                for (let i = 0; i < bytes.length; i++) {
+                    bytes[i] = parseInt(hex.substr(i * 2, 2), 16);
+                }
+                return bytes;
             }
         }
 
@@ -552,64 +589,83 @@
         function generateKey() {
             const randomBytes = new Uint8Array(32);
             crypto.getRandomValues(randomBytes);
-            currentKey = btoa(String.fromCharCode.apply(null, randomBytes));
+            currentKey = btoa(String.fromCharCode(...randomBytes));
             document.getElementById('key').value = currentKey;
+            showStatus('✅ Новый ключ сгенерирован', 'success');
         }
 
         // Шифрование
         async function encrypt() {
             const inputText = document.getElementById('inputText').value;
-            const key = document.getElementById('key').value || currentKey;
+            const keyInput = document.getElementById('key').value;
+            const key = keyInput || currentKey;
             
             if (!inputText) {
-                alert('Введите текст для шифрования');
+                showStatus('❌ Введите текст для шифрования', 'error');
                 return;
             }
             
             if (!key) {
-                alert('Сначала сгенерируйте ключ');
+                showStatus('❌ Сначала сгенерируйте ключ', 'error');
                 return;
             }
             
             try {
+                showStatus('🔒 Шифрование...', 'success');
                 const encrypted = await cipher.encrypt(inputText, key);
                 document.getElementById('outputText').value = encrypted;
                 
                 // Показываем сравнение
                 document.getElementById('normalBase64').textContent = btoa(unescape(encodeURIComponent(inputText)));
-                document.getElementById('holyGrailOutput').textContent = encrypted.slice(0, 100) + '...';
+                document.getElementById('holyGrailOutput').textContent = encrypted.slice(0, 100) + (encrypted.length > 100 ? '...' : '');
+                
+                showStatus('✅ Успешно зашифровано!', 'success');
                 
             } catch (error) {
-                alert('Ошибка шифрования: ' + error.message);
+                showStatus(`❌ Ошибка шифрования: ${error.message}`, 'error');
             }
         }
 
         // Дешифрование
         async function decrypt() {
             const inputText = document.getElementById('inputText').value;
-            const key = document.getElementById('key').value || currentKey;
+            const keyInput = document.getElementById('key').value;
+            const key = keyInput || currentKey;
             
             if (!inputText) {
-                alert('Введите данные для дешифрования');
+                showStatus('❌ Введите данные для дешифрования', 'error');
                 return;
             }
             
             if (!key) {
-                alert('Введите ключ для дешифрования');
+                showStatus('❌ Введите ключ для дешифрования', 'error');
                 return;
             }
             
             try {
+                showStatus('🔓 Дешифрование...', 'success');
                 const decrypted = await cipher.decrypt(inputText, key);
                 document.getElementById('outputText').value = decrypted;
+                showStatus('✅ Успешно расшифровано!', 'success');
+                
             } catch (error) {
-                alert('Ошибка дешифрования: ' + error.message);
+                showStatus(`❌ Ошибка дешифрования: ${error.message}`, 'error');
             }
+        }
+
+        // Показать статус
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('statusMessage');
+            statusDiv.innerHTML = `<div class="status ${type}">${message}</div>`;
+            setTimeout(() => {
+                statusDiv.innerHTML = '';
+            }, 5000);
         }
 
         // Инициализация
         window.onload = function() {
             generateKey();
+            showStatus('🚀 Система готова к работе!', 'success');
         };
     </script>
 </body>
