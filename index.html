@@ -6,7 +6,6 @@
     <title>CryptoBox • Недетерминированный S-Box 16×16</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* Стили остаются без изменений */
         :root {
             --primary: #0A84FF;
             --primary-dark: #0066CC;
@@ -77,6 +76,7 @@
         .navbar-actions {
             display: flex;
             gap: 16px;
+            align-items: center;
         }
 
         .navbar-icon {
@@ -331,6 +331,7 @@
             display: flex;
             margin-bottom: 16px;
             border-bottom: 1px solid var(--border);
+            overflow-x: auto;
         }
 
         .tab {
@@ -340,6 +341,7 @@
             color: var(--text-secondary);
             border-bottom: 2px solid transparent;
             transition: var(--transition);
+            white-space: nowrap;
         }
 
         .tab.active {
@@ -398,6 +400,16 @@
             font-size: 12px;
             color: var(--text-secondary);
             margin-top: 8px;
+        }
+
+        .debug-info {
+            font-size: 12px;
+            color: var(--text-secondary);
+            background-color: var(--background);
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 10px;
+            border: 1px solid var(--border);
         }
     </style>
 </head>
@@ -481,7 +493,7 @@
                 
                 <div class="input-group">
                     <label class="input-label">Исходный текст</label>
-                    <textarea class="input-field" id="plainText" rows="4" placeholder="Введите текст для шифрования">Привет, мир! Это демонстрация недетерминированного S-Box.</textarea>
+                    <textarea class="input-field" id="plainText" rows="4" placeholder="Введите текст для шифрования">Привет, мир!</textarea>
                 </div>
                 
                 <div class="input-group">
@@ -539,6 +551,7 @@
                 <div class="tabs">
                     <div class="tab active" data-tab="sbox-view">S-Box</div>
                     <div class="tab" data-tab="stats-view">Статистика</div>
+                    <div class="tab" data-tab="debug-view">Отладка</div>
                 </div>
                 
                 <div class="tab-content active" id="sbox-view">
@@ -552,9 +565,19 @@
                 <div class="tab-content" id="stats-view">
                     <div class="log-output" id="logOutput">
                         <div class="log-entry">
-                            <span class="log-time">12:45:10</span>
+                            <span class="log-time">00:00:00</span>
                             <span>Система инициализирована. Готов к работе.</span>
                         </div>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="debug-view">
+                    <div class="debug-info">
+                        <h4>Информация для отладки:</h4>
+                        <p>Размер S-Box: 16x16x16 = 4096 значений</p>
+                        <p>Каждая ячейка содержит 16 омофонов</p>
+                        <p>При шифровании случайно выбирается один омофон</p>
+                        <p>При дешифровании используется обратное преобразование</p>
                     </div>
                 </div>
             </div>
@@ -642,48 +665,23 @@
             };
         }
 
-        // Функция диффузии (упрощенная)
-        function diffusionMix(data, roundKey) {
-            const result = new Uint8Array(data.length);
-            for (let i = 0; i < data.length; i++) {
-                // Простая операция XOR с соседними байтами и ключом раунда
-                const prev = i > 0 ? data[i - 1] : roundKey;
-                const next = i < data.length - 1 ? data[i + 1] : roundKey;
-                result[i] = (data[i] ^ prev ^ next ^ roundKey) & 0xFF;
-            }
-            return result;
-        }
-
-        // Обратная функция диффузии
-        function inverseDiffusionMix(data, roundKey) {
-            const result = new Uint8Array(data.length);
-            
-            // Обратная диффузия должна применяться в обратном порядке
-            for (let i = data.length - 1; i >= 0; i--) {
-                const prev = i > 0 ? result[i - 1] : roundKey;
-                const next = i < data.length - 1 ? data[i + 1] : roundKey;
-                result[i] = (data[i] ^ prev ^ next ^ roundKey) & 0xFF;
-            }
-            
-            return result;
-        }
-
         // Генерация S-Box
         function generateSBox(key, nonce = '') {
             log(`Генерация S-Box с ключом: ${key} и nonce: ${nonce}`);
             const seed = key + nonce;
             const prng = createPRNG(seed);
             
+            // Создаем S-Box 16x16, где каждая ячейка содержит массив из 16 омофонов
             const sbox = Array.from({length: 16}, () => 
                 Array.from({length: 16}, () => [])
             );
             
-            // Сначала заполняем все возможные значения
+            // Создаем массив всех возможных значений (0-255)
             const allValues = Array.from({length: 256}, (_, i) => i);
             
-            // Перемешиваем значения
+            // Перемешиваем значения используя PRNG
             for (let i = allValues.length - 1; i > 0; i--) {
-                const j = Math.floor(prng() / 255 * (i + 1));
+                const j = Math.floor(prng() / 256 * (i + 1));
                 [allValues[i], allValues[j]] = [allValues[j], allValues[i]];
             }
             
@@ -691,13 +689,11 @@
             let valueIndex = 0;
             for (let i = 0; i < 16; i++) {
                 for (let j = 0; j < 16; j++) {
-                    const values = [];
                     for (let k = 0; k < 16; k++) {
                         if (valueIndex < allValues.length) {
-                            values.push(allValues[valueIndex++]);
+                            sbox[i][j][k] = allValues[valueIndex++];
                         }
                     }
-                    sbox[i][j] = values;
                 }
             }
             
@@ -709,6 +705,7 @@
         function buildInverseMapping(sbox) {
             log('Построение обратного mapping...');
             const inverse = {};
+            
             for (let i = 0; i < 16; i++) {
                 for (let j = 0; j < 16; j++) {
                     for (let k = 0; k < 16; k++) {
@@ -717,6 +714,7 @@
                     }
                 }
             }
+            
             return inverse;
         }
 
@@ -740,7 +738,6 @@
                 }
             }
             
-            // Обновляем статистику
             updateStats();
         }
 
@@ -752,7 +749,8 @@
         }
 
         function updateStats() {
-            // Вычисляем энтропию S-Box
+            if (!sBox) return;
+            
             const valueCount = new Array(256).fill(0);
             for (let i = 0; i < 16; i++) {
                 for (let j = 0; j < 16; j++) {
@@ -762,12 +760,10 @@
                 }
             }
             
-            // Проверяем, что все значения встречаются ровно 1 раз
             const uniqueValues = valueCount.filter(count => count === 1).length;
             const entropy = uniqueValues / 256;
             document.getElementById('entropyValue').textContent = entropy.toFixed(4);
             
-            // Размер ключа
             const key = document.getElementById('keyInput').value;
             document.getElementById('keySize').textContent = `${key.length} симв.`;
         }
@@ -776,29 +772,22 @@
         function encrypt(text, rounds = 3) {
             log(`Начало шифрования (${rounds} раунда)`);
             const textBytes = new TextEncoder().encode(text);
-            let currentData = new Uint8Array(textBytes);
             
-            // Массивы для хранения карты омофонов
+            // Для каждого раунда будем хранить карту выбранных омофонов
             const homophoneMaps = [];
+            let currentData = new Uint8Array(textBytes);
             
             for (let round = 0; round < rounds; round++) {
                 log(`Раунд шифрования ${round + 1}/${rounds}`);
-                const roundKey = round + 1;
                 const homophoneMap = new Uint8Array(currentData.length);
-                
-                // Применяем диффузию
-                if (round > 0) {
-                    currentData = diffusionMix(currentData, roundKey);
-                }
-                
-                // Применяем S-Box подстановку
                 const newData = new Uint8Array(currentData.length);
+                
                 for (let i = 0; i < currentData.length; i++) {
                     const byte = currentData[i];
                     const row = (byte >> 4) & 0x0F;
                     const col = byte & 0x0F;
                     
-                    // Случайный выбор омофона
+                    // Случайный выбор омофона из 16 возможных
                     const homophoneIndex = Math.floor(Math.random() * 16);
                     newData[i] = sBox[row][col][homophoneIndex];
                     homophoneMap[i] = homophoneIndex;
@@ -808,88 +797,66 @@
                 homophoneMaps.push(homophoneMap);
             }
             
-            // Подготавливаем финальные данные: данные + все карты омофонов
-            const totalLength = currentData.length + homophoneMaps.reduce((sum, map) => sum + map.length, 0);
-            const finalData = new Uint8Array(totalLength);
+            // Создаем финальный результат: данные + все карты омофонов
+            const dataLength = currentData.length;
+            const totalSize = dataLength + homophoneMaps.reduce((sum, map) => sum + map.length, 0);
+            
+            const result = new Uint8Array(4 + totalSize); // 4 байта на заголовок
+            const header = new DataView(result.buffer);
+            
+            // Заголовок: размер данных + количество раундов
+            header.setUint16(0, dataLength);
+            header.setUint16(2, rounds);
             
             // Записываем зашифрованные данные
-            finalData.set(currentData, 0);
+            result.set(currentData, 4);
             
             // Записываем карты омофонов
-            let offset = currentData.length;
+            let offset = 4 + dataLength;
             for (const map of homophoneMaps) {
-                finalData.set(map, offset);
+                result.set(map, offset);
                 offset += map.length;
             }
             
-            // Добавляем заголовок с информацией о размерах
-            const header = new DataView(new ArrayBuffer(4));
-            header.setUint16(0, currentData.length); // Размер данных
-            header.setUint16(2, rounds); // Количество раундов
-            
-            // Объединяем заголовок и данные
-            const resultWithHeader = new Uint8Array(4 + finalData.length);
-            resultWithHeader.set(new Uint8Array(header.buffer), 0);
-            resultWithHeader.set(finalData, 4);
-            
-            // Преобразуем в hex-строку
-            const hexResult = Array.from(resultWithHeader)
-                .map(b => b.toString(16).padStart(2, '0'))
-                .join('');
-                
+            const hexResult = Array.from(result).map(b => b.toString(16).padStart(2, '0')).join('');
             log('Шифрование завершено');
             return hexResult;
         }
 
         // Дешифрование
-        function decrypt(hexData, rounds = 3) {
-            log(`Начало дешифрования (${rounds} раунда)`);
-            
+        function decrypt(hexData) {
             try {
-                // Преобразуем hex в байты
                 const bytes = new Uint8Array(hexData.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
+                const header = new DataView(bytes.buffer);
                 
-                // Извлекаем заголовок
-                const headerView = new DataView(bytes.buffer, 0, 4);
-                const dataLength = headerView.getUint16(0);
-                const actualRounds = headerView.getUint16(2);
+                const dataLength = header.getUint16(0);
+                const rounds = header.getUint16(2);
                 
-                // Извлекаем основные данные и карты омофонов
-                const encryptedData = bytes.slice(4, 4 + dataLength);
+                let currentData = bytes.slice(4, 4 + dataLength);
                 const homophoneMaps = [];
                 
                 let offset = 4 + dataLength;
-                for (let i = 0; i < actualRounds; i++) {
-                    const mapLength = dataLength;
-                    homophoneMaps.push(bytes.slice(offset, offset + mapLength));
-                    offset += mapLength;
+                for (let i = 0; i < rounds; i++) {
+                    homophoneMaps.push(bytes.slice(offset, offset + dataLength));
+                    offset += dataLength;
                 }
                 
-                let currentData = new Uint8Array(encryptedData);
-                
                 // Обрабатываем раунды в обратном порядке
-                for (let round = actualRounds - 1; round >= 0; round--) {
-                    log(`Раунд дешифрования ${actualRounds - round}/${actualRounds}`);
-                    const roundKey = round + 1;
+                for (let round = rounds - 1; round >= 0; round--) {
+                    log(`Раунд дешифрования ${rounds - round}/${rounds}`);
                     const homophoneMap = homophoneMaps[round];
-                    
-                    // Обратная S-Box подстановка
                     const newData = new Uint8Array(currentData.length);
+                    
                     for (let i = 0; i < currentData.length; i++) {
-                        const byte = currentData[i];
+                        const encryptedByte = currentData[i];
                         const homophoneIndex = homophoneMap[i];
                         
-                        // Находим исходный байт через обратное отображение
-                        const { i: row, j: col } = invSBox[byte];
+                        // Используем обратное отображение
+                        const { i: row, j: col } = invSBox[encryptedByte];
                         newData[i] = (row << 4) | col;
                     }
                     
                     currentData = newData;
-                    
-                    // Обратная диффузия (кроме последнего раунда)
-                    if (round > 0) {
-                        currentData = inverseDiffusionMix(currentData, roundKey);
-                    }
                 }
                 
                 log('Дешифрование завершено');
@@ -905,7 +872,6 @@
         function initApp() {
             log('Приложение инициализировано');
             
-            // Обработчики событий для табов
             document.querySelectorAll('.tab').forEach(tab => {
                 tab.addEventListener('click', () => {
                     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -916,7 +882,6 @@
                 });
             });
             
-            // Инициализация S-Box
             document.getElementById('initBtn').addEventListener('click', () => {
                 const key = document.getElementById('keyInput').value;
                 const nonce = document.getElementById('nonceInput').value;
@@ -937,7 +902,6 @@
                 }
             });
             
-            // Сброс S-Box
             document.getElementById('resetBtn').addEventListener('click', () => {
                 sBox = null;
                 invSBox = null;
@@ -949,7 +913,6 @@
                 showToast('S-Box сброшен');
             });
             
-            // Шифрование
             document.getElementById('encryptBtn').addEventListener('click', () => {
                 if (!sBox) {
                     showToast('Сначала инициализируйте S-Box', false);
@@ -968,8 +931,6 @@
                     const encrypted = encrypt(text, rounds);
                     document.getElementById('encryptedResult').innerHTML = 
                         `<p>${encrypted}</p>`;
-                    
-                    // Автоматически заполняем поле для дешифрования
                     document.getElementById('cipherText').value = encrypted;
                     showToast('Текст успешно зашифрован');
                 } catch (e) {
@@ -978,7 +939,6 @@
                 }
             });
             
-            // Дешифрование
             document.getElementById('decryptBtn').addEventListener('click', () => {
                 if (!sBox) {
                     showToast('Сначала инициализируйте S-Box', false);
@@ -986,7 +946,6 @@
                 }
                 
                 const cipherText = document.getElementById('cipherText').value;
-                const rounds = parseInt(document.getElementById('rounds').value);
                 
                 if (!cipherText) {
                     showToast('Введите шифртекст для дешифрования', false);
@@ -994,18 +953,17 @@
                 }
                 
                 try {
-                    const decrypted = decrypt(cipherText, rounds);
+                    const decrypted = decrypt(cipherText);
                     document.getElementById('decryptedResult').innerHTML = 
                         `<p>${decrypted}</p>`;
                     showToast('Текст успешно дешифрован');
                 } catch (e) {
                     console.error(e);
-                    showToast('Ошибка дешифрования: неверный формат шифртекста', false);
+                    showToast('Ошибка дешифрования', false);
                 }
             });
         }
 
-        // Запуск приложения после загрузки страницы
         window.addEventListener('load', initApp);
     </script>
 </body>
