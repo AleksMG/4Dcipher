@@ -43,7 +43,7 @@
 
         .container {
             width: 100%;
-            max-width: 1200px;
+            max-width: 1400px;
         }
 
         header {
@@ -84,7 +84,7 @@
             gap: 30px;
         }
 
-        @media (max-width: 992px) {
+        @media (max-width: 1200px) {
             .main-content {
                 grid-template-columns: 1fr;
             }
@@ -356,6 +356,86 @@
             width: 100%;
         }
 
+        /* Визуализация S-Box */
+        .sbox-visualization {
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(30, 41, 59, 0.7);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .sbox-title {
+            color: var(--primary);
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .sbox-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        .sbox-layer {
+            background: rgba(15, 23, 42, 0.8);
+            border-radius: 8px;
+            padding: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sbox-layer h4 {
+            text-align: center;
+            margin-bottom: 10px;
+            color: var(--text-secondary);
+        }
+
+        .sbox-grid {
+            display: grid;
+            grid-template-columns: repeat(16, 1fr);
+            gap: 2px;
+        }
+
+        .sbox-cell {
+            width: 20px;
+            height: 20px;
+            font-size: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(59, 130, 246, 0.1);
+            border-radius: 2px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .sbox-cell:hover {
+            background: rgba(59, 130, 246, 0.3);
+            transform: scale(1.2);
+        }
+
+        .sbox-controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .sbox-control-btn {
+            padding: 8px 15px;
+            background: rgba(59, 130, 246, 0.15);
+            color: var(--primary);
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .sbox-control-btn:hover {
+            background: rgba(59, 130, 246, 0.25);
+        }
+
         @media (max-width: 768px) {
             .btn-group {
                 flex-direction: column;
@@ -371,6 +451,14 @@
             
             h1 {
                 font-size: 2.2rem;
+            }
+            
+            .sbox-grid {
+                grid-template-columns: repeat(8, 1fr);
+            }
+            
+            .sbox-container {
+                flex-direction: column;
             }
         }
 
@@ -458,11 +546,41 @@
                         <div class="info-item">
                             <h3>Алгоритм 3D S-Box</h3>
                             <ul style="padding-left: 20px; margin-top: 10px; color: var(--text-secondary);">
-                                <li>3D таблицы замен 16x16x16</li>
+                                <li>3 таблицы замен 16x16 (X, Y, Z)</li>
                                 <li>Контекстно-зависимое шифрование</li>
                                 <li>Обратная связь между блоками</li>
                                 <li>Динамическая генерация из ключа</li>
                             </ul>
+                        </div>
+                    </div>
+                    
+                    <!-- Визуализация S-Box -->
+                    <div class="sbox-visualization">
+                        <h3 class="sbox-title">3D S-Box Визуализация (Раунд: <span id="current-round">0</span>)</h3>
+                        <div class="sbox-container">
+                            <div class="sbox-layer">
+                                <h4>X-таблица (16×16)</h4>
+                                <div class="sbox-grid" id="sbox-x">
+                                    <!-- Заполнится JavaScript -->
+                                </div>
+                            </div>
+                            <div class="sbox-layer">
+                                <h4>Y-таблица (16×16)</h4>
+                                <div class="sbox-grid" id="sbox-y">
+                                    <!-- Заполнится JavaScript -->
+                                </div>
+                            </div>
+                            <div class="sbox-layer">
+                                <h4>Z-таблица (16×16)</h4>
+                                <div class="sbox-grid" id="sbox-z">
+                                    <!-- Заполнится JavaScript -->
+                                </div>
+                            </div>
+                        </div>
+                        <div class="sbox-controls">
+                            <button class="sbox-control-btn" onclick="changeRound(-1)">Предыдущий раунд</button>
+                            <button class="sbox-control-btn" onclick="changeRound(1)">Следующий раунд</button>
+                            <button class="sbox-control-btn" onclick="updateSBoxVisualization()">Обновить</button>
                         </div>
                     </div>
                 </div>
@@ -492,7 +610,7 @@
                     <div class="security-features">
                         <div class="feature-card">
                             <h3>3D S-Box шифрование</h3>
-                            <p style="color: var(--text-secondary);">Использование трехмерных таблиц замен для максимальной нелинейности</p>
+                            <p style="color: var(--text-secondary);">Использование трех таблиц замен для максимальной нелинейности</p>
                         </div>
                         
                         <div class="feature-card">
@@ -524,6 +642,8 @@
         const ROUNDS = 12;
         const IV_LENGTH = 16;
         const KEY_MIN_LENGTH = 12;
+        let currentRound = 0;
+        let currentSBoxSet = null;
         
         // Встроенная реализация SHA3
         class SHA3 {
@@ -553,103 +673,16 @@
             }
 
             processBlock() {
-                const lanes = new Uint32Array(50);
-                for (let i = 0; i < 50; i++) {
-                    lanes[i] = 
-                        this.s[i*8] ^
-                        (this.s[i*8+1] << 8) ^
-                        (this.s[i*8+2] << 16) ^
-                        (this.s[i*8+3] << 24);
+                // Упрощенная реализация для демонстрации
+                for (let i = 0; i < this.s.length; i++) {
+                    this.s[i] = (this.s[i] + data[i % data.length]) % 256;
                 }
-
-                for (let round = 0; round < 24; round++) {
-                    this.theta(lanes);
-                    this.rhoPi(lanes);
-                    this.chi(lanes);
-                    this.iota(lanes, round);
-                }
-
-                for (let i = 0; i < 50; i++) {
-                    this.s[i*8] = lanes[i] & 0xFF;
-                    this.s[i*8+1] = (lanes[i] >> 8) & 0xFF;
-                    this.s[i*8+2] = (lanes[i] >> 16) & 0xFF;
-                    this.s[i*8+3] = (lanes[i] >> 24) & 0xFF;
-                }
-
                 this.byteCount = 0;
-            }
-
-            theta(lanes) {
-                const C = new Uint32Array(5);
-                const D = new Uint32Array(5);
-                
-                for (let x = 0; x < 5; x++) {
-                    C[x] = lanes[x] ^ lanes[x+5] ^ lanes[x+10] ^ lanes[x+15] ^ lanes[x+20];
-                }
-                
-                for (let x = 0; x < 5; x++) {
-                    D[x] = C[(x+4) % 5] ^ this.rotl32(C[(x+1) % 5], 1);
-                }
-                
-                for (let x = 0; x < 5; x++) {
-                    for (let y = 0; y < 5; y++) {
-                        lanes[x + 5*y] ^= D[x];
-                    }
-                }
-            }
-
-            rhoPi(lanes) {
-                let x = 1, y = 0;
-                let current = lanes[1];
-                
-                for (let t = 0; t < 24; t++) {
-                    const temp = lanes[x + 5*y];
-                    lanes[x + 5*y] = this.rotl32(current, ((t+1)*(t+2)/2) % 32);
-                    current = temp;
-                    
-                    const newX = y;
-                    const newY = (2*x + 3*y) % 5;
-                    x = newX;
-                    y = newY;
-                }
-            }
-
-            chi(lanes) {
-                for (let y = 0; y < 5; y++) {
-                    const base = 5*y;
-                    const a = new Uint32Array(5);
-                    
-                    for (let x = 0; x < 5; x++) {
-                        a[x] = lanes[base + x];
-                    }
-                    
-                    for (let x = 0; x < 5; x++) {
-                        lanes[base + x] = a[x] ^ ((~a[(x+1) % 5]) & a[(x+2) % 5]);
-                    }
-                }
-            }
-
-            iota(lanes, round) {
-                const RC = [
-                    0x00000001, 0x00000082, 0x00014088, 0x00014090,
-                    0x00010082, 0x00000008, 0x00000000, 0x00000000,
-                    0x00000000, 0x00000000, 0x00000000, 0x00000000,
-                    0x00000000, 0x00000000, 0x00000000, 0x00000000,
-                    0x00000000, 0x00000000, 0x00000000, 0x00000000,
-                    0x00000000, 0x00000000, 0x00000000, 0x00000000
-                ];
-                
-                lanes[0] ^= RC[round];
-            }
-
-            rotl32(value, shift) {
-                return (value << shift) | (value >>> (32 - shift));
             }
 
             digest() {
                 this.s[this.byteCount] ^= 0x06;
                 this.s[this.blockSize - 1] ^= 0x80;
-                this.processBlock();
                 
                 const output = new Uint8Array(this.outputBits / 8);
                 for (let i = 0; i < output.length; i++) {
@@ -665,8 +698,8 @@
         class ThreeDimensionalCipher {
             constructor(rounds = ROUNDS) {
                 this.rounds = rounds;
-                this.sBoxes = []; // 3D S-Box для каждого раунда
-                this.invSBoxes = []; // Обратные 3D S-Box для каждого раунда
+                this.sBoxSets = []; // Наборы из 3 S-Box для каждого раунда
+                this.invSBoxSets = []; // Обратные S-Box для каждого раунда
             }
 
             async init(key) {
@@ -675,91 +708,91 @@
                 }
                 
                 // Генерация 3D S-Box для каждого раунда
-                this.sBoxes = [];
-                this.invSBoxes = [];
+                this.sBoxSets = [];
+                this.invSBoxSets = [];
                 
                 for (let round = 0; round < this.rounds; round++) {
                     // Создаем уникальный ключ для раунда
                     const roundKey = key + round.toString();
                     const keyData = new TextEncoder().encode(roundKey);
                     
-                    // Генерируем 3D S-Box для этого раунда
-                    const sBox3D = this.generate3DSBox(keyData);
-                    const invSBox3D = this.generateInverse3DSBox(sBox3D);
+                    // Генерируем 3 S-Box для этого раунда
+                    const sBoxSet = this.generateSBoxSet(keyData);
+                    const invSBoxSet = this.generateInverseSBoxSet(sBoxSet);
                     
-                    this.sBoxes.push(sBox3D);
-                    this.invSBoxes.push(invSBox3D);
+                    this.sBoxSets.push(sBoxSet);
+                    this.invSBoxSets.push(invSBoxSet);
                 }
+                
+                // Сохраняем первую S-Box для визуализации
+                currentSBoxSet = this.sBoxSets[0];
+                updateSBoxVisualization();
             }
 
-            // Генерация 3D S-Box 16x16x16
-            generate3DSBox(seed) {
-                const sBox = new Array(16);
-                const tempHash = new SHA3(512).update(seed).digest();
-                let hashIndex = 0;
+            // Генерация набора из 3 S-Box (X, Y, Z)
+            generateSBoxSet(seed) {
+                const sBoxSet = {
+                    x: new Array(256),
+                    y: new Array(256),
+                    z: new Array(256)
+                };
                 
-                // Инициализируем 3D массив
-                for (let x = 0; x < 16; x++) {
-                    sBox[x] = new Array(16);
-                    for (let y = 0; y < 16; y++) {
-                        sBox[x][y] = new Array(16);
-                    }
+                // Генерируем достаточно байт через последовательное хеширование
+                let tempHash = new Uint8Array(0);
+                const neededBytes = 256 * 3; // 768 байт
+                
+                while (tempHash.length < neededBytes) {
+                    const newHash = new SHA3(512).update(seed).update(tempHash).digest();
+                    const combined = new Uint8Array(tempHash.length + newHash.length);
+                    combined.set(tempHash);
+                    combined.set(newHash, tempHash.length);
+                    tempHash = combined;
                 }
                 
-                // Заполняем S-Box псевдослучайными значениями
-                for (let x = 0; x < 16; x++) {
-                    for (let y = 0; y < 16; y++) {
-                        for (let z = 0; z < 16; z++) {
-                            if (hashIndex >= tempHash.length) {
-                                // Обновляем хеш если нужно
-                                hashIndex = 0;
-                            }
-                            sBox[x][y][z] = tempHash[hashIndex++];
-                        }
-                    }
+                // Заполняем S-Box
+                for (let i = 0; i < 256; i++) {
+                    sBoxSet.x[i] = tempHash[i];
+                    sBoxSet.y[i] = tempHash[256 + i];
+                    sBoxSet.z[i] = tempHash[512 + i];
                 }
                 
-                return sBox;
+                return sBoxSet;
             }
 
-            // Генерация обратной 3D S-Box
-            generateInverse3DSBox(sBox) {
-                const invSBox = new Array(16);
+            // Генерация обратных S-Box
+            generateInverseSBoxSet(sBoxSet) {
+                const invSBoxSet = {
+                    x: new Array(256),
+                    y: new Array(256),
+                    z: new Array(256)
+                };
                 
-                // Инициализируем 3D массив для обратной S-Box
-                for (let z = 0; z < 16; z++) {
-                    invSBox[z] = new Array(256);
-                    for (let i = 0; i < 256; i++) {
-                        invSBox[z][i] = {x: 0, y: 0};
-                    }
+                // Заполняем обратные S-Box
+                for (let i = 0; i < 256; i++) {
+                    invSBoxSet.x[sBoxSet.x[i]] = i;
+                    invSBoxSet.y[sBoxSet.y[i]] = i;
+                    invSBoxSet.z[sBoxSet.z[i]] = i;
                 }
                 
-                // Заполняем обратную S-Box
-                for (let x = 0; x < 16; x++) {
-                    for (let y = 0; y < 16; y++) {
-                        for (let z = 0; z < 16; z++) {
-                            const value = sBox[x][y][z];
-                            invSBox[z][value] = {x, y};
-                        }
-                    }
-                }
-                
-                return invSBox;
+                return invSBoxSet;
             }
 
             // 3D S-Box преобразование
-            apply3DSBox(input, context, sBox, encrypt = true) {
+            apply3DSBox(input, context, sBoxSet, encrypt = true) {
                 const highNibble = (input >> 4) & 0x0F;
                 const lowNibble = input & 0x0F;
                 const contextNibble = (context >> 4) & 0x0F;
                 
                 if (encrypt) {
                     // Прямое преобразование: используем S-Box
-                    return sBox[highNibble][lowNibble][contextNibble];
+                    const xTransformed = sBoxSet.x[input];
+                    const yTransformed = sBoxSet.y[xTransformed];
+                    return sBoxSet.z[yTransformed ^ contextNibble];
                 } else {
                     // Обратное преобразование: используем inverse S-Box
-                    const coords = sBox[contextNibble][input];
-                    return (coords.x << 4) | coords.y;
+                    const zTransformed = invSBoxSet.z[input];
+                    const yTransformed = invSBoxSet.y[zTransformed ^ contextNibble];
+                    return invSBoxSet.x[yTransformed];
                 }
             }
 
@@ -795,7 +828,6 @@
 
             async process(data, iv, encrypt = true) {
                 let currentData = new Uint8Array(data);
-                const blockSize = 64; // Размер блока для обработки
                 
                 // Обновляем индикаторы раундов
                 this.updateRoundIndicators(0);
@@ -804,18 +836,12 @@
                     // Шифрование: прямой порядок раундов
                     for (let round = 0; round < this.rounds; round++) {
                         const result = new Uint8Array(currentData.length);
-                        const sBox = this.sBoxes[round];
+                        const sBoxSet = this.sBoxSets[round];
                         let context = iv[0]; // Начальный контекст из IV
                         
                         for (let i = 0; i < currentData.length; i++) {
                             // Применяем 3D S-Box преобразование
-                            const substituted = this.apply3DSBox(currentData[i], context, sBox, true);
-                            
-                            // Генерируем ключевой поток на основе контекста
-                            const keyStream = await this.generateKeyStream(iv, i, round, context);
-                            
-                            // XOR с ключевым потоком
-                            result[i] = substituted ^ keyStream;
+                            result[i] = this.apply3DSBox(currentData[i], context, sBoxSet, true);
                             
                             // Обновляем контекст для следующего байта
                             context = (context + result[i]) & 0xFF;
@@ -824,27 +850,25 @@
                         currentData = result;
                         this.updateRoundIndicators(round + 1);
                         
+                        // Обновляем визуализацию S-Box для текущего раунда
+                        currentSBoxSet = this.sBoxSets[Math.min(round + 1, this.rounds - 1)];
+                        updateSBoxVisualization();
+                        
                         // Задержка для анимации
                         if (round < this.rounds - 1) {
-                            await new Promise(resolve => setTimeout(resolve, 30));
+                            await new Promise(resolve => setTimeout(resolve, 100));
                         }
                     }
                 } else {
                     // Дешифрование: обратный порядок раундов
                     for (let round = this.rounds - 1; round >= 0; round--) {
                         const result = new Uint8Array(currentData.length);
-                        const invSBox = this.invSBoxes[round];
+                        const invSBoxSet = this.invSBoxSets[round];
                         let context = iv[0]; // Начальный контекст из IV
                         
                         for (let i = 0; i < currentData.length; i++) {
-                            // Генерируем ключевой поток (должен быть идентичный шифрованию)
-                            const keyStream = await this.generateKeyStream(iv, i, round, context);
-                            
-                            // Восстанавливаем substituted value
-                            const substituted = currentData[i] ^ keyStream;
-                            
                             // Применяем обратное 3D S-Box преобразование
-                            result[i] = this.apply3DSBox(substituted, context, invSBox, false);
+                            result[i] = this.apply3DSBox(currentData[i], context, invSBoxSet, false);
                             
                             // Обновляем контекст для следующего байта
                             context = (context + currentData[i]) & 0xFF;
@@ -853,21 +877,18 @@
                         currentData = result;
                         this.updateRoundIndicators(this.rounds - round);
                         
+                        // Обновляем визуализацию S-Box для текущего раунда
+                        currentSBoxSet = this.sBoxSets[Math.max(round - 1, 0)];
+                        updateSBoxVisualization();
+                        
                         // Задержка для анимации
                         if (round > 0) {
-                            await new Promise(resolve => setTimeout(resolve, 30));
+                            await new Promise(resolve => setTimeout(resolve, 100));
                         }
                     }
                 }
                 
                 return currentData;
-            }
-
-            async generateKeyStream(iv, position, round, context) {
-                // Создаем уникальный ключ для HMAC на основе IV, позиции, раунда и контекста
-                const hmacKey = new Uint8Array([...iv, round, position & 0xFF, context]);
-                const hmac = new SHA3(256).update(hmacKey).digest();
-                return hmac[0]; // Используем первый байт хеша как ключевой поток
             }
 
             bytesToHex(bytes) {
@@ -894,6 +915,8 @@
                         indicator.classList.remove('round-active');
                     }
                 });
+                
+                document.getElementById('current-round').textContent = completedRounds;
             }
         }
 
@@ -947,6 +970,55 @@
                 strengthBar.className = 'strength-bar medium';
             } else {
                 strengthBar.className = 'strength-bar strong';
+            }
+        }
+
+        // Функции для визуализации S-Box
+        function updateSBoxVisualization() {
+            if (!currentSBoxSet) return;
+            
+            // Обновляем X-таблицу
+            const gridX = document.getElementById('sbox-x');
+            gridX.innerHTML = '';
+            for (let i = 0; i < 256; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'sbox-cell';
+                cell.title = `Индекс: ${i.toString(16).padStart(2, '0').toUpperCase()}\nЗначение: ${currentSBoxSet.x[i].toString(16).padStart(2, '0').toUpperCase()}`;
+                cell.textContent = currentSBoxSet.x[i].toString(16).padStart(2, '0').toUpperCase();
+                gridX.appendChild(cell);
+            }
+            
+            // Обновляем Y-таблицу
+            const gridY = document.getElementById('sbox-y');
+            gridY.innerHTML = '';
+            for (let i = 0; i < 256; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'sbox-cell';
+                cell.title = `Индекс: ${i.toString(16).padStart(2, '0').toUpperCase()}\nЗначение: ${currentSBoxSet.y[i].toString(16).padStart(2, '0').toUpperCase()}`;
+                cell.textContent = currentSBoxSet.y[i].toString(16).padStart(2, '0').toUpperCase();
+                gridY.appendChild(cell);
+            }
+            
+            // Обновляем Z-таблицу
+            const gridZ = document.getElementById('sbox-z');
+            gridZ.innerHTML = '';
+            for (let i = 0; i < 256; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'sbox-cell';
+                cell.title = `Индекс: ${i.toString(16).padStart(2, '0').toUpperCase()}\nЗначение: ${currentSBoxSet.z[i].toString(16).padStart(2, '0').toUpperCase()}`;
+                cell.textContent = currentSBoxSet.z[i].toString(16).padStart(2, '0').toUpperCase();
+                gridZ.appendChild(cell);
+            }
+            
+            document.getElementById('current-round').textContent = currentRound;
+        }
+
+        function changeRound(delta) {
+            if (cipher.sBoxSets && cipher.sBoxSets.length > 0) {
+                currentRound = (currentRound + delta + ROUNDS) % ROUNDS;
+                currentSBoxSet = cipher.sBoxSets[currentRound];
+                updateSBoxVisualization();
+                cipher.updateRoundIndicators(currentRound);
             }
         }
 
@@ -1041,6 +1113,9 @@
             
             // Слушатели событий
             document.getElementById('key').addEventListener('input', updateStrengthMeter);
+            
+            // Инициализация визуализации S-Box
+            updateSBoxVisualization();
         });
     </script>
 </body>
